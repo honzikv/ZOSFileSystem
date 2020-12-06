@@ -1,11 +1,10 @@
 
 #include <memory>
 #include "FileSystemController.hpp"
-#include "../io/model/SuperBlock.hpp"
-#include "../util/FSException.hpp"
+#include "INodeIO.hpp"
 
 FileSystemController::FileSystemController(const std::string& fileName) : fstream(fileName) {
-    auto superBlock = std::make_unique<SuperBlock>();
+    superBlock = std::make_shared<SuperBlock>();
     fstream >> *superBlock;
 
     if (!superBlock->isValid()) {
@@ -13,4 +12,18 @@ FileSystemController::FileSystemController(const std::string& fileName) : fstrea
     }
 
     memoryAllocator = std::make_unique<MemoryAllocator>(superBlock);
+    nodeIO = std::make_unique<INodeIO>(fstream, *this);
+    pathInfo = std::make_unique<PathInfo>(); // todo call saveInfo
+
+    auto root = fstream.readINode(superBlock->nodeAddress); // reference na root node pro nastaveni path info
+    auto children = nodeIO->getItems(root);
+    pathInfo->saveInfo()
+}
+
+void FileSystemController::reclaimMemory(std::vector<uint64_t>& memoryBlocks) {
+
+}
+
+void FileSystemController::update(INode& node) {
+
 }

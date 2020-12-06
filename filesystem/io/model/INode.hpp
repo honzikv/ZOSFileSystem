@@ -39,6 +39,8 @@ class INode {
 
       uint32_t getSize() const;
 
+      uint32_t getFolderSize(); // alias pro logictejsi kod pro INode, ktera reprezentuje slozku
+
       void setSize(uint32_t size);
 
       void setDirectAddress(uint32_t index, uint64_t address);

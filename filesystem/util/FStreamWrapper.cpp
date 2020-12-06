@@ -10,3 +10,15 @@ void FStreamWrapper::formatSpace(uint64_t bytes) {
     for (auto i = 0; i < bufferFullWrites; i++) { fstream.write(buffer.data(), buffer.size()); }
     fstream.write(remainderBuffer.data(), remainderBuffer.size());
 }
+
+INode FStreamWrapper::readINode(uint64_t address) {
+    auto node = INode();
+    moveTo(address);
+    *this >> node;
+    return node;
+}
+
+void FStreamWrapper::writeFolderItem(FolderItem& folderItem, uint64_t address) {
+    moveTo(address);
+    *this << folderItem;
+}

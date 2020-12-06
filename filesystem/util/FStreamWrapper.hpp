@@ -113,6 +113,10 @@ class FStreamWrapper {
           return fstream.tellg();
       }
 
+      INode readINode(uint64_t address);
+
+      void writeFolderItem(FolderItem& folderItem, uint64_t address);
+
     private:
       /**
        * Vytvori soubor, pokud neexistuje

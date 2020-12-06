@@ -1,6 +1,8 @@
 
 #include "MemoryAllocator.hpp"
 
-MemoryAllocator::MemoryAllocator(std::unique_ptr<SuperBlock>& superBlock) {
+#include <utility>
+
+MemoryAllocator::MemoryAllocator(std::shared_ptr<SuperBlock> superBlock) {
     superBlock = std::move(superBlock);
 }

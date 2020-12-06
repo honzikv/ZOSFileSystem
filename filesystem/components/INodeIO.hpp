@@ -13,7 +13,15 @@ class INodeIO {
       FileSystemController& fileSystemController; // reference pro callbacky
 
     public:
+
+      INodeIO(FStreamWrapper& fstream, FileSystemController& fileSystemController);
+
       void append(INode& node, FolderItem& folderItem);
+
+      std::pair<std::vector<INode>, std::vector<std::string>> getItems(INode& node);
+
+    private:
+      void readFromBlockAddress(std::vector<FolderItem>& folderItems, uint64_t address);
 };
 
 
