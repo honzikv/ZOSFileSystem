@@ -1,4 +1,3 @@
-
 #include "INodeIO.hpp"
 #include "../io/AddressType.h"
 
@@ -64,8 +63,8 @@ void INodeIO::append(INode& node, FolderItem& folderItem) {
                 fstream.writeFolderItem(folderItem, blockAddress);
                 allocations.push_back(blockAddress);
             } else {
-                fstream.moveTo(node.getT2Address() + t2Index * Globals::POINTER_SIZE_BYTES);
                 uint64_t t1Address;
+                fstream.moveTo(node.getT2Address() + t2Index * Globals::POINTER_SIZE_BYTES);
                 fstream.read(t1Address);
 
                 uint64_t blockAddress;

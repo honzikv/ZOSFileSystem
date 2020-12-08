@@ -8,6 +8,7 @@
 
 class FolderItem;
 class FStreamWrapper;
+
 class INode {
 
       bool folder = false;
@@ -25,29 +26,65 @@ class INode {
 
     public:
       /**
-       * @return if inode is linked to any data
+       * @return zda-li je INode volna
        */
       [[nodiscard]] bool isFree() const;
 
+      /**
+       * @return zda-li je INode slozka
+       */
       [[nodiscard]] bool isFolder() const;
 
+      /**
+       * @return seznam primych adres
+       */
       [[nodiscard]] const std::vector<uint64_t>& getT0AddressList() const;
 
+      /**
+       * @return vrati odkaz na 1. neprimy odkaz
+       */
       [[nodiscard]] uint64_t getT1Address() const;
 
+      /**
+       * @return vrati odkaz na 2. neprimy odkaz
+       */
       [[nodiscard]] uint64_t getT2Address() const;
 
+      /**
+       * @return vrati velikost souboru
+       */
       uint32_t getSize() const;
 
-      uint32_t getFolderSize(); // alias pro logictejsi kod pro INode, ktera reprezentuje slozku
+      /**
+       * alias pro logictejsi kod pro INode, ktera reprezentuje slozku
+       * @return vrati pocet predmetu ve slozce
+       */
+      uint32_t getFolderSize();
 
+      /**
+       * nastavi INode velikost
+       * @param size velikost, ktera se nastavi
+       */
       void setSize(uint32_t size);
 
+      /**
+       * Nastavi danou primou adresu na jinou
+       * @param index index prime adresy
+       * @param address adresa, ktera se nastavi
+       */
       void setDirectAddress(uint32_t index, uint64_t address);
 
-      void setT1Address(uint64_t t1IndirectAddress);
+      /**
+       * Setter pro 1. neprimy odkaz
+       * @param t1Address adresa, na kterou se nastavi
+       */
+      void setT1Address(uint64_t t1Address);
 
-      void setT2Address(uint64_t t2IndirectAddress);
+      /**
+       * Setter pro 2. neprimy odkaz
+       * @param t2Address adresa, na kterou se nastavi
+       */
+      void setT2Address(uint64_t t2Address);
 
       INode(bool isFolder, uint32_t id);
 
@@ -55,22 +92,7 @@ class INode {
 
       friend FStreamWrapper& operator>>(FStreamWrapper& fs, INode& iNode);
 
-      /**
-       * Nastavi hodnoty pro root folder dane referenci na iNode
-       * @param iNode reference na I-Node objekt
-       */
-      static void makeRoot(INode& iNode);
-
-      /**
-       * Nacte ze souboru polozky dane slozky prostrednictvim fstream
-       * @param fstream fstream wrapper pro precteni dat ze souboru
-       * @param folderItemBuffer reference na vektor, kam se zapisou namapovane objekty
-       */
-      const void loadValidFolderItems(FStreamWrapper& fstream, std::vector<FolderItem>& folderItemBuffer);
-
       INode();
-
-      void setDirectAddressList(std::vector<uint64_t>& vector);
 };
 
 

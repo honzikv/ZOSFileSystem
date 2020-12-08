@@ -29,7 +29,7 @@ class CLI {
       static std::vector<std::string> splitByWhitespace(const std::string& input);
 
     public:
-      CLI();
+      CLI(std::string  filePath);
 
       void run();
 

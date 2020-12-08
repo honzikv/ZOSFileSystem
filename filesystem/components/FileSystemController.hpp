@@ -20,11 +20,11 @@ class FileSystemController {
 
       std::shared_ptr<SuperBlock> superBlock;
 
-      std::unique_ptr<MemoryAllocator> memoryAllocator;
+      std::shared_ptr<MemoryAllocator> memoryAllocator;
 
-      std::unique_ptr<INodeIO> nodeIO;
+      std::shared_ptr<INodeIO> nodeIO;
 
-      std::unique_ptr<PathInfo> pathInfo;
+      std::shared_ptr<PathInfo> pathInfo;
 
     public:
 

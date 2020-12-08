@@ -12,7 +12,7 @@
 /**
 *                               Filesystem
 * 0 ......... | ............ | .................... | ..... | ....... EOF
-* Super Block | Block Bitmap | Node Bitmap (Vector) | Nodes | Data Blocks
+* Super Block | Block Bitmap |       Node Bitmap    | Nodes | Data Blocks
 */
 struct SuperBlock {
 

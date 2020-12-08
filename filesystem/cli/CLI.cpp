@@ -2,12 +2,13 @@
 #include <fstream>
 #include <iterator>
 #include <sstream>
+#include <utility>
 #include "CLI.hpp"
 #include "../util/FSException.hpp"
 
 
-CLI::CLI() {
-    fileSystem = std::make_unique<FileSystem>();
+CLI::CLI(std::string filePath) {
+    fileSystem = std::make_unique<FileSystem>(filePath);
 }
 
 bool CLI::startsWith(const std::string& input, const std::string& token) {
@@ -15,8 +16,8 @@ bool CLI::startsWith(const std::string& input, const std::string& token) {
 }
 
 void CLI::run() {
-    std::cout << "Virtual File System Application v1.0" << std::endl;
-    std::cout << "Type \"format\" to create new disk" << std::endl;
+    std::cout << "Virtual File System Application" << std::endl;
+    std::cout << "Type \"format\" to format disk" << std::endl;
     std::cout << "Type \"mount\" to mount already existing disk" << std::endl;
     std::cout << "Command limit is 2048 characters, commands over 2048 characters will be truncated" << std::endl;
     std::cout << "Type \"help\" to list all commands" << std::endl;

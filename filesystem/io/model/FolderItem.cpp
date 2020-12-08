@@ -81,7 +81,7 @@ uint64_t FolderItem::getNodeAddress() const {
 }
 
 void FolderItem::load(FStreamWrapper& fstream, INode& node) const {
-    fstream.moveToRead(nodeAddress);
+    fstream.moveTo(nodeAddress);
     fstream >> node;
 }
 

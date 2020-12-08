@@ -14,23 +14,14 @@ class FStreamWrapper {
 
       static constexpr uint64_t FORMAT_BUFFER_BYTES = 4096;
 
-      std::fstream fstream; // fstream na soubor
+      std::fstream& fstream; // fstream na soubor
 
     public:
-      explicit FStreamWrapper(const std::string& fileName) {
-          createFileIfNotExists(fileName);
-          fstream.open(fileName, std::ios::binary | std::ios::in | std::ios::out);
-      }
+      FStreamWrapper(std::fstream& fstream);
 
-      std::vector<FolderItem> readFolderItems(uint64_t blockAddress) {
-          auto result = std::vector<FolderItem>();
-          for (auto i = 0; i < Globals::FOLDER_ITEMS_PER_BLOCK(); i++) {
-              auto folderItem = FolderItem();
-              *this >> folderItem; // vyuziti friend operatoru, ktery implementuje FolderItem
-              result.push_back(folderItem);
-          }
-          return result;
-      }
+      virtual ~FStreamWrapper();
+
+      std::vector<FolderItem> readFolderItems(uint64_t blockAddress);
 
       /**
        * Zapis libovolneho (primitivniho) datoveho typu ze streamu
@@ -38,7 +29,9 @@ class FStreamWrapper {
        * @param t reference
        */
       template<typename T>
-      void write(T& t) { fstream.write(reinterpret_cast<const char*>(&t), sizeof(T)); }
+      void write(T& t) {
+          fstream.write(reinterpret_cast<const char*>(&t), sizeof(T));
+      }
 
       /**
         * Varargs varianta pro zapis dat
@@ -57,7 +50,7 @@ class FStreamWrapper {
       template<typename T>
       void writeVector(const std::vector<T>& vector) {
           for (auto byteObj : vector) {
-              fstream.write(byteObj);
+              fstream.write(reinterpret_cast<const char*>(&byteObj), sizeof(T));
           }
       }
 
@@ -67,7 +60,9 @@ class FStreamWrapper {
        * @param t reference na objekt do ktereho se data zapisi
        */
       template<typename T>
-      void read(T& t) { fstream.read(&t, sizeof(T)); }
+      void read(T& t) {
+          fstream.read(reinterpret_cast<char*>(&t), sizeof(T));
+      }
 
       /**
        * Varargs varianta pro precteni dat
@@ -83,7 +78,7 @@ class FStreamWrapper {
        * Vektor musi mit predem alokovany pocet prvku, ktere se pote nahradi
        */
       template<typename T>
-      std::vector<T> readVector(std::vector<T>& vector) {
+      void readVector(std::vector<T>& vector) {
           auto amount = vector.size();
           auto byteSize = sizeof(T) * amount;
           auto buffer = std::vector<char>(byteSize);
@@ -117,19 +112,14 @@ class FStreamWrapper {
 
       void writeFolderItem(FolderItem& folderItem, uint64_t address);
 
+      uint64_t getPosition();
+
     private:
       /**
        * Vytvori soubor, pokud neexistuje
        * @param fileName nazev souboru
        */
-      static void createFileIfNotExists(const std::string& fileName) {
-          auto ifstream = std::ifstream(fileName, std::ios::in | std::ios::binary);
-          if (!ifstream.good()) {
-              ifstream.close();
-              std::ofstream(fileName, std::ios::out | std::ios::binary)
-                      .close();
-          }
-      }
+      static void createFileIfNotExists(const std::string& fileName);
 };
 
 #endif //ZOSREWORK_FSTREAMWRAPPER_HPP
