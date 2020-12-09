@@ -1,9 +1,15 @@
 
 #include "FileStream.hpp"
+#include "FSException.hpp"
 
-FileStream::FileStream(const std::string& filePath) : filePath(filePath) {
+FileStream::FileStream(const std::string& filePath) {
     auto path = std::filesystem::path(filePath);
     createFileIfNotExists(path);
+    fstream.open(filePath);
+    if (!fstream.good()) {
+        throw FSException("Error file could not be open");
+    }
+
 }
 
 void FileStream::createFileIfNotExists(const std::filesystem::path& filePath) {
@@ -26,16 +32,13 @@ void FileStream::writeFolderItem(FolderItem& folderItem, uint64_t address) {
 }
 
 std::vector<FolderItem> FileStream::readFolderItems(uint64_t address) {
-    fstream.open(filePath, std::ios::binary | std::ios::in | std::ios::out);
-    fstream.seekg(address);
+    moveTo(address);
     auto result = std::vector<FolderItem>();
     for (auto i = 0; i < Globals::FOLDER_ITEMS_PER_BLOCK(); i++) {
         auto folderItem = FolderItem();
         *this >> folderItem;
         result.push_back(folderItem);
     }
-    currentReadPosition = fstream.tellg();
-    fstream.close();
     return result;
 }
 
@@ -46,14 +49,8 @@ INode FileStream::readINode(uint64_t address) {
     return node;
 }
 
-void FileStream::moveToStart() { moveTo(0); }
-
-void FileStream::moveTo(uint64_t pos) {
-    currentReadPosition = pos;
-}
 
 void FileStream::formatSpace(uint64_t bytes) {
-    openToRead()
     auto buffer = std::vector<char>(FORMAT_BUFFER_SIZE_BYTES, 0);
     auto bufferWrites = bytes / FORMAT_BUFFER_SIZE_BYTES;
     auto remainder = bytes % FORMAT_BUFFER_SIZE_BYTES;
@@ -63,12 +60,5 @@ void FileStream::formatSpace(uint64_t bytes) {
     }
     auto remainingBytes = std::vector<char>(remainder, 0);
     fstream.write(remainingBytes.data(), remainingBytes.size());
-    fstream.flush();
+    moveTo(0);
 }
-
-FileStream::~FileStream() {
-    fstream.close();
-}
-
-
-

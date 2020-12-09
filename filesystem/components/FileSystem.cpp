@@ -99,7 +99,6 @@ void FileSystem::execute(const std::vector<std::string>& commandWithArguments) {
 
 void FileSystem::format(uint64_t userSpaceSizeBytes, const std::string& filePath) {
     auto superBlock = SuperBlock(userSpaceSizeBytes);
-    std::cout << fileStream.isOpen() << std::endl;
     fileStream.formatSpace(superBlock.totalSize);
     fileStream.moveTo(0);
     fileStream << superBlock;
@@ -114,4 +113,5 @@ void FileSystem::format(uint64_t userSpaceSizeBytes, const std::string& filePath
 
     fileStream.moveTo(0);
     fileSystemController = std::make_shared<FileSystemController>(fileStream);
+    std::cout << "controller complete" << std::endl;
 }

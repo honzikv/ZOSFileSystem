@@ -10,48 +10,13 @@
  * Wrapper pro cteni a zapis do souboru
  */
 class FileStream {
-
       static constexpr uint64_t FORMAT_BUFFER_SIZE_BYTES = 4096;
 
-      /**
-       * Z nejakeho duvodu se data nezapisi dokud se soubor nezavre
-       */
-      void openToRead() {
-          ifstream.open(filePath, std::ios::binary | std::ios::in);
-          ifstream.seekg(currentReadPosition);
-      }
-
-      void openToWrite() {
-          ofstream.open(filePath, std::ios::binary |std::ios::out);
-          ofstream.seekp(currentWritePosition);
-      }
-
-      void closeWrite() {
-          currentWritePosition = ofstream.tellp();
-          ofstream.close();
-      }
-
-      void closeRead() {
-          currentReadPosition = ifstream.tellg();
-          ifstream.close();
-      }
-
-
-      std::string filePath;
-      std::ifstream ifstream; // ifstream pro pristup k souboru
-      std::ofstream ofstream; // ofstream pro pristup k souboru
-
-      uint64_t currentReadPosition = 0;
-      uint64_t currentWritePosition = 0;
-
-    private:
-
-      template<typename T>
-      void _writeWithoutClosing(T& object) {
-          ofstream.write(reinterpret_cast<const char*>(&object), sizeof(T));
-      }
+      std::fstream fstream;
 
     public:
+
+      explicit FileStream(const std::string& filePath);
 
       /**
        * Vytvori soubor a slozky, pokud neexistuji
@@ -59,30 +24,21 @@ class FileStream {
        */
       static void createFileIfNotExists(const std::filesystem::path& filePath);
 
-      explicit FileStream(const std::string& filePath);
-
-      bool isOpen();
-
       template<typename T>
       void write(T& object) {
-          openToWrite();
-          ofstream.write(reinterpret_cast<const char*>(&object), sizeof(T));
-          closeWrite();
+          fstream.write(reinterpret_cast<char*>(&object), sizeof(T));
+          fstream.flush();
       }
 
       template<typename T, typename... Args>
       void write(T& object, Args& ... args) {
-          openToWrite();
-          _writeWithoutClosing(object);
-          _writeWithoutClosing(args...);
-          closeWrite();
+          write(object);
+          write(args...);
       }
 
       template<typename T>
       void read(T& object) {
-          openToRead();
-          ifstream.read(reinterpret_cast<char*>(&object), sizeof(T));
-          closeRead();
+          fstream.read(reinterpret_cast<char*>(&object), sizeof(T));
       }
 
 
@@ -92,9 +48,11 @@ class FileStream {
           read(args...);
       }
 
-      void moveTo(uint64_t pos);
 
-      void moveToStart();
+      void moveTo(uint64_t pos) {
+          fstream.flush();
+          fstream.seekg(pos, std::fstream::beg);
+      }
 
       /**
        * Zapise folder item na danou adresu
@@ -110,7 +68,7 @@ class FileStream {
        * @param vector reference na vektor
        */
       template<typename T>
-      void writeVector(const std::vector<T>& vector) {
+      void writeVector(std::vector<T>& vector) {
           for (auto& obj : vector) {
               write(obj);
           }
@@ -129,9 +87,7 @@ class FileStream {
 
       INode readINode(uint64_t address);
 
-      uint64_t getPosition();
 
-      virtual ~FileStream();
 };
 
 

@@ -45,9 +45,6 @@ class FileSystem {
 
       void execute(const std::vector<std::string>& commandWithArguments);
 
-    private:
-
-      static bool isFileSystemUsable(FileStream& stream);
 };
 
 #endif //FILESYSTEM_HPP
