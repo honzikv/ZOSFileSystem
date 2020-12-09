@@ -3,10 +3,10 @@
 #define FILESYSTEMCONTROLLER_HPP
 
 #include <string>
-#include "../util/FStreamWrapper.hpp"
 #include "MemoryAllocator.hpp"
 #include "PathInfo.hpp"
 #include "../io/AddressType.h"
+#include "../util/FileStream.hpp"
 
 class INodeIO;
 
@@ -16,7 +16,7 @@ class INodeIO;
 
 class FileSystemController {
 
-      FStreamWrapper fstream;
+      FileStream& fileStream; // reference na filestream ziskana z FileSystem tridy
 
       std::shared_ptr<SuperBlock> superBlock;
 
@@ -28,7 +28,7 @@ class FileSystemController {
 
     public:
 
-      explicit FileSystemController(const std::string& fileName);
+      explicit FileSystemController(FileStream& fileStream);
 
       void cp(const std::string& file, const std::string& path);
 

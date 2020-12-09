@@ -2,7 +2,7 @@
 #include "../io/AddressType.h"
 
 
-INodeIO::INodeIO(FStreamWrapper& fstream, FileSystemController& fileSystemController)
+INodeIO::INodeIO(FileStream& fstream, FileSystemController& fileSystemController)
         : fstream(fstream),
           fileSystemController(fileSystemController) {}
 

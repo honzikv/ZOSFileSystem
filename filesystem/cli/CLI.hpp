@@ -16,6 +16,8 @@ class CLI {
 
       bool running = true;
 
+      std::string filePath;
+
       std::unique_ptr<FileSystem> fileSystem;
 
       void executeScript(const std::vector<std::string>& tokens);
@@ -29,11 +31,10 @@ class CLI {
       static std::vector<std::string> splitByWhitespace(const std::string& input);
 
     public:
-      CLI(std::string  filePath);
+      explicit CLI(std::string filePath);
 
       void run();
 
-      void format(std::basic_string<char> basicString);
 };
 
 

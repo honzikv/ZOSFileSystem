@@ -3,24 +3,15 @@
 #include "FileSystemController.hpp"
 #include "INodeIO.hpp"
 
-FileSystemController::FileSystemController(const std::string& fileName) : fstream(fileName) {
-    if (fstream.getFileLength() < Globals::SUPERBLOCK_SIZE_BYTES) {
-        throw FSException("Loaded file does not contain valid file system, please format it with format command");
+
+FileSystemController::FileSystemController(FileStream& fileStream) : fileStream(fileStream) {
+    auto superBlock = SuperBlock();
+    fileStream >> superBlock;
+    this->superBlock = std::make_shared<SuperBlock>(superBlock);
+
+    if (!superBlock.isValid()) {
+        throw FSException("Filesystem is corrupt!");
     }
-    superBlock = std::make_shared<SuperBlock>();
-    fstream >> *superBlock;
-
-    if (!superBlock->isValid()) {
-        throw FSException("Loaded file does not contain valid file system, please format it with format command");
-    }
-
-    memoryAllocator = std::make_shared<MemoryAllocator>(superBlock);
-    nodeIO = std::make_shared<INodeIO>(fstream, *this);
-    pathInfo = std::make_shared<PathInfo>(); // todo call saveInfo
-
-    auto root = fstream.readINode(superBlock->nodeAddress); // reference na root node pro nastaveni path info
-    auto children = nodeIO->getItems(root);
-    pathInfo->saveInfo(children);
 }
 
 void FileSystemController::reclaimMemory(std::vector<uint64_t>& memoryBlocks) {

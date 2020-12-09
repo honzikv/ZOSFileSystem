@@ -7,8 +7,7 @@
 #include "../util/FSException.hpp"
 
 
-CLI::CLI(std::string filePath) {
-    fileSystem = std::make_unique<FileSystem>(filePath);
+CLI::CLI(std::string filePath) : filePath(std::move(filePath)) {
 }
 
 bool CLI::startsWith(const std::string& input, const std::string& token) {
@@ -17,10 +16,12 @@ bool CLI::startsWith(const std::string& input, const std::string& token) {
 
 void CLI::run() {
     std::cout << "Virtual File System Application" << std::endl;
+    std::cout << "Command limit is 2048 characters, commands over 2048 characters will be truncated" <<
+              std::endl << std::endl;
     std::cout << "Type \"format\" to format disk" << std::endl;
-    std::cout << "Type \"mount\" to mount already existing disk" << std::endl;
-    std::cout << "Command limit is 2048 characters, commands over 2048 characters will be truncated" << std::endl;
-    std::cout << "Type \"help\" to list all commands" << std::endl;
+    std::cout << "Type \"help\" to list all commands" << std::endl << std::endl;
+
+    fileSystem = std::make_unique<FileSystem>(filePath);
 
     auto input = std::string(); // TODO 2048 char limit
     while (running) {
@@ -110,14 +111,11 @@ void CLI::printHelp() {
     std::cout << "load [script] - load script with commands and execute them sequentially" << std::endl;
 }
 
-void CLI::format(std::basic_string<char> basicString) {
-
-}
 
 std::vector<std::string> CLI::splitByWhitespace(const std::string& input) {
     auto stringStream = std::istringstream(input);
     return std::vector<std::string>
-            { std::istream_iterator<std::string>(stringStream), std::istream_iterator<std::string>() };
+            {std::istream_iterator<std::string>(stringStream), std::istream_iterator<std::string>()};
 }
 
 

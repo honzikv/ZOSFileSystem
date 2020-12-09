@@ -4,14 +4,14 @@
 
 
 #include <cstdint>
-#include "../../util/FStreamWrapper.hpp"
+#include "../../util/FileStream.hpp"
 
 /**
  * Trida reprezentujici bitmapu objektu - tzn. INode nebo bloku. Obsahuje operace pro manipulaci s externim souborem
  */
 class Bitmap {
 
-      FStreamWrapper& fstream; // fstream wrapper reference
+      FileStream& fstream; // fstream wrapper reference
 
       uint64_t startAddress; // pocatecni adresa bitmapy
       uint64_t sizeOfObject; // velikost daneho objektu - INode, Data block apod.
@@ -25,7 +25,7 @@ class Bitmap {
        * @param sizeOfObject velikost prvku
        * @param fStreamWrapper reference na fstream wrapper pro snazsi cteni
        */
-      Bitmap(uint64_t startAddress, uint32_t count, uint64_t sizeOfObject, FStreamWrapper& fStreamWrapper);
+      Bitmap(uint64_t startAddress, uint32_t count, uint64_t sizeOfObject, FileStream& fStreamWrapper);
 
       bool isAddressEmpty(uint64_t address);
 
@@ -37,7 +37,7 @@ class Bitmap {
 
       static uint8_t getFirstEmptyBit(uint8_t byte);
 
-      bool setPosition(uint8_t value, uint32_t pos, FStreamWrapper& fstream);
+      bool setPosition(uint8_t value, uint32_t pos, FileStream& fstream);
 
       uint32_t findFirstEmpty();
 

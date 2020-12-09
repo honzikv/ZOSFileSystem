@@ -2,7 +2,7 @@
 #include "Bitmap.hpp"
 #include "../../util/FSException.hpp"
 
-Bitmap::Bitmap(uint64_t startAddress, uint32_t count, uint64_t sizeOfObject, FStreamWrapper& fstream) :
+Bitmap::Bitmap(uint64_t startAddress, uint32_t count, uint64_t sizeOfObject, FileStream& fstream) :
         startAddress(startAddress), fstream(fstream), sizeOfObject(sizeOfObject) {
     fstream.moveTo(startAddress);
     auto bytes = count % 8 > 0 ? (count / 8) + 1 : (count / 8);
@@ -11,7 +11,7 @@ Bitmap::Bitmap(uint64_t startAddress, uint32_t count, uint64_t sizeOfObject, FSt
     fstream.readVector(bitmap);
 }
 
-bool Bitmap::setPosition(uint8_t value, uint32_t pos, FStreamWrapper& fstream) {
+bool Bitmap::setPosition(uint8_t value, uint32_t pos, FileStream& fstream) {
     auto index = pos / 8;
     auto bit = pos % 8;
     auto bitSet = std::bitset<8>(bitmap[index]);

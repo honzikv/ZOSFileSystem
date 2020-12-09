@@ -9,7 +9,7 @@
 #include "../../global/Globals.hpp"
 #include "INode.hpp"
 
-class FStreamWrapper;
+class FileStream;
 
 class FolderItem {
 
@@ -36,20 +36,18 @@ class FolderItem {
 
       [[nodiscard]] uint64_t getNodeAddress() const;
 
-      friend FStreamWrapper& operator<<(FStreamWrapper& os, FolderItem& item);
+      friend FileStream& operator<<(FileStream& os, FolderItem& item);
 
-      friend FStreamWrapper& operator>>(FStreamWrapper& os, FolderItem& item);
+      friend FileStream& operator>>(FileStream& os, FolderItem& item);
 
       bool operator==(const FolderItem& other) const;
 
       bool operator!=(const FolderItem& other) const;
 
-      void load(FStreamWrapper& fstream, INode& node) const;
-
     private:
       void validateFileName(const std::string& input);
 
-      void validateFolderName(const std::string& input);
+      static void validateFolderName(const std::string& input);
 };
 
 

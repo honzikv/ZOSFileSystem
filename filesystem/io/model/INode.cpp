@@ -1,6 +1,6 @@
 
 #include "INode.hpp"
-#include "../../util/FStreamWrapper.hpp"
+#include "../../util/FileStream.hpp"
 
 uint32_t INode::getFolderSize() { return size; }
 
@@ -31,13 +31,14 @@ INode::INode(bool isFolder, uint32_t id) {
     this->id = id;
 }
 
-FStreamWrapper& operator<<(FStreamWrapper& fs, INode& node) {
+FileStream& operator<<(FileStream& fs, INode& node) {
     fs.write(node.folder, node.id, node.size, node.timestamp, node.refCount,
              node.t1Address, node.t2Address);
     fs.writeVector(node.t0AddressList);
     return fs;
 }
-FStreamWrapper& operator>>(FStreamWrapper& fs, INode& node) {
+
+FileStream& operator>>(FileStream& fs, INode& node) {
     fs.read(node.folder, node.id, node.size, node.timestamp, node.refCount,
             node.t1Address, node.t2Address);
     auto vector = std::vector<uint64_t>(Globals::T0_ADDRESS_LIST_SIZE, Globals::INVALID_VALUE);

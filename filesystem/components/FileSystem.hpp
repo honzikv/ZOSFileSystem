@@ -8,7 +8,7 @@
 #include <cmath>
 #include <unordered_set>
 #include "FileSystemController.hpp"
-#include "../util/FStreamWrapper.hpp"
+#include "../util/FileStream.hpp"
 
 #define INCORRECT_NUM_PARAMS std::string("Error, incorrect number of parameters for command ")
 
@@ -17,7 +17,9 @@ class SuperBlock;
 class FileSystem {
       static constexpr uint16_t MAX_DISK_SIZE_GB = 8; // vic by asi windows / linux nezvladl
 
-      std::string& filePath;
+      FileStream fileStream;
+
+      std::string filePath;
 
       std::unordered_set<std::string> mountedCommands {
               "format", "mount", "cp", "mv", "rm", "mkdir",
@@ -31,7 +33,7 @@ class FileSystem {
 
     public:
 
-      FileSystem(std::string& filePath);
+      explicit FileSystem(std::string& filePath);
 
 /**
        * Formats filesystem file - creates all neccessary parts of the filesystem
@@ -45,7 +47,7 @@ class FileSystem {
 
     private:
 
-      void mountDisk(const std::string& filePath);
+      static bool isFileSystemUsable(FileStream& stream);
 };
 
 #endif //FILESYSTEM_HPP

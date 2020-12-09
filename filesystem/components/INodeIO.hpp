@@ -3,18 +3,17 @@
 #define INODEIO_HPP
 
 
-#include "../util/FStreamWrapper.hpp"
 #include "FileSystemController.hpp"
 
 class INodeIO {
 
-      FStreamWrapper& fstream; // reference pro cteni
+      FileStream& fstream;
 
       FileSystemController& fileSystemController; // reference pro callbacky
 
     public:
 
-      INodeIO(FStreamWrapper& fstream, FileSystemController& fileSystemController);
+      INodeIO(FileStream& fstream, FileSystemController& fileSystemController);
 
       void append(INode& node, FolderItem& folderItem);
 

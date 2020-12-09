@@ -7,7 +7,7 @@
 #include "../../global/Globals.hpp"
 
 class FolderItem;
-class FStreamWrapper;
+class FileStream;
 
 class INode {
 
@@ -88,9 +88,9 @@ class INode {
 
       INode(bool isFolder, uint32_t id);
 
-      friend FStreamWrapper& operator<<(FStreamWrapper& fs, INode& iNode);
+      friend FileStream& operator<<(FileStream& fs, INode& iNode);
 
-      friend FStreamWrapper& operator>>(FStreamWrapper& fs, INode& iNode);
+      friend FileStream& operator>>(FileStream& fs, INode& iNode);
 
       INode();
 };

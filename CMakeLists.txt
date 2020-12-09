@@ -10,8 +10,6 @@ add_executable(ZOSRework main.cpp
         filesystem/io/PathContext.hpp
         filesystem/io/model/INode.cpp
         filesystem/io/model/INode.hpp
-        filesystem/util/FStreamWrapper.hpp
-        filesystem/util/FStreamWrapper.cpp
         filesystem/io/model/FolderItem.cpp
         filesystem/io/model/FolderItem.hpp
         filesystem/util/FSException.cpp
@@ -32,4 +30,4 @@ add_executable(ZOSRework main.cpp
         filesystem/components/MemoryAllocator.cpp
         filesystem/components/MemoryAllocator.hpp
         filesystem/components/INodeIO.cpp
-        filesystem/components/INodeIO.hpp filesystem/util/StringParsing.hpp)
+        filesystem/components/INodeIO.hpp filesystem/util/StringParsing.hpp filesystem/util/FileStream.cpp filesystem/util/FileStream.hpp)

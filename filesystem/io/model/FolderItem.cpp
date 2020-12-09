@@ -1,7 +1,7 @@
 #include <sstream>
 #include "FolderItem.hpp"
 #include "../../util/FSException.hpp"
-#include "../../util/FStreamWrapper.hpp"
+#include "../../util/FileStream.hpp"
 
 void FolderItem::validateFileName(const std::string& input) {
     if (input.empty()) {
@@ -51,13 +51,13 @@ FolderItem::FolderItem() {
     itemName = std::vector<char>('\0', Globals::MAX_FILE_STRING_LENGTH);
 }
 
-FStreamWrapper& operator<<(FStreamWrapper& os, FolderItem& item) {
+FileStream& operator<<(FileStream& os, FolderItem& item) {
     os.write(item.nodeAddress);
     os.writeVector(item.itemName);
     return os;
 }
 
-FStreamWrapper& operator>>(FStreamWrapper& os, FolderItem& item) {
+FileStream& operator>>(FileStream& os, FolderItem& item) {
     os.read(item.nodeAddress);
     os.readVector(item.itemName);
     return os;
@@ -78,11 +78,6 @@ std::string FolderItem::getItemName() const {
 
 uint64_t FolderItem::getNodeAddress() const {
     return nodeAddress;
-}
-
-void FolderItem::load(FStreamWrapper& fstream, INode& node) const {
-    fstream.moveTo(nodeAddress);
-    fstream >> node;
 }
 
 bool FolderItem::isEmpty() const {
