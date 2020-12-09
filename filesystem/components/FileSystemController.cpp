@@ -1,5 +1,6 @@
 
 #include <memory>
+#include <iostream>
 #include "FileSystemController.hpp"
 #include "INodeIO.hpp"
 
@@ -11,6 +12,10 @@ FileSystemController::FileSystemController(FileStream& fileStream) : fileStream(
 
     if (!superBlock.isValid()) {
         throw FSException("Filesystem is corrupt!");
+    } else {
+        std::cout << "Filesystem loaded" << std::endl;
+        std::cout << "Superblock : {\n" << "\tfreeBlocks: " << superBlock.freeBlocks << ", \n\tfreeNodes: "
+                  << superBlock.freeNodes << ", \n\tblockSize: " << superBlock.blockSize << "\n}" << std::endl;
     }
 }
 

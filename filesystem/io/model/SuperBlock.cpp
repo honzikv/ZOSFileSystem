@@ -75,6 +75,8 @@ SuperBlock::SuperBlock(uint64_t size) {
     blockBitmapAddress = nodeBitmapAddress + nodeBitmapSize;
     dataAddress = blockBitmapAddress + blockBitmapSize;
     magicNumber = Globals::SUPER_BLOCK_MAGIC_NUMBER;
+    freeBlocks = blockCount;
+    freeNodes = nodeCount - 1; // krome root node
 
     //debug
     std::cout << "blocks: " << blockCount << " -> "
