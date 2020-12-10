@@ -1,15 +1,12 @@
 
 #include "FileStream.hpp"
 #include "FSException.hpp"
+#include "../io/model/SuperBlock.hpp"
 
-FileStream::FileStream(const std::string& filePath) {
-    auto path = std::filesystem::path(filePath);
-    createFileIfNotExists(path);
-    fstream.open(filePath);
+FileStream::FileStream(std::fstream& fstream) : fstream(fstream) {
     if (!fstream.good()) {
         throw FSException("Error file could not be open");
     }
-
 }
 
 void FileStream::createFileIfNotExists(const std::filesystem::path& filePath) {
@@ -60,5 +57,40 @@ void FileStream::formatSpace(uint64_t bytes) {
     }
     auto remainingBytes = std::vector<char>(remainder, 0);
     fstream.write(remainingBytes.data(), remainingBytes.size());
+
     moveTo(0);
+}
+
+bool FileStream::isFileEmpty() {
+    fstream.seekg(0, std::ios::end);
+    auto a = fstream.tellg() == 0;
+    return a;
+}
+
+void FileStream::writeSuperBlock(SuperBlock& superBlock) {
+    write(superBlock.magicNumber,
+          superBlock.totalSize,
+          superBlock.blockSize,
+          superBlock.blockCount,
+          superBlock.blockBitmapAddress,
+          superBlock.nodeCount,
+          superBlock.nodeBitmapAddress,
+          superBlock.nodeAddress,
+          superBlock.dataAddress,
+          superBlock.freeNodes,
+          superBlock.freeBlocks);
+}
+
+void FileStream::readSuperBlock(SuperBlock& superBlock) {
+    read(superBlock.magicNumber,
+         superBlock.totalSize,
+         superBlock.blockSize,
+         superBlock.blockCount,
+         superBlock.blockBitmapAddress,
+         superBlock.nodeCount,
+         superBlock.nodeBitmapAddress,
+         superBlock.nodeAddress,
+         superBlock.dataAddress,
+         superBlock.freeNodes,
+         superBlock.freeBlocks);
 }

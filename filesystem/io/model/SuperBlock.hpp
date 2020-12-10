@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <string>
+#include <ostream>
 #include "../../global/Globals.hpp"
 #include "../../util/FileStream.hpp"
 
@@ -35,9 +36,7 @@ struct SuperBlock {
 
       SuperBlock() = default;
 
-      friend FileStream& operator<<(FileStream& fileStream, SuperBlock& superBlock);
-
-      friend FileStream& operator>>(FileStream& fileStream, SuperBlock& superBlock);
+            friend FileStream& operator>>(FileStream& fileStream, SuperBlock& superBlock);
 
       [[nodiscard]] bool isValid() const;
 
@@ -46,6 +45,8 @@ struct SuperBlock {
       static uint64_t getNodeCount(uint64_t blockCount);
 
       static uint64_t getBitmapSize(uint64_t objectCount);
+
+      friend std::ostream& operator<<(std::ostream& os, const SuperBlock& block);
 
     private:
 };

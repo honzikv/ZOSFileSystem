@@ -4,19 +4,22 @@
 
 #include <fstream>
 #include <filesystem>
+#include <iostream>
 #include "../io/model/FolderItem.hpp"
 
 /**
  * Wrapper pro cteni a zapis do souboru
  */
+class SuperBlock;
 class FileStream {
       static constexpr uint64_t FORMAT_BUFFER_SIZE_BYTES = 4096;
 
-      std::fstream fstream;
+      std::fstream& fstream;
 
     public:
 
-      explicit FileStream(const std::string& filePath);
+
+      explicit FileStream(std::fstream& fstream);
 
       /**
        * Vytvori soubor a slozky, pokud neexistuji
@@ -27,7 +30,6 @@ class FileStream {
       template<typename T>
       void write(T& object) {
           fstream.write(reinterpret_cast<char*>(&object), sizeof(T));
-          fstream.flush();
       }
 
       template<typename T, typename... Args>
@@ -39,6 +41,10 @@ class FileStream {
       template<typename T>
       void read(T& object) {
           fstream.read(reinterpret_cast<char*>(&object), sizeof(T));
+          if (!fstream.good()) {
+              moveTo(0);
+              std::cout << "not good" << std::endl;
+          }
       }
 
 
@@ -50,7 +56,7 @@ class FileStream {
 
 
       void moveTo(uint64_t pos) {
-          fstream.flush();
+          fstream.seekg(0);
           fstream.seekg(pos, std::fstream::beg);
       }
 
@@ -85,9 +91,15 @@ class FileStream {
 
       std::vector<FolderItem> readFolderItems(uint64_t address);
 
+      void writeSuperBlock(SuperBlock& superBlock);
+
+      void readSuperBlock(SuperBlock& superBlock);
+
       INode readINode(uint64_t address);
 
+      bool good() { return fstream.good(); }
 
+      bool isFileEmpty();
 };
 
 

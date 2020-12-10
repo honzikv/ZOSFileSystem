@@ -2,6 +2,7 @@
 #include <unordered_set>
 #include "filesystem/cli/CLI.hpp"
 #include <filesystem>
+#include "filesystem/util/ConversionUtils.hpp"
 
 
 int main(int argc, char* argv[]) {

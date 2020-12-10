@@ -4,6 +4,15 @@
 
 #include <cstdint>
 
+
+enum class UnitType {
+      Byte,
+      Kilobyte,
+      Megabyte,
+      Gigabyte,
+      Terabyte // :)
+};
+
 /**
  * Simple class for more elegant conversion of bytes
  */
@@ -50,6 +59,19 @@ class ConversionUtils {
       }
 
 
+      static uint64_t convert(UnitType type, uint64_t size) {
+          if (type == UnitType::Byte) {
+              return size;
+          }
+          if (type == UnitType::Kilobyte) {
+              return kilobytesToBytes(size);
+          }
+          if (type == UnitType::Megabyte) {
+              return megabytesToBytes(size);
+          } else {
+              return gigabyteToBytes(size);
+          }
+      }
 };
 
 

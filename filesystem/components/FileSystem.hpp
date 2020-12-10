@@ -17,7 +17,7 @@ class SuperBlock;
 class FileSystem {
       static constexpr uint16_t MAX_DISK_SIZE_GB = 8; // vic by asi windows / linux nezvladl
 
-      FileStream fileStream;
+      FileStream& fileStream;
 
       std::string filePath;
 
@@ -33,7 +33,7 @@ class FileSystem {
 
     public:
 
-      explicit FileSystem(std::string& filePath);
+      explicit FileSystem(FileStream& fstream);
 
 /**
        * Formats filesystem file - creates all neccessary parts of the filesystem

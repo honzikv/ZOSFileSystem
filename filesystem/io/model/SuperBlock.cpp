@@ -24,21 +24,6 @@ uint64_t SuperBlock::getBlockCount(uint64_t sizeBytes) {
     return sizeBytes % Globals::BLOCK_SIZE_BYTES == 0 ? count : count + 1;
 }
 
-FileStream& operator<<(FileStream& fileStream, SuperBlock& superBlock) {
-    fileStream.write(superBlock.magicNumber,
-                     superBlock.totalSize,
-                     superBlock.blockSize,
-                     superBlock.blockCount,
-                     superBlock.blockBitmapAddress,
-                     superBlock.nodeCount,
-                     superBlock.nodeBitmapAddress,
-                     superBlock.nodeAddress,
-                     superBlock.dataAddress,
-                     superBlock.freeNodes,
-                     superBlock.freeBlocks);
-    return fileStream;
-}
-
 FileStream& operator>>(FileStream& fileStream, SuperBlock& superBlock) {
     fileStream.read(superBlock.magicNumber,
                     superBlock.totalSize,
@@ -53,7 +38,6 @@ FileStream& operator>>(FileStream& fileStream, SuperBlock& superBlock) {
                     superBlock.freeBlocks);
     return fileStream;
 }
-
 
 SuperBlock::SuperBlock(uint64_t size) {
 

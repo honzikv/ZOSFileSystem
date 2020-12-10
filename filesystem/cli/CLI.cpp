@@ -21,29 +21,39 @@ void CLI::run() {
     std::cout << "Type \"format\" to format disk" << std::endl;
     std::cout << "Type \"help\" to list all commands" << std::endl << std::endl;
 
-    fileSystem = std::make_unique<FileSystem>(filePath);
+    FileStream::createFileIfNotExists(filePath);
+    auto fstream = std::fstream(filePath, std::ios::in | std::ios::binary | std::ios::out);
+    auto fileStream = FileStream(fstream);
+    std::cout << fileStream.good() << std::endl;
+    fileSystem = std::make_unique<FileSystem>(fileStream);
 
+    std::cout << fileStream.good() << std::endl;
     auto input = std::string(); // TODO 2048 char limit
     while (running) {
         std::getline(std::cin, input);
-        if (input.empty()) {
-            continue;
-        } else {
-            auto tokens = splitByWhitespace(input);
-
-            // prevod na lowercase
-            std::transform(tokens[0].begin(), tokens[0].end(), tokens[0].begin(), ::tolower);
-            input = tokens[0];
-
-            if (input == "help") {
-                printHelp();
-            } else if (input == "exit") {
-                running = false;
-            } else if (input == "load") {
-                executeScript(tokens);
+        try {
+            if (input.empty()) {
+                continue;
             } else {
-                execute(tokens);
+                auto tokens = splitByWhitespace(input);
+
+                // prevod na lowercase
+                std::transform(tokens[0].begin(), tokens[0].end(), tokens[0].begin(), ::tolower);
+                input = tokens[0];
+
+                if (input == "help") {
+                    printHelp();
+                } else if (input == "exit") {
+                    running = false;
+                } else if (input == "load") {
+                    executeScript(tokens);
+                } else {
+                    execute(tokens);
+                }
             }
+        }
+        catch (FSException& ex) {
+            std::cout << ex.what() << std::endl;
         }
 
     }

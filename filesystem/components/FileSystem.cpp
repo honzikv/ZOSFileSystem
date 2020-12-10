@@ -2,15 +2,6 @@
 #include "FileSystem.hpp"
 #include "../util/StringParsing.hpp"
 
-FileSystem::FileSystem(std::string& filePath) : fileStream(filePath), filePath(filePath) {
-    try {
-        fileSystemController = std::make_shared<FileSystemController>(fileStream);
-    }
-    catch (FSException& exception) {
-        std::cout << "Error file is not formatted yet, please format it with the \"format\" command" << std::endl;
-    }
-}
-
 void FileSystem::execute(const std::vector<std::string>& commandWithArguments) {
     auto command = commandWithArguments[0];
     auto args = std::vector<std::string>();
@@ -101,7 +92,7 @@ void FileSystem::format(uint64_t userSpaceSizeBytes, const std::string& filePath
     auto superBlock = SuperBlock(userSpaceSizeBytes);
     fileStream.formatSpace(superBlock.totalSize);
     fileStream.moveTo(0);
-    fileStream << superBlock;
+    fileStream.writeSuperBlock(superBlock);
 
     fileStream.moveTo(superBlock.nodeAddress);
     auto rootNode = INode(true, 0);
@@ -114,4 +105,15 @@ void FileSystem::format(uint64_t userSpaceSizeBytes, const std::string& filePath
     fileStream.moveTo(0);
     fileSystemController = std::make_shared<FileSystemController>(fileStream);
     std::cout << "controller complete" << std::endl;
+}
+
+FileSystem::FileSystem(FileStream& fstream) : fileStream(fstream) {
+
+    try {
+        fileSystemController = std::make_shared<FileSystemController>(fileStream);
+        std::cout << fileStream.good();
+    }
+    catch (FSException& exception) {
+        std::cout << "Error file is not formatted yet, please format it with the \"format\" command" << std::endl;
+    }
 }

@@ -6,16 +6,24 @@
 
 
 FileSystemController::FileSystemController(FileStream& fileStream) : fileStream(fileStream) {
-    auto superBlock = SuperBlock();
-    fileStream >> superBlock;
-    this->superBlock = std::make_shared<SuperBlock>(superBlock);
+    if (fileStream.isFileEmpty()) {
+        std::cout << "File is empty" << std::endl;
+        throw FSException("File is empty");
+    }
+    auto superBlock =  std::make_shared<SuperBlock>();
+    std::cout << fileStream.good() << std::endl;
+    fileStream.moveTo(0);
+    fileStream.readSuperBlock(*superBlock);
 
-    if (!superBlock.isValid()) {
+    std::cout << fileStream.good() << std::endl;
+    if (!superBlock->isValid()) {
+        fileStream.moveTo(0);
         throw FSException("Filesystem is corrupt!");
     } else {
+
         std::cout << "Filesystem loaded" << std::endl;
-        std::cout << "Superblock : {\n" << "\tfreeBlocks: " << superBlock.freeBlocks << ", \n\tfreeNodes: "
-                  << superBlock.freeNodes << ", \n\tblockSize: " << superBlock.blockSize << "\n}" << std::endl;
+        std::cout << "Superblock : {\n" << "\tfreeBlocks: " << superBlock->freeBlocks << ", \n\tfreeNodes: "
+                  << superBlock->freeNodes << ", \n\tblockSize: " << superBlock->blockSize << "\n}" << std::endl;
     }
 }
 
