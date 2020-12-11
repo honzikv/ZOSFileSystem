@@ -13,19 +13,21 @@ class Bitmap {
 
       FileStream& fstream; // fstream wrapper reference
 
-      uint64_t startAddress; // pocatecni adresa bitmapy
+      uint64_t bitmapStartAddress; // pocatecni adresa bitmapy
+      uint64_t objectStartAddress; // pocatecni adresa objektu
       uint64_t sizeOfObject; // velikost daneho objektu - INode, Data block apod.
 
       std::vector<uint8_t> bitmap; // bitmapa abychom nemuseli neustale cist ze souboru
 
     public:
       /**
-       * @param startAddress pocatecni adresa v souboru
+       * @param bitmapStartAddress pocatecni adresa v souboru
        * @param count pocet prvku
        * @param sizeOfObject velikost prvku
        * @param fileStream reference na fstream wrapper pro snazsi cteni
        */
-      Bitmap(uint64_t startAddress, uint32_t count, uint64_t sizeOfObject, FileStream& fileStream);
+      Bitmap(uint64_t bitmapStartAddress, uint32_t count, uint64_t objectStartAddress, uint64_t sizeOfObject,
+             FileStream& fileStream);
 
       bool isAddressEmpty(uint64_t address);
 

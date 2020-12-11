@@ -44,24 +44,16 @@ FolderItem::FolderItem(const std::string& itemName, uint64_t nodeAddress, bool i
         validateFileName(itemName);
     }
     this->itemName = std::vector<char>(itemName.begin(), itemName.end());
-    this->itemName.push_back('\0');
+    auto paddingBytes = Globals::FILE_NAME_CHAR_ARRAY_LENGTH - itemName.size();
+    for (auto i = 0; i < paddingBytes; i++) {
+        this->itemName.push_back('\0');
+    }
 }
 
 FolderItem::FolderItem() {
     itemName = std::vector<char>('\0', Globals::MAX_FILE_STRING_LENGTH);
 }
 
-FileStream& operator<<(FileStream& os, FolderItem& item) {
-    os.write(item.nodeAddress);
-    os.writeVector(item.itemName);
-    return os;
-}
-
-FileStream& operator>>(FileStream& os, FolderItem& item) {
-    os.read(item.nodeAddress);
-    os.readVector(item.itemName);
-    return os;
-}
 
 
 std::string FolderItem::getItemName() const {

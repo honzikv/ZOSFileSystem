@@ -2,9 +2,11 @@
 #include "Bitmap.hpp"
 #include "../../util/FSException.hpp"
 
-Bitmap::Bitmap(uint64_t startAddress, uint32_t count, uint64_t sizeOfObject, FileStream& fileStream) :
-        startAddress(startAddress), fstream(fileStream), sizeOfObject(sizeOfObject) {
-    fileStream.moveTo(startAddress);
+Bitmap::Bitmap(uint64_t bitmapStartAddress, uint32_t count, uint64_t objectStartAddress, uint64_t sizeOfObject,
+               FileStream& fileStream) :
+        bitmapStartAddress(bitmapStartAddress), fstream(fileStream), sizeOfObject(sizeOfObject),
+        objectStartAddress(objectStartAddress) {
+    fileStream.moveTo(bitmapStartAddress);
     auto bytes = count % 8 > 0 ? (count / 8) + 1 : (count / 8);
 
     bitmap = std::vector<uint8_t>(bytes, 0);
@@ -18,7 +20,7 @@ bool Bitmap::setPosition(uint8_t value, uint32_t pos, FileStream& fstream) {
     bitSet[bit] = value;
     auto byteValue = (uint8_t) bitSet.to_ulong();
     bitmap[index] = byteValue;
-    fstream.moveTo(startAddress + pos / 8);
+    fstream.moveTo(bitmapStartAddress + pos / 8);
     fstream.write(byteValue);
     return true;
 }
@@ -41,12 +43,12 @@ void Bitmap::getEmptyPositions(std::vector<uint8_t>& positions, uint32_t index) 
 }
 
 void Bitmap::updateBitmap(uint64_t bitmapIndex, uint8_t value) {
-    fstream.moveTo(startAddress + bitmapIndex);
+    fstream.moveTo(bitmapStartAddress + bitmapIndex);
     fstream.write(value);
 }
 
 bool Bitmap::isAddressEmpty(uint64_t address) {
-    auto bitmapAddress = (address - startAddress) / sizeOfObject;
+    auto bitmapAddress = (address - bitmapStartAddress) / sizeOfObject;
     auto bitmapIndex = bitmapAddress / 8;
     auto bit = bitmapAddress % 8;
 
@@ -58,23 +60,22 @@ uint64_t Bitmap::getFirstEmptyAddress() {
     auto full = uint8_t(0xff);
     uint32_t index = -1;
     for (auto i = 0; i < bitmap.size(); i++) {
-        if (bitmap[i] == full) {
-            continue;
+        if (bitmap[i] != full) {
+            index = i;
+            break;
         }
-        index = i;
     }
 
     if (index != -1) {
         auto bit = getFirstEmptyBit(bitmap[index]);
-        return (index * 8 + bit ) * sizeOfObject + startAddress;
-    }
-    else {
+        return (index * 8 + bit) * sizeOfObject + objectStartAddress;
+    } else {
         throw FSException("Error bitmap is full");
     }
 }
 
 void Bitmap::setAddress(uint64_t address, bool empty) {
-    auto bitmapAddress = (address - startAddress) / sizeOfObject;
+    auto bitmapAddress = (address - objectStartAddress) / sizeOfObject;
     auto bitmapIndex = bitmapAddress / 8;
     auto bit = bitmapAddress % 8;
 

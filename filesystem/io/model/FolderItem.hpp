@@ -11,7 +11,7 @@
 
 class FileStream;
 
-class FolderItem {
+struct FolderItem {
 
       std::vector<char> itemName = std::vector<char>(Globals::FILE_NAME_CHAR_ARRAY_LENGTH, '\0'); // nazev souboru
       uint64_t nodeAddress = Globals::INVALID_VALUE; // reference na INode
@@ -35,10 +35,6 @@ class FolderItem {
       [[nodiscard]] std::string getItemName() const;
 
       [[nodiscard]] uint64_t getNodeAddress() const;
-
-      friend FileStream& operator<<(FileStream& os, FolderItem& item);
-
-      friend FileStream& operator>>(FileStream& os, FolderItem& item);
 
       bool operator==(const FolderItem& other) const;
 

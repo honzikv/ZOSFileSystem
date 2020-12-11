@@ -96,37 +96,48 @@ std::pair<std::vector<INode>, std::vector<std::string>> INodeIO::getItems(INode&
     auto blockCount = itemCount / Globals::FOLDER_ITEMS_PER_BLOCK();
     auto remainder = itemCount % Globals::FOLDER_ITEMS_PER_BLOCK();
 
-    if (remainder != 0) {
-        blockCount += 1;
-    }
+    if (blockCount == 0) {
+        readFromBlockAddress(folderItems,
+                             node.getT0AddressList()[0]); // precteme prvni blok a odstranime prebytecne predmety
+        auto toRemove = Globals::FOLDER_ITEMS_PER_BLOCK() - remainder;
+        folderItems.resize(folderItems.size() - toRemove);
 
-    for (auto currBlockIndex = 0; currBlockIndex < blockCount; currBlockIndex++) {
-        if (currBlockIndex < Globals::T0_ADDRESS_LIST_SIZE) {
-            readFromBlockAddress(folderItems, node.getT0AddressList()[currBlockIndex]);
-        } else if (currBlockIndex - Globals::T0_ADDRESS_LIST_SIZE < Globals::POINTERS_PER_BLOCK()) {
-            uint64_t blockAddress;
-            auto t1Index = (currBlockIndex - Globals::T0_ADDRESS_LIST_SIZE);
-            fstream.moveTo(node.getT1Address() +
-                           t1Index * Globals::POINTER_SIZE_BYTES);
-            fstream.read(blockAddress);
-            readFromBlockAddress(folderItems, blockAddress);
-        } else {
-            auto relativeBlockIndex = currBlockIndex - Globals::T0_ADDRESS_LIST_SIZE - Globals::POINTERS_PER_BLOCK();
-            auto t2Index = relativeBlockIndex / (Globals::POINTERS_PER_BLOCK() * Globals::POINTERS_PER_BLOCK());
-            auto t1Index = relativeBlockIndex / Globals::POINTERS_PER_BLOCK();
-
-            uint64_t t1Address;
-            fstream.moveTo(node.getT2Address() + t2Index * Globals::POINTER_SIZE_BYTES);
-            fstream.read(t1Address);
-
-            uint64_t blockAddress;
-            fstream.moveTo(t1Address + t1Index * Globals::POINTER_SIZE_BYTES);
-            fstream.read(blockAddress);
-            readFromBlockAddress(folderItems, blockAddress);
+    } else {
+        if (remainder != 0) {
+            blockCount += 1; // precteme jeden extra blok navic a pote odstranime prebytecne predmety
         }
-    }
 
-    folderItems.resize(folderItems.size() - (Globals::FOLDER_ITEMS_PER_BLOCK() - remainder));
+        for (auto currBlockIndex = 0; currBlockIndex < blockCount; currBlockIndex++) {
+            if (currBlockIndex < Globals::T0_ADDRESS_LIST_SIZE) {
+                readFromBlockAddress(folderItems, node.getT0AddressList()[currBlockIndex]);
+            } else if (currBlockIndex - Globals::T0_ADDRESS_LIST_SIZE < Globals::POINTERS_PER_BLOCK()) {
+                uint64_t blockAddress;
+                auto t1Index = (currBlockIndex - Globals::T0_ADDRESS_LIST_SIZE);
+                fstream.moveTo(node.getT1Address() +
+                               t1Index * Globals::POINTER_SIZE_BYTES);
+                fstream.read(blockAddress);
+                readFromBlockAddress(folderItems, blockAddress);
+            } else {
+                // vypocteme index v danem t2 bloku - tzn odecteme predchozi limity pro prime odkazy a 1. neprimy odkaz
+                auto relativeBlockIndex =
+                        currBlockIndex - Globals::T0_ADDRESS_LIST_SIZE - Globals::POINTERS_PER_BLOCK();
+                auto t2Index = relativeBlockIndex / (Globals::POINTERS_PER_BLOCK() * Globals::POINTERS_PER_BLOCK());
+                auto t1Index = relativeBlockIndex / Globals::POINTERS_PER_BLOCK();
+
+                uint64_t t1Address;
+                fstream.moveTo(node.getT2Address() + t2Index * Globals::POINTER_SIZE_BYTES);
+                fstream.read(t1Address);
+
+                uint64_t blockAddress;
+                fstream.moveTo(t1Address + t1Index * Globals::POINTER_SIZE_BYTES);
+                fstream.read(blockAddress);
+                readFromBlockAddress(folderItems, blockAddress);
+            }
+        }
+
+        auto toRemove = Globals::FOLDER_ITEMS_PER_BLOCK() - remainder;
+        folderItems.resize(folderItems.size() - toRemove);
+    }
 
     auto inodes = std::vector<INode>();
     auto itemNames = std::vector<std::string>();
@@ -137,9 +148,7 @@ std::pair<std::vector<INode>, std::vector<std::string>> INodeIO::getItems(INode&
         fstream.readINode(parent);
         inodes.push_back(parent);
     }
-
     return std::pair(inodes, itemNames);
-
 }
 
 void INodeIO::readFromBlockAddress(std::vector<FolderItem>& folderItems, uint64_t address) {

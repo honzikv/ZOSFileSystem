@@ -4,7 +4,7 @@
 #include "FSException.hpp"
 #include "../io/model/SuperBlock.hpp"
 
-FileStream::FileStream(std::string  filePath): filePath(std::move(filePath)) {
+FileStream::FileStream(std::string filePath) : filePath(std::move(filePath)) {
 }
 
 bool FileStream::fileExists() {
@@ -29,10 +29,10 @@ void FileStream::createFileIfNotExists(const std::filesystem::path& filePath) {
 }
 
 void FileStream::deleteFile() {
-    if (fileExists()) {
-        std::filesystem::remove(std::filesystem::path(filePath));
-    }
     fstream.close();
+    if (fileExists()) {
+        std::remove(filePath.c_str());
+    }
 }
 
 void FileStream::createFile() {
@@ -43,15 +43,17 @@ void FileStream::createFile() {
 
 void FileStream::writeFolderItem(FolderItem& folderItem, uint64_t address) {
     moveTo(address);
-    *this << folderItem;
+    write(folderItem.nodeAddress);
+    writeVector(folderItem.itemName);
 }
 
 std::vector<FolderItem> FileStream::readFolderItems(uint64_t address) {
     moveTo(address);
     auto result = std::vector<FolderItem>();
+    auto folderItem = FolderItem();
     for (auto i = 0; i < Globals::FOLDER_ITEMS_PER_BLOCK(); i++) {
-        auto folderItem = FolderItem();
-        *this >> folderItem;
+        read(folderItem.nodeAddress);
+        readVector(folderItem.itemName);
         result.push_back(folderItem);
     }
     return result;

@@ -173,14 +173,10 @@ void FileSystemController::initDrive() {
 
     // tecka pro aktualni slozku a dve tecky pro "nadrazenou" slozku - v tomto pripaade se presune na root
     auto dot = FolderItem(".", superBlock->nodeAddress, true);
-    auto dotDot = FolderItem(".", superBlock->nodeAddress, true);
+    auto dotDot = FolderItem("..", superBlock->nodeAddress, true);
 
     nodeIO->append(root, dot);
     nodeIO->append(root, dotDot); // tato funkce automaticky aktualizuje pathInfo
-
-    auto superBlock = SuperBlock();
-    fileStream.moveTo(0);
-    fileStream.read(superBlock);
 
     driveState = DriveState::Valid;
 }

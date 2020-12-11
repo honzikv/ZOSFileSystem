@@ -109,10 +109,6 @@ void FileSystem::execute(const std::vector<std::string>& commandWithArguments) {
 }
 
 void FileSystem::format(std::vector<std::string>& args) {
-    fileStream.deleteFile(); // smazeme predchozi soubor
-    fileStream.createFile(); // vytvorime prazdny soubor
-    fileStream.open(); // otevreme fstream
-
     auto string = std::string();
     for (const auto& arg : args) {
         string += arg;
@@ -120,19 +116,21 @@ void FileSystem::format(std::vector<std::string>& args) {
     std::transform(string.begin(), string.end(), string.begin(),
                    [](auto c) { return std::tolower(c); }); // to lower
     if (!StringParsing::matchesFormatRegex(string)) {
-        fileStream.deleteFile();
-        fileStream.close();
         throw FSException("Incorrect parameters for \"format\"");
     }
+
     uint64_t userSpaceSizeBytes;
     try {
         userSpaceSizeBytes = StringParsing::parseDriveFormatSize(string);
     }
     catch (FSException& ex) {
-        fileStream.deleteFile();
-        fileStream.close();
         throw FSException("Incorrect parameters for \"format\"");
     }
+
+    fileStream.deleteFile(); // smazeme predchozi soubor
+    fileStream.createFile(); // vytvorime prazdny soubor
+    fileStream.open(); // otevreme fstream
+
     auto superBlock = SuperBlock(userSpaceSizeBytes);
     fileStream.moveTo(0);
     fileStream.format(superBlock.totalSize);

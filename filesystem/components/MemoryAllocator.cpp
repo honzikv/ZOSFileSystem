@@ -6,8 +6,8 @@ MemoryAllocator::MemoryAllocator(std::shared_ptr<SuperBlock> superBlock, FileStr
         fileStream) {
     this->superBlock = superBlock;
     blockBitmap = std::make_shared<Bitmap>(superBlock->blockBitmapAddress, superBlock->blockCount,
-                                           Globals::BLOCK_SIZE_BYTES, fileStream);
-    nodeBitmap = std::make_shared<Bitmap>(superBlock->nodeBitmapAddress, superBlock->nodeCount,
+                                           superBlock->dataAddress, Globals::BLOCK_SIZE_BYTES, fileStream);
+    nodeBitmap = std::make_shared<Bitmap>(superBlock->nodeBitmapAddress, superBlock->nodeCount, superBlock->nodeAddress,
                                           Globals::INODE_SIZE_BYTES(), fileStream);
 
 }
