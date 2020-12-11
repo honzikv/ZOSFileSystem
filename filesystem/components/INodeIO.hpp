@@ -13,7 +13,7 @@ class INodeIO {
 
     public:
 
-      INodeIO(FileStream& fstream, FileSystemController& fileSystemController);
+      INodeIO(FileStream& fileStream, FileSystemController& fileSystemController);
 
       void append(INode& node, FolderItem& folderItem);
 

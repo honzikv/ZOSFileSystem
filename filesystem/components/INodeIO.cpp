@@ -2,8 +2,8 @@
 #include "../io/AddressType.h"
 
 
-INodeIO::INodeIO(FileStream& fstream, FileSystemController& fileSystemController)
-        : fstream(fstream),
+INodeIO::INodeIO(FileStream& fileStream, FileSystemController& fileSystemController)
+        : fstream(fileStream),
           fileSystemController(fileSystemController) {}
 
 void INodeIO::append(INode& node, FolderItem& folderItem) {
@@ -74,15 +74,21 @@ void INodeIO::append(INode& node, FolderItem& folderItem) {
                 fstream.writeFolderItem(folderItem, blockAddress + row * Globals::FOLDER_ITEM_SIZE_BYTES);
             }
         }
+
+        node.increaseFolderItems();
         fileSystemController.update(node);
 
-    } catch (FSException& oom) {
+    } catch (FSException& outOfMemoryBlocks) {
         fileSystemController.reclaimMemory(allocations);
     }
 
 }
 
 std::pair<std::vector<INode>, std::vector<std::string>> INodeIO::getItems(INode& node) {
+    if (node.getFolderSize() == 0) {
+        return std::pair<std::vector<INode>, std::vector<std::string>>(std::vector<INode>(),
+                                                                       std::vector<std::string>());
+    }
     auto itemCount = node.getFolderSize();
     auto folderItems = std::vector<FolderItem>();
     folderItems.reserve(itemCount);
@@ -126,7 +132,10 @@ std::pair<std::vector<INode>, std::vector<std::string>> INodeIO::getItems(INode&
     auto itemNames = std::vector<std::string>();
     for (const auto& folderItem : folderItems) {
         itemNames.push_back(folderItem.getItemName());
-        inodes.push_back(fstream.readINode(folderItem.getNodeAddress()));
+        auto parent = INode();
+        fstream.moveTo(folderItem.getNodeAddress());
+        fstream.readINode(parent);
+        inodes.push_back(parent);
     }
 
     return std::pair(inodes, itemNames);

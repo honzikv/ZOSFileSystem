@@ -24,7 +24,9 @@ class FileSystem {
       std::unordered_set<std::string> mountedCommands {
               "format", "mount", "cp", "mv", "rm", "mkdir",
               "rmdir", "ls", "cat", "cd", "pwd", "info",
-              "incp", "outcp", "load"
+              "incp", "outcp", "load",
+              // debug
+              "diskinfo"
       };
 
       std::shared_ptr<FileSystemController> fileSystemController = nullptr;
@@ -41,7 +43,7 @@ class FileSystem {
        * @param userSpaceSizeBytes file system size in bytes
        * @return
        */
-      void format(uint64_t userSpaceSizeBytes, const std::string& filePath);
+      void format(std::vector<std::string>& args);
 
       void execute(const std::vector<std::string>& commandWithArguments);
 

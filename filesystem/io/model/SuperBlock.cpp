@@ -2,8 +2,6 @@
 #include <iostream>
 #include "SuperBlock.hpp"
 #include "../../util/ConversionUtils.hpp"
-#include "../../util/FileStream.hpp"
-#include "../../util/FSException.hpp"
 
 bool SuperBlock::isValid() const {
     return magicNumber == Globals::SUPER_BLOCK_MAGIC_NUMBER;
@@ -24,19 +22,12 @@ uint64_t SuperBlock::getBlockCount(uint64_t sizeBytes) {
     return sizeBytes % Globals::BLOCK_SIZE_BYTES == 0 ? count : count + 1;
 }
 
-FileStream& operator>>(FileStream& fileStream, SuperBlock& superBlock) {
-    fileStream.read(superBlock.magicNumber,
-                    superBlock.totalSize,
-                    superBlock.blockSize,
-                    superBlock.blockCount,
-                    superBlock.blockBitmapAddress,
-                    superBlock.nodeCount,
-                    superBlock.nodeBitmapAddress,
-                    superBlock.nodeAddress,
-                    superBlock.dataAddress,
-                    superBlock.freeNodes,
-                    superBlock.freeBlocks);
-    return fileStream;
+void SuperBlock::printInfo() const {
+    std::cout << "blocks: " << blockCount << " -> "
+              << ConversionUtils::bytesToMegabytes(blockCount * Globals::BLOCK_SIZE_BYTES) << " MB" << std::endl
+              << "nodes: " << nodeCount << " -> "
+              << ConversionUtils::bytesToMegabytes(nodeCount * Globals::INODE_SIZE_BYTES()) << " MB" << std::endl
+              << "valid = " << isValid() << std::endl;
 }
 
 SuperBlock::SuperBlock(uint64_t size) {
@@ -63,11 +54,5 @@ SuperBlock::SuperBlock(uint64_t size) {
     freeNodes = nodeCount - 1; // krome root node
 
     //debug
-    std::cout << "blocks: " << blockCount << " -> "
-              << ConversionUtils::bytesToMegabytes(blockCount * Globals::BLOCK_SIZE_BYTES) << " MB" << std::endl
-              << "nodes: " << nodeCount << " -> "
-              << ConversionUtils::bytesToMegabytes(nodeCount * Globals::INODE_SIZE_BYTES()) << " MB" << std::endl
-              << "node bitmap: " << ConversionUtils::bytesToKilobytes(nodeBitmapSize) << " kB " << std::endl
-              << "block bitmap: " << ConversionUtils::bytesToKilobytes(blockBitmapSize) << " kB " << std::endl
-              << "valid = " << isValid() << std::endl;
+    printInfo();
 }

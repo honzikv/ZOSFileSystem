@@ -9,7 +9,7 @@
 class FolderItem;
 class FileStream;
 
-class INode {
+struct INode {
 
       bool folder = false;
       uint32_t id = (uint32_t) Globals::INVALID_VALUE; // Id. Bude bud vypocteno z adresy INode nebo INVALID_VALUE
@@ -24,7 +24,6 @@ class INode {
       uint64_t t1Address = Globals::INVALID_VALUE; // Odkaz na datovy blok s neprimymi adresami
       uint64_t t2Address = Globals::INVALID_VALUE; // Odkaz na blok s odkazy na neprime adresy
 
-    public:
       /**
        * @return zda-li je INode volna
        */
@@ -59,7 +58,7 @@ class INode {
        * alias pro logictejsi kod pro INode, ktera reprezentuje slozku
        * @return vrati pocet predmetu ve slozce
        */
-      uint32_t getFolderSize();
+      uint32_t getFolderSize() const;
 
       /**
        * nastavi INode velikost
@@ -86,13 +85,19 @@ class INode {
        */
       void setT2Address(uint64_t t2Address);
 
+      /**
+       * Konstruktor pro ulozeni do souboru
+       * @param isFolder zda-li se jedna o slozku
+       * @param id id INode
+       */
       INode(bool isFolder, uint32_t id);
 
-      friend FileStream& operator<<(FileStream& fs, INode& iNode);
-
-      friend FileStream& operator>>(FileStream& fs, INode& iNode);
-
+      /**
+       * Empty konstruktor pro naplneni pri cteni ze souboru
+       */
       INode();
+
+      void increaseFolderItems();
 };
 
 

@@ -2,6 +2,21 @@
 #include "FileSystem.hpp"
 #include "../util/StringParsing.hpp"
 
+FileSystem::FileSystem(FileStream& fstream) : fileStream(fstream) {
+    fileSystemController = std::make_shared<FileSystemController>(fileStream);
+
+    if (fileSystemController->getDriveState() == DriveState::Valid) {
+        std::cout << "FileSystem is usable" << std::endl;
+        isMounted = true;
+    } else if (fileSystemController->getDriveState() == DriveState::Invalid) {
+        std::cout << "Error, disk is either corrupt or incorrect parameter present.\n "
+                     "File is not empty but does not contain super block."
+                  << std::endl;
+    } else {
+        std::cout << "File is either empty or not created, please format it with the \"format\" command" << std::endl;
+    }
+}
+
 void FileSystem::execute(const std::vector<std::string>& commandWithArguments) {
     auto command = commandWithArguments[0];
     auto args = std::vector<std::string>();
@@ -13,12 +28,12 @@ void FileSystem::execute(const std::vector<std::string>& commandWithArguments) {
         if (args.size() > 2 || args.empty()) {
             throw FSException(INCORRECT_NUM_PARAMS + "\"format\"");
         }
-        format(StringParsing::getSizeBytes(args), filePath);
+        format(args);
     } else if (!mountedCommands.contains(command)) {
         throw FSException("Unknown command, type \"help\" for list of all commands");
     } else if (!isMounted) {
         throw FSException("Error unable to read disk file, this is probably due to wrong parameter or disk not having"
-                          "been formatted yet, to format it use format command");
+                          " been formatted yet, to format it use format command");
     } else if (command == "cp") {
         if (args.size() != 2) {
             throw FSException(INCORRECT_NUM_PARAMS + "\"cp\"");
@@ -84,36 +99,45 @@ void FileSystem::execute(const std::vector<std::string>& commandWithArguments) {
             throw FSException(INCORRECT_NUM_PARAMS + "\"outcp\"");
         }
         fileSystemController->outcp(args[0], args[1]);
+    } else if (command == "diskinfo") {
+        if (!args.empty()) {
+            throw FSException(INCORRECT_NUM_PARAMS + "\"diskinfo\"");
+        }
+        fileSystemController->diskInfo();
     }
 
 }
 
-void FileSystem::format(uint64_t userSpaceSizeBytes, const std::string& filePath) {
+void FileSystem::format(std::vector<std::string>& args) {
+    fileStream.deleteFile(); // smazeme predchozi soubor
+    fileStream.createFile(); // vytvorime prazdny soubor
+    fileStream.open(); // otevreme fstream
+
+    auto string = std::string();
+    for (const auto& arg : args) {
+        string += arg;
+    }
+    std::transform(string.begin(), string.end(), string.begin(),
+                   [](auto c) { return std::tolower(c); }); // to lower
+    if (!StringParsing::matchesFormatRegex(string)) {
+        fileStream.deleteFile();
+        fileStream.close();
+        throw FSException("Incorrect parameters for \"format\"");
+    }
+    uint64_t userSpaceSizeBytes;
+    try {
+        userSpaceSizeBytes = StringParsing::parseDriveFormatSize(string);
+    }
+    catch (FSException& ex) {
+        fileStream.deleteFile();
+        fileStream.close();
+        throw FSException("Incorrect parameters for \"format\"");
+    }
     auto superBlock = SuperBlock(userSpaceSizeBytes);
-    fileStream.formatSpace(superBlock.totalSize);
+    fileStream.moveTo(0);
+    fileStream.format(superBlock.totalSize);
     fileStream.moveTo(0);
     fileStream.writeSuperBlock(superBlock);
-
-    fileStream.moveTo(superBlock.nodeAddress);
-    auto rootNode = INode(true, 0);
-    fileStream << rootNode;
-    auto emptyNode = INode();
-    for (auto i = 1; i < superBlock.nodeCount; i++) {
-        fileStream << rootNode;
-    }
-
-    fileStream.moveTo(0);
-    fileSystemController = std::make_shared<FileSystemController>(fileStream);
-    std::cout << "controller complete" << std::endl;
-}
-
-FileSystem::FileSystem(FileStream& fstream) : fileStream(fstream) {
-
-    try {
-        fileSystemController = std::make_shared<FileSystemController>(fileStream);
-        std::cout << fileStream.good();
-    }
-    catch (FSException& exception) {
-        std::cout << "Error file is not formatted yet, please format it with the \"format\" command" << std::endl;
-    }
+    fileSystemController->initDrive();
+    isMounted = true;
 }

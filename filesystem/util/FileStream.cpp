@@ -1,12 +1,18 @@
-
 #include "FileStream.hpp"
+
+#include <utility>
 #include "FSException.hpp"
 #include "../io/model/SuperBlock.hpp"
 
-FileStream::FileStream(std::fstream& fstream) : fstream(fstream) {
-    if (!fstream.good()) {
-        throw FSException("Error file could not be open");
-    }
+FileStream::FileStream(std::string  filePath): filePath(std::move(filePath)) {
+}
+
+bool FileStream::fileExists() {
+    return std::filesystem::exists(filePath);
+}
+
+void FileStream::open() {
+    fstream.open(filePath, std::ios::binary | std::ios::in | std::ios::out);
 }
 
 void FileStream::createFileIfNotExists(const std::filesystem::path& filePath) {
@@ -20,6 +26,18 @@ void FileStream::createFileIfNotExists(const std::filesystem::path& filePath) {
         ifstream.close();
         std::ofstream(filePath.string());
     }
+}
+
+void FileStream::deleteFile() {
+    if (fileExists()) {
+        std::filesystem::remove(std::filesystem::path(filePath));
+    }
+    fstream.close();
+}
+
+void FileStream::createFile() {
+    auto path = std::filesystem::path(filePath);
+    createFileIfNotExists(path);
 }
 
 
@@ -39,15 +57,8 @@ std::vector<FolderItem> FileStream::readFolderItems(uint64_t address) {
     return result;
 }
 
-INode FileStream::readINode(uint64_t address) {
-    auto node = INode();
-    moveTo(address);
-    *this >> node;
-    return node;
-}
-
-
-void FileStream::formatSpace(uint64_t bytes) {
+void FileStream::format(uint64_t bytes) {
+    moveTo(0);
     auto buffer = std::vector<char>(FORMAT_BUFFER_SIZE_BYTES, 0);
     auto bufferWrites = bytes / FORMAT_BUFFER_SIZE_BYTES;
     auto remainder = bytes % FORMAT_BUFFER_SIZE_BYTES;
@@ -57,40 +68,80 @@ void FileStream::formatSpace(uint64_t bytes) {
     }
     auto remainingBytes = std::vector<char>(remainder, 0);
     fstream.write(remainingBytes.data(), remainingBytes.size());
-
-    moveTo(0);
+    fstream.flush();
 }
 
 bool FileStream::isFileEmpty() {
     fstream.seekg(0, std::ios::end);
-    auto a = fstream.tellg() == 0;
-    return a;
+    return fstream.tellg() == 0;
 }
 
 void FileStream::writeSuperBlock(SuperBlock& superBlock) {
-    write(superBlock.magicNumber,
-          superBlock.totalSize,
-          superBlock.blockSize,
-          superBlock.blockCount,
-          superBlock.blockBitmapAddress,
-          superBlock.nodeCount,
-          superBlock.nodeBitmapAddress,
-          superBlock.nodeAddress,
-          superBlock.dataAddress,
-          superBlock.freeNodes,
-          superBlock.freeBlocks);
+    write(superBlock.magicNumber);
+    write(superBlock.totalSize);
+    write(superBlock.blockSize);
+    write(superBlock.blockCount);
+    write(superBlock.blockBitmapAddress);
+    write(superBlock.nodeCount);
+    write(superBlock.nodeBitmapAddress);
+    write(superBlock.nodeAddress);
+    write(superBlock.dataAddress);
+    write(superBlock.freeBlocks);
+    write(superBlock.freeNodes);
 }
 
 void FileStream::readSuperBlock(SuperBlock& superBlock) {
-    read(superBlock.magicNumber,
-         superBlock.totalSize,
-         superBlock.blockSize,
-         superBlock.blockCount,
-         superBlock.blockBitmapAddress,
-         superBlock.nodeCount,
-         superBlock.nodeBitmapAddress,
-         superBlock.nodeAddress,
-         superBlock.dataAddress,
-         superBlock.freeNodes,
-         superBlock.freeBlocks);
+    read(superBlock.magicNumber);
+    read(superBlock.totalSize);
+    read(superBlock.blockSize);
+    read(superBlock.blockCount);
+    read(superBlock.blockBitmapAddress);
+    read(superBlock.nodeCount);
+    read(superBlock.nodeBitmapAddress);
+    read(superBlock.nodeAddress);
+    read(superBlock.dataAddress);
+    read(superBlock.freeBlocks);
+    read(superBlock.freeNodes);
 }
+
+void FileStream::writeINode(INode& node) {
+    write(node.id);
+    write(node.size);
+    write(node.timestamp);
+    write(node.refCount);
+    write(node.t1Address);
+    write(node.t2Address);
+    writeVector(node.t0AddressList);
+//    std::cout << "Writing inode @ " << getWritePosition() << std::endl;
+}
+
+void FileStream::readINode(INode& node) {
+    read(node.id);
+    read(node.size);
+    read(node.timestamp);
+    read(node.refCount);
+    read(node.t1Address);
+    read(node.t2Address);
+    readVector(node.t0AddressList);
+}
+
+void FileStream::close() {
+    fstream.close();
+}
+
+bool FileStream::isOpen() {
+    return fstream.is_open();
+}
+
+long FileStream::getWritePosition() {
+    return fstream.tellp();
+}
+
+long FileStream::getReadPosition() {
+    return fstream.tellg();
+}
+
+FileStream::~FileStream() {
+    fstream.flush();
+}
+

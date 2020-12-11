@@ -6,20 +6,47 @@
 #include <filesystem>
 #include <iostream>
 #include "../io/model/FolderItem.hpp"
+#include "FSException.hpp"
 
 /**
  * Wrapper pro cteni a zapis do souboru
  */
 class SuperBlock;
+
+enum class LastOperation {
+      Read,
+      Write,
+      None
+};
+
 class FileStream {
       static constexpr uint64_t FORMAT_BUFFER_SIZE_BYTES = 4096;
 
-      std::fstream& fstream;
+      std::fstream fstream; // fstream objekt pro cteni souboru
+      std::string filePath; // cesta k souboru
+
+      LastOperation lastOp = LastOperation::None;
 
     public:
 
+      /**
+       * Zjisti zda-li cesta - filePath exisutuje
+       * @return vrati true, pokud soubor existuje, jinak false
+       */
+      bool fileExists();
 
-      explicit FileStream(std::fstream& fstream);
+      /**
+       * Otevre stream pro dany soubor ve filePath
+       */
+      void open();
+
+      /**
+       * Manualne zavre fstream, tuto funkci neni nutno volat na konci programu protoze fstream je RAII, tzn stream
+       * se zavre sam po smazani tohoto objektu
+       */
+      void close();
+
+      explicit FileStream(std::string filePath);
 
       /**
        * Vytvori soubor a slozky, pokud neexistuji
@@ -29,34 +56,28 @@ class FileStream {
 
       template<typename T>
       void write(T& object) {
+          // potreba provest seek pokud se predtim cetlo
+          if (lastOp != LastOperation::Write) {
+              fstream.seekp(fstream.tellp(), std::ios::beg);
+              lastOp = LastOperation::Write;
+          }
           fstream.write(reinterpret_cast<char*>(&object), sizeof(T));
-      }
-
-      template<typename T, typename... Args>
-      void write(T& object, Args& ... args) {
-          write(object);
-          write(args...);
       }
 
       template<typename T>
       void read(T& object) {
+          // potreba provest seek pokud se predtim zapisovalo
+          if (lastOp != LastOperation::Read) {
+              fstream.seekg(fstream.tellg(), std::ios::beg);
+              lastOp = LastOperation::Read;
+          }
           fstream.read(reinterpret_cast<char*>(&object), sizeof(T));
           if (!fstream.good()) {
-              moveTo(0);
-              std::cout << "not good" << std::endl;
+              throw FSException("Error while reading from file");
           }
       }
 
-
-      template<typename T, typename... Args>
-      void read(T& object, Args& ... args) {
-          read(object);
-          read(args...);
-      }
-
-
       void moveTo(uint64_t pos) {
-          fstream.seekg(0);
           fstream.seekg(pos, std::fstream::beg);
       }
 
@@ -87,7 +108,11 @@ class FileStream {
           }
       }
 
-      void formatSpace(uint64_t bytes);
+      /**
+       * Formatuje dany soubor od zacatku. Tato funkce by se mela pouzit pouze pro prazdny soubor a prave jednou.
+       * @param bytes velikost souboroveho systemu
+       */
+      void format(uint64_t bytes);
 
       std::vector<FolderItem> readFolderItems(uint64_t address);
 
@@ -95,11 +120,35 @@ class FileStream {
 
       void readSuperBlock(SuperBlock& superBlock);
 
-      INode readINode(uint64_t address);
+      void writeINode(INode& inode);
 
       bool good() { return fstream.good(); }
 
       bool isFileEmpty();
+
+      uint64_t getFileSize() {
+
+          fstream.seekg(0, std::ios::beg);
+          auto beg = fstream.tellg();
+          fstream.seekg(0, std::ios::end);
+          auto end = fstream.tellg();
+          fstream.seekg(0, std::ios::beg);
+          return end - beg;
+      }
+
+      virtual ~FileStream();
+
+      void readINode(INode& node);
+
+      bool isOpen();
+
+      void deleteFile();
+
+      void createFile();
+
+      long getWritePosition();
+
+      long getReadPosition();
 };
 
 

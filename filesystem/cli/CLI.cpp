@@ -21,15 +21,14 @@ void CLI::run() {
     std::cout << "Type \"format\" to format disk" << std::endl;
     std::cout << "Type \"help\" to list all commands" << std::endl << std::endl;
 
-    FileStream::createFileIfNotExists(filePath);
-    auto fstream = std::fstream(filePath, std::ios::in | std::ios::binary | std::ios::out);
-    auto fileStream = FileStream(fstream);
+    auto fileStream = FileStream(filePath);
     std::cout << fileStream.good() << std::endl;
     fileSystem = std::make_unique<FileSystem>(fileStream);
 
     std::cout << fileStream.good() << std::endl;
     auto input = std::string(); // TODO 2048 char limit
     while (running) {
+        std::cout << "#: ";
         std::getline(std::cin, input);
         try {
             if (input.empty()) {
@@ -43,7 +42,7 @@ void CLI::run() {
 
                 if (input == "help") {
                     printHelp();
-                } else if (input == "exit") {
+                } else if (input == "exit" || input == "q" || input == "quit") {
                     running = false;
                 } else if (input == "load") {
                     executeScript(tokens);

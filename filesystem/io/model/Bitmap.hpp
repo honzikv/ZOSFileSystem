@@ -23,9 +23,9 @@ class Bitmap {
        * @param startAddress pocatecni adresa v souboru
        * @param count pocet prvku
        * @param sizeOfObject velikost prvku
-       * @param fStreamWrapper reference na fstream wrapper pro snazsi cteni
+       * @param fileStream reference na fstream wrapper pro snazsi cteni
        */
-      Bitmap(uint64_t startAddress, uint32_t count, uint64_t sizeOfObject, FileStream& fStreamWrapper);
+      Bitmap(uint64_t startAddress, uint32_t count, uint64_t sizeOfObject, FileStream& fileStream);
 
       bool isAddressEmpty(uint64_t address);
 

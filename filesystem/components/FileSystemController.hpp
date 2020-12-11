@@ -14,9 +14,18 @@ class INodeIO;
  * Trida, ktera slouzi pro ovladani filesystemu
  */
 
+enum class DriveState {
+      NonExistent, // soubor (cesta) neexistuje
+      Valid, // soubor obsahuje validni super block
+      Empty, // soubor je prazdny
+      Invalid // v souboru neni od adresy 0 super block
+};
+
 class FileSystemController {
 
       FileStream& fileStream; // reference na filestream ziskana z FileSystem tridy
+
+      DriveState driveState = DriveState::Empty;
 
       std::shared_ptr<SuperBlock> superBlock;
 
@@ -28,7 +37,13 @@ class FileSystemController {
 
     public:
 
+      [[nodiscard]] DriveState getDriveState() const;
+
       explicit FileSystemController(FileStream& fileStream);
+
+      void initDrive();
+
+      void diskInfo();
 
       void cp(const std::string& file, const std::string& path);
 
@@ -59,6 +74,7 @@ class FileSystemController {
       void reclaimMemory(std::vector<uint64_t>& memoryBlocks);
 
       void update(INode& node);
+
 };
 
 
