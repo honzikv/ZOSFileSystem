@@ -32,7 +32,7 @@ void FolderItem::validateFileName(const std::string& input) {
 
     // doplneni \0 do maximalni velikosti nazvu
     for (auto i = 0; i < trailingZeros; i++) {
-        itemName.push_back('\0');
+        itemName.push_back((char) 0);
     }
 
 }
@@ -46,23 +46,27 @@ FolderItem::FolderItem(const std::string& itemName, uint64_t nodeAddress, bool i
     this->itemName = std::vector<char>(itemName.begin(), itemName.end());
     auto paddingBytes = Globals::FILE_NAME_CHAR_ARRAY_LENGTH - itemName.size();
     for (auto i = 0; i < paddingBytes; i++) {
-        this->itemName.push_back('\0');
+        this->itemName.push_back((char) 0);
     }
 }
 
 FolderItem::FolderItem() = default;
 
 
-
 std::string FolderItem::getItemName() const {
     auto terminalIndex = -1;
     for (auto i = 0; i < itemName.size(); i++) {
-        if (itemName[i] == '\0') {
+        if (itemName[i] == (char) 0) {
             terminalIndex = i;
+            break;
         }
     }
 
-    return std::string(itemName.begin(), terminalIndex == -1 ? itemName.end() : itemName.begin() +terminalIndex);
+    if (terminalIndex == -1) {
+        throw FSException("Error terminal symbol in the string not found"); // nemelo by se stat
+    }
+
+    return std::string(itemName.begin(), itemName.begin() + terminalIndex);
 }
 
 uint64_t FolderItem::getNodeAddress() const {
@@ -84,7 +88,7 @@ void FolderItem::validateFolderName(const std::string& input) {
 }
 
 bool FolderItem::operator==(const FolderItem& other) const {
-    return std::equal(itemName.begin(),itemName.end(), other.itemName.begin())  &&
+    return std::equal(itemName.begin(), itemName.end(), other.itemName.begin()) &&
            nodeAddress == other.nodeAddress;
 }
 

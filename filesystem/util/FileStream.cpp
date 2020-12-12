@@ -117,6 +117,7 @@ void FileStream::readSuperBlock(SuperBlock& superBlock) {
 }
 
 void FileStream::writeINode(INode& node) {
+    write(node.folder);
     write(node.id);
     write(node.size);
     write(node.timestamp);
@@ -128,6 +129,7 @@ void FileStream::writeINode(INode& node) {
 }
 
 void FileStream::readINode(INode& node) {
+    read(node.folder);
     read(node.id);
     read(node.size);
     read(node.timestamp);

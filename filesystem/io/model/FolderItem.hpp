@@ -13,7 +13,7 @@ class FileStream;
 
 struct FolderItem {
 
-      std::vector<char> itemName = std::vector<char>(Globals::FILE_NAME_CHAR_ARRAY_LENGTH, '\0'); // nazev souboru
+      std::vector<char> itemName = std::vector<char>(Globals::FILE_NAME_CHAR_ARRAY_LENGTH, (char) 0); // nazev souboru
       uint64_t nodeAddress = Globals::INVALID_VALUE; // reference na INode
 
     public:

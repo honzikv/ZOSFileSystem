@@ -153,10 +153,12 @@ void FileSystemController::initDrive() {
 
     memoryAllocator = std::make_shared<MemoryAllocator>(superBlock, fileStream);
     nodeIO = std::make_shared<INodeIO>(fileStream, *this);
+    pathContext = std::make_shared<PathContext>(*this);
 
     auto root = INode();
     root.id = 0;
     root.refCount = 1; // ref count = 1 aby root nesel nikdy odstranit
+    root.folder = true;
     root.timestamp = std::chrono::system_clock::now().time_since_epoch().count(); // nastaveni casu vytvoreni
 
     fileStream.moveTo(this->superBlock->nodeAddress);
@@ -169,15 +171,12 @@ void FileSystemController::initDrive() {
     }
 
     // tecka pro aktualni slozku a dve tecky pro "nadrazenou" slozku - v tomto pripaade se presune na root
-    auto dot = FolderItem("thisFolder", superBlock->nodeAddress, true);
-    auto dotDot = FolderItem("parent", superBlock->nodeAddress, true);
-    auto pogPog = FolderItem("..", superBlock->nodeAddress, true);
+    auto dot = FolderItem(".", superBlock->nodeAddress, true);
+    auto dotDot = FolderItem("okay", superBlock->nodeAddress, true);
 
     nodeIO->append(root, dot);
     nodeIO->append(root, dotDot); // tato funkce automaticky aktualizuje pathInfo
-    nodeIO->append(root, pogPog); // tato funkce automaticky aktualizuje pathInfo
 
-    pathContext = std::make_shared<PathContext>(*this);
     driveState = DriveState::Valid;
 }
 

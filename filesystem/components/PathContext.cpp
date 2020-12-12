@@ -81,7 +81,12 @@ void PathContext::printRelativePath(FileSystemPath& path) {
 }
 
 void PathContext::printAbsolutePath(FileSystemPath& path) {
+    auto root = absolutePath[0];
+    auto newAbsolutePath = std::vector<INode>();
+    newAbsolutePath.push_back(root);
+    absolutePath = newAbsolutePath;
 
+    printRelativePath(path);
 }
 
 bool PathContext::folderItemExists(std::string& itemName) {
@@ -126,8 +131,11 @@ void PathContext::moveTo(std::string& folderItemName) {
 }
 
 int PathContext::getFolderItemIndex(std::string& folderItemName) {
+    auto folderItemLowerCase = StringParsing::toLowerCase(folderItemName);
     for (auto i = 0; i < folderItems.size(); i += 1) {
-        if (folderItems[i].getItemName() == folderItemName) {
+        auto itemName = folderItems[i].getItemName();
+        auto itemNameLowerCase = StringParsing::toLowerCase(itemName);
+        if (itemNameLowerCase == folderItemLowerCase) {
             return i;
         }
     }

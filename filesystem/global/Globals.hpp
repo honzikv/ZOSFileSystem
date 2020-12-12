@@ -37,12 +37,12 @@ namespace Globals {
     static constexpr uint8_t T0_ADDRESS_LIST_SIZE = 12;
 
     static uint64_t INODE_SIZE_BYTES() {
-        return 16 *
-               sizeof(uint64_t) // directAddressList (12 longs), t1IndirectAddress,
-               // t2IndirectAddress, hardlinkAddress, timestamp
-               + 2 * sizeof(uint32_t) // filesize, timestamp, id
-               + sizeof(bool) // folder
-               + 12 * sizeof(char); // name
+        return sizeof(bool) //folder
+        + 2 * sizeof(uint32_t) // id, size
+        + 2 * sizeof(uint64_t) // timestamp, refcount
+        + Globals::T0_ADDRESS_LIST_SIZE * sizeof(uint64_t) // prime adresy
+        + 2 * sizeof(uint64_t); // t1 a t2 adresy
+
     }
 
     static uint64_t FOLDER_ITEMS_PER_BLOCK() { return BLOCK_SIZE_BYTES % FOLDER_ITEM_SIZE_BYTES; }

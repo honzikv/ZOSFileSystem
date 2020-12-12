@@ -81,6 +81,13 @@ class StringParsing {
 
           return result;
       }
+
+      static std::string toLowerCase(std::string& string) {
+          auto result = std::string(string.begin(), string.end());
+          std::transform(result.begin(), result.end(), result.begin(),
+                                [](auto c){ return std::tolower(c); });
+          return result;
+      }
 };
 
 #endif //STRINGPARSING_HPP
