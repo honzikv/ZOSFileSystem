@@ -75,6 +75,10 @@ class StringParsing {
               pathString.erase(0, pos + delimiter.length());
           }
 
+          if (!pathString.empty()) {
+              result.push_back(pathString);
+          }
+
           return result;
       }
 };

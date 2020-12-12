@@ -49,6 +49,7 @@ void PathContext::listItems(const std::string& path) {
         std::cout << "Error, invalid path" << std::endl;
     }
 
+    // vratime "aktualni" hodnoty zpet
     absolutePath = currentPath;
     folderItems = currentFolderItems;
 }
@@ -71,7 +72,12 @@ void PathContext::printFolderItemNames() {
 }
 
 void PathContext::printRelativePath(FileSystemPath& path) {
-
+    while (!path.isComplete()) {
+        auto folder = path.get();
+        moveTo(folder);
+        path.next();
+    }
+    printFolderItemNames();
 }
 
 void PathContext::printAbsolutePath(FileSystemPath& path) {

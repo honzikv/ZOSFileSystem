@@ -32,6 +32,10 @@ class FileSystemPath {
           return currentIndex < path.size();
       }
 
+      bool isComplete() {
+          return currentIndex == path.size();
+      }
+
       bool hasLastElement() {
           return currentIndex != path.size() - 1;
       }
