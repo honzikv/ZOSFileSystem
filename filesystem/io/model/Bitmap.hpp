@@ -39,7 +39,7 @@ class Bitmap {
 
       static uint8_t getFirstEmptyBit(uint8_t byte);
 
-      bool setPosition(uint8_t value, uint32_t pos, FileStream& fstream);
+      bool setPosition(uint8_t value, uint32_t pos, FileStream& fileStream);
 
       uint32_t findFirstEmpty();
 

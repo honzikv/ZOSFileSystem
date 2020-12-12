@@ -149,6 +149,8 @@ class FileStream {
       long getWritePosition();
 
       long getReadPosition();
+
+      std::vector<FolderItem> readNFolderItems(uint64_t address, uint32_t n);
 };
 
 

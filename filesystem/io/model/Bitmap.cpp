@@ -13,15 +13,15 @@ Bitmap::Bitmap(uint64_t bitmapStartAddress, uint32_t count, uint64_t objectStart
     fileStream.readVector(bitmap);
 }
 
-bool Bitmap::setPosition(uint8_t value, uint32_t pos, FileStream& fstream) {
+bool Bitmap::setPosition(uint8_t value, uint32_t pos, FileStream& fileStream) {
     auto index = pos / 8;
     auto bit = pos % 8;
     auto bitSet = std::bitset<8>(bitmap[index]);
     bitSet[bit] = value;
     auto byteValue = (uint8_t) bitSet.to_ulong();
     bitmap[index] = byteValue;
-    fstream.moveTo(bitmapStartAddress + pos / 8);
-    fstream.write(byteValue);
+    fileStream.moveTo(bitmapStartAddress + pos / 8);
+    fileStream.write(byteValue);
     return true;
 }
 

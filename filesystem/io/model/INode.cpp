@@ -31,5 +31,6 @@ INode::INode(bool isFolder, uint32_t id) {
 }
 
 void INode::increaseFolderItems() {
+    refCount += 1;
     size += 1;
 }

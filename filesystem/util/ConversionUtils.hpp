@@ -9,8 +9,7 @@ enum class UnitType {
       Byte,
       Kilobyte,
       Megabyte,
-      Gigabyte,
-      Terabyte // :)
+      Gigabyte
 };
 
 /**
@@ -59,7 +58,7 @@ class ConversionUtils {
       }
 
 
-      static uint64_t convert(UnitType type, uint64_t size) {
+      static uint64_t toBytes(UnitType type, uint64_t size) {
           if (type == UnitType::Byte) {
               return size;
           }

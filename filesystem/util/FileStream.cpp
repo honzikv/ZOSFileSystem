@@ -48,10 +48,15 @@ void FileStream::writeFolderItem(FolderItem& folderItem, uint64_t address) {
 }
 
 std::vector<FolderItem> FileStream::readFolderItems(uint64_t address) {
+    return readNFolderItems(address, Globals::FOLDER_ITEMS_PER_BLOCK());
+}
+
+std::vector<FolderItem> FileStream::readNFolderItems(uint64_t address, uint32_t n) {
     moveTo(address);
     auto result = std::vector<FolderItem>();
+    result.reserve(n);
     auto folderItem = FolderItem();
-    for (auto i = 0; i < Globals::FOLDER_ITEMS_PER_BLOCK(); i++) {
+    for (auto i = 0; i < n; i++) {
         read(folderItem.nodeAddress);
         readVector(folderItem.itemName);
         result.push_back(folderItem);
@@ -64,6 +69,11 @@ void FileStream::format(uint64_t bytes) {
     auto buffer = std::vector<char>(FORMAT_BUFFER_SIZE_BYTES, 0);
     auto bufferWrites = bytes / FORMAT_BUFFER_SIZE_BYTES;
     auto remainder = bytes % FORMAT_BUFFER_SIZE_BYTES;
+
+    if (lastOp == LastOperation::Read) {
+        fstream.seekp(fstream.tellp(), std::ios::beg);
+        lastOp = LastOperation::Write;
+    }
 
     for (auto i = 0; i < bufferWrites; i++) {
         fstream.write(buffer.data(), buffer.size());

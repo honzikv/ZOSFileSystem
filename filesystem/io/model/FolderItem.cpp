@@ -50,9 +50,7 @@ FolderItem::FolderItem(const std::string& itemName, uint64_t nodeAddress, bool i
     }
 }
 
-FolderItem::FolderItem() {
-    itemName = std::vector<char>('\0', Globals::MAX_FILE_STRING_LENGTH);
-}
+FolderItem::FolderItem() = default;
 
 
 
