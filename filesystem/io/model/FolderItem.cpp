@@ -62,8 +62,7 @@ std::string FolderItem::getItemName() const {
         }
     }
 
-    return std::string(itemName.begin(), terminalIndex == -1 ? itemName.end() :
-                                         itemName.end() - terminalIndex);
+    return std::string(itemName.begin(), terminalIndex == -1 ? itemName.end() : itemName.begin() +terminalIndex);
 }
 
 uint64_t FolderItem::getNodeAddress() const {

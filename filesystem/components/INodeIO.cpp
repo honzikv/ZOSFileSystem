@@ -51,6 +51,10 @@ void INodeIO::appendToT2Block(uint32_t itemPosition, uint64_t t2Address, std::ve
 }
 
 void INodeIO::append(INode& node, FolderItem& folderItem) {
+    if (node.getFolderSize() == Globals::maxFolderItems()) {
+        throw FSException("Error, this INode cannot hold more files / folders");
+    }
+
     auto itemPosition = node.getFolderSize(); // "index" v celkovem umisteni
     auto blockIndex = itemPosition / Globals::FOLDER_ITEMS_PER_BLOCK(); // index bloku
 
@@ -61,7 +65,8 @@ void INodeIO::append(INode& node, FolderItem& folderItem) {
 
     try {
         if (blockIndex < Globals::T0_ADDRESS_LIST_SIZE) {
-            if (node.t0AddressList[blockIndex] == Globals::INVALID_VALUE) { // inicializace pokud je blok neinicializovany
+            if (node.t0AddressList[blockIndex] == Globals::INVALID_VALUE) {
+                // inicializace pokud je blok neinicializovany
                 auto address = fileSystemController.nextBlock(AddressType::FolderItem);
                 node.t0AddressList[blockIndex] = address;
                 blockAllocations.push_back(address);
@@ -69,7 +74,7 @@ void INodeIO::append(INode& node, FolderItem& folderItem) {
             auto blockRow = itemPosition % Globals::FOLDER_ITEMS_PER_BLOCK(); // radka v datovem bloku
             fileStream.writeFolderItem(folderItem,
                                        node.t0AddressList[blockIndex] + blockRow * Globals::FOLDER_ITEM_SIZE_BYTES);
-        } else if (itemPosition - Globals::T0_ADDRESS_LIST_SIZE < Globals::POINTERS_PER_BLOCK()) {
+        } else if ((blockIndex - Globals::T0_ADDRESS_LIST_SIZE) < Globals::POINTERS_PER_BLOCK()) {
             if (node.t1Address == Globals::INVALID_VALUE) {
                 // pokud neexistuje 1. neprimy odkaz musime ho vytvorit
                 auto t1Address = fileSystemController.nextBlock(AddressType::Pointer);
@@ -99,150 +104,50 @@ void INodeIO::append(INode& node, FolderItem& folderItem) {
 }
 
 
-//void INodeIO::append(INode& node, FolderItem& folderItem) {
-//    auto itemPosition = node.getFolderSize();
-//    auto row = itemPosition % Globals::FOLDER_ITEMS_PER_BLOCK();
-//    auto blockIndex = row == 0 ?
-//                      itemPosition / Globals::FOLDER_ITEMS_PER_BLOCK() :
-//                      itemPosition / Globals::FOLDER_ITEMS_PER_BLOCK() + 1;
-//
-//    auto allocations = std::vector<uint64_t>();
-//
-//    try {
-//        if (blockIndex < Globals::T0_ADDRESS_LIST_SIZE) {
-//            if (node.getT0AddressList()[blockIndex] == Globals::INVALID_VALUE) {
-//                auto address = fileSystemController.nextBlock(AddressType::FolderItem);
-//                node.setDirectAddress(blockIndex, address);
-//                allocations.push_back(address);
-//            }
-//            auto address = node.getT0AddressList()[blockIndex];
-//            fileStream.writeFolderItem(folderItem, address + row * Globals::FOLDER_ITEM_SIZE_BYTES);
-//        } else if (blockIndex - Globals::T0_ADDRESS_LIST_SIZE < Globals::POINTERS_PER_BLOCK()) {
-//            if (node.getT1Address() == Globals::INVALID_VALUE) {
-//                auto address = fileSystemController.nextBlock(AddressType::Pointer);
-//                node.setT1Address(address);
-//                allocations.push_back(address);
-//            }
-//            auto t1Index = blockIndex - Globals::T0_ADDRESS_LIST_SIZE;
-//            auto row = blockIndex - Globals::T0_ADDRESS_LIST_SIZE % Globals::FOLDER_ITEMS_PER_BLOCK();
-//            if (row == 0) {
-//                auto address = fileSystemController.nextBlock(AddressType::FolderItem);
-//                fileStream.moveTo(node.getT1Address() + t1Index * Globals::POINTER_SIZE_BYTES);
-//                fileStream.write(address);
-//                fileStream.writeFolderItem(folderItem, address);
-//                allocations.push_back(address);
-//            } else {
-//                uint64_t address;
-//                fileStream.moveTo(node.getT1Address() + t1Index);
-//                fileStream.read(address);
-//                fileStream.moveTo(address + row * Globals::FOLDER_ITEM_SIZE_BYTES);
-//                fileStream.writeFolderItem(folderItem, address);
-//            }
-//        } else {
-//            auto t2Index = (blockIndex - Globals::T0_ADDRESS_LIST_SIZE) /
-//                           (Globals::POINTERS_PER_BLOCK() * Globals::POINTERS_PER_BLOCK());
-//            auto t1Index = (blockIndex - Globals::T0_ADDRESS_LIST_SIZE) / Globals::POINTERS_PER_BLOCK();
-//            auto row = (blockIndex - Globals::T0_ADDRESS_LIST_SIZE) % Globals::FOLDER_ITEMS_PER_BLOCK();
-//            if (node.getT2Address() == Globals::INVALID_VALUE) {
-//                node.setT2Address(fileSystemController.nextBlock(AddressType::Pointer));
-//                auto t1Address = fileSystemController.nextBlock(AddressType::Pointer);
-//                fileStream.moveTo(node.getT2Address());
-//                fileStream.write(t1Address);
-//                allocations.push_back(t1Address);
-//
-//                auto blockAddress = fileSystemController.nextBlock(AddressType::FolderItem);
-//                fileStream.moveTo(t1Address);
-//                fileStream.write(blockAddress);
-//                fileStream.writeFolderItem(folderItem, blockAddress);
-//                allocations.push_back(blockAddress);
-//            } else {
-//                uint64_t t1Address;
-//                fileStream.moveTo(node.getT2Address() + t2Index * Globals::POINTER_SIZE_BYTES);
-//                fileStream.read(t1Address);
-//
-//                uint64_t blockAddress;
-//                fileStream.moveTo(t1Address + t1Index * Globals::POINTER_SIZE_BYTES);
-//                fileStream.read(blockAddress);
-//
-//                fileStream.writeFolderItem(folderItem, blockAddress + row * Globals::FOLDER_ITEM_SIZE_BYTES);
-//            }
-//        }
-//
-//        node.increaseFolderItems();
-//        fileSystemController.update(node);
-//
-//    } catch (FSException& outOfMemoryBlocks) {
-//        fileSystemController.reclaimMemory(allocations);
-//    }
-//
-//}
+std::vector<FolderItem> INodeIO::getFolderItems(INode& node) {
+    auto remainingItems = node.getFolderSize();
+    auto result = std::vector<FolderItem>();
+    result.reserve(node.getFolderSize());
 
-std::pair<std::vector<INode>, std::vector<std::string>> INodeIO::getItems(INode& node) {
-    if (node.getFolderSize() == 0) {
-        return std::pair<std::vector<INode>, std::vector<std::string>>(std::vector<INode>(),
-                                                                       std::vector<std::string>());
-    }
-    auto itemCount = node.getFolderSize();
-    auto folderItems = std::vector<FolderItem>();
-    folderItems.reserve(itemCount);
-
-    auto blockCount = itemCount / Globals::FOLDER_ITEMS_PER_BLOCK();
-    auto remainder = itemCount % Globals::FOLDER_ITEMS_PER_BLOCK();
-
-    if (blockCount == 0) {
-        readNFolderItems(folderItems, node.getT0AddressList()[0], itemCount);
-    } else {
-        if (remainder != 0) {
-            blockCount += 1; // precteme jeden extra blok navic a pote odstranime prebytecne predmety
-        }
-
-        for (auto currBlockIndex = 0; currBlockIndex < blockCount; currBlockIndex++) {
-            if (currBlockIndex < Globals::T0_ADDRESS_LIST_SIZE) {
-                readFromBlockAddress(folderItems, node.getT0AddressList()[currBlockIndex]);
-            } else if (currBlockIndex - Globals::T0_ADDRESS_LIST_SIZE < Globals::POINTERS_PER_BLOCK()) {
-                uint64_t blockAddress;
-                auto t1Index = (currBlockIndex - Globals::T0_ADDRESS_LIST_SIZE);
-                fileStream.moveTo(node.getT1Address() +
-                                  t1Index * Globals::POINTER_SIZE_BYTES);
-                fileStream.read(blockAddress);
-                readFromBlockAddress(folderItems, blockAddress);
-            } else {
-                // vypocteme index v danem t2 bloku - tzn odecteme predchozi limity pro prime odkazy a 1. neprimy odkaz
-                auto relativeBlockIndex =
-                        currBlockIndex - Globals::T0_ADDRESS_LIST_SIZE - Globals::POINTERS_PER_BLOCK();
-                auto t2Index = relativeBlockIndex / (Globals::POINTERS_PER_BLOCK() * Globals::POINTERS_PER_BLOCK());
-                auto t1Index = relativeBlockIndex / Globals::POINTERS_PER_BLOCK();
-
-                uint64_t t1Address;
-                fileStream.moveTo(node.getT2Address() + t2Index * Globals::POINTER_SIZE_BYTES);
-                fileStream.read(t1Address);
-
-                uint64_t blockAddress;
-                fileStream.moveTo(t1Address + t1Index * Globals::POINTER_SIZE_BYTES);
-                fileStream.read(blockAddress);
-                readFromBlockAddress(folderItems, blockAddress);
-            }
-        }
-
-        auto toRemove = Globals::FOLDER_ITEMS_PER_BLOCK() - remainder;
-        folderItems.resize(folderItems.size() - toRemove);
+    if (remainingItems == 0) {
+        return result;
     }
 
-    auto inodes = std::vector<INode>();
-    auto itemNames = std::vector<std::string>();
-    for (const auto& folderItem : folderItems) {
-        itemNames.push_back(folderItem.getItemName());
-        auto parent = INode();
-        fileStream.moveTo(folderItem.getNodeAddress());
-        fileStream.readINode(parent);
-        inodes.push_back(parent);
+    auto t0Capacity = Globals::T0_ADDRESS_LIST_SIZE * Globals::FOLDER_ITEMS_PER_BLOCK();
+    auto t1Capacity = Globals::POINTERS_PER_BLOCK() * Globals::FOLDER_ITEMS_PER_BLOCK();
+
+    auto itemCount = remainingItems < t0Capacity ? remainingItems : t0Capacity;
+    auto t0Items = std::vector<FolderItem>();
+    t0Items.reserve(itemCount);
+    readFromDirectBlocks(node.t0AddressList, itemCount, t0Items);
+
+
+    auto t1Items = std::vector<FolderItem>();
+    remainingItems -= t0Items.size();
+    if (remainingItems > 0) {
+        itemCount = remainingItems < t1Capacity ? remainingItems : t1Capacity;
+        t1Items.reserve(itemCount);
+        readFromT1Address(node.t1Address, itemCount, t1Items);
     }
 
-    return std::pair(inodes, itemNames);
+
+    auto t2Items = std::vector<FolderItem>();
+    remainingItems -= t1Items.size();
+    if (remainingItems > 0) {
+        t2Items.reserve(remainingItems);
+        readFromT2Address(node.t2Address, remainingItems, t2Items);
+    }
+
+    result.insert(result.end(), t0Items.begin(), t0Items.end());
+    result.insert(result.end(), t1Items.begin(), t1Items.end());
+    result.insert(result.end(), t2Items.begin(), t2Items.end());
+
+    return result;
 }
 
+
 void INodeIO::readFromBlockAddress(std::vector<FolderItem>& folderItems, uint64_t address) {
-    auto blockItems = fileStream.readFolderItems(address);
+    auto blockItems = fileStream.readFolderItemBlock(address);
     folderItems.insert(folderItems.end(), blockItems.begin(), blockItems.end());
 }
 
@@ -250,5 +155,52 @@ void INodeIO::readNFolderItems(std::vector<FolderItem>& folderItems, uint64_t bl
     auto blockItems = fileStream.readNFolderItems(blockAddress, count);
     folderItems.insert(folderItems.end(), blockItems.begin(), blockItems.end());
 }
+
+void INodeIO::readFromDirectBlocks(std::vector<uint64_t> addressList, uint32_t count, std::vector<FolderItem>& result) {
+    auto fullBlocks = count / Globals::FOLDER_ITEMS_PER_BLOCK();
+    auto remainder = count % Globals::FOLDER_ITEMS_PER_BLOCK();
+
+    for (auto blockIndex = 0; blockIndex < fullBlocks; blockIndex += 1) {
+        auto items = fileStream.readFolderItemBlock(addressList[blockIndex]);
+        result.insert(result.end(), items.begin(), items.end());
+    }
+
+    auto remainderBlockIndex = fullBlocks + 1;
+    if (fullBlocks == 0) {
+        remainderBlockIndex = 0;
+    }
+
+    auto remainderItems = fileStream.readNFolderItems(addressList[remainderBlockIndex], remainder);
+    result.insert(result.end(), remainderItems.begin(), remainderItems.end());
+}
+
+void INodeIO::readFromT1Address(uint64_t t1Address, uint64_t count, std::vector<FolderItem> result) {
+    auto addressList = std::vector<uint64_t>(Globals::POINTERS_PER_BLOCK(), Globals::INVALID_VALUE);
+    fileStream.moveTo(t1Address);
+    fileStream.readVector(addressList);
+    readFromDirectBlocks(addressList, count, result);
+}
+
+void INodeIO::readFromT2Address(uint64_t t2Address, uint32_t itemCount, std::vector<FolderItem> result) {
+    auto fullBlocks = itemCount / (Globals::POINTERS_PER_BLOCK() * Globals::FOLDER_ITEMS_PER_BLOCK());
+    auto remainder = itemCount % (Globals::POINTERS_PER_BLOCK() * Globals::FOLDER_ITEMS_PER_BLOCK());
+
+    auto t1BlockList = std::vector<uint64_t>(Globals::POINTERS_PER_BLOCK(), Globals::INVALID_VALUE);
+    fileStream.moveTo(t2Address);
+    fileStream.readVector(t1BlockList);
+
+    auto blockItemCount = Globals::POINTERS_PER_BLOCK() * Globals::FOLDER_ITEMS_PER_BLOCK();
+    for (auto blockIndex = 0; blockIndex < fullBlocks; blockIndex += 1) {
+        readFromT1Address(t1BlockList[blockIndex], blockItemCount, result);
+    }
+
+    auto remainderBlockIndex = fullBlocks + 1;
+    if (fullBlocks == 0) {
+        remainderBlockIndex = 0;
+    }
+
+    readFromT1Address(t1BlockList[remainderBlockIndex], remainder, result);
+}
+
 
 

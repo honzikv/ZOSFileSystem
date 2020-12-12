@@ -98,6 +98,10 @@ struct INode {
       INode();
 
       void increaseFolderItems();
+
+    bool operator==(const INode& rhs) const;
+
+    bool operator!=(const INode& rhs) const;
 };
 
 

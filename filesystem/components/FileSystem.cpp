@@ -1,6 +1,7 @@
 #include <iostream>
 #include "FileSystem.hpp"
 #include "../util/StringParsing.hpp"
+#include "PathContext.hpp"
 
 FileSystem::FileSystem(FileStream& fstream) : fileStream(fstream) {
     fileSystemController = std::make_shared<FileSystemController>(fileStream);

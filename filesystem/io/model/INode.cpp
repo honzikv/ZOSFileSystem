@@ -34,3 +34,11 @@ void INode::increaseFolderItems() {
     refCount += 1;
     size += 1;
 }
+
+bool INode::operator==(const INode& rhs) const {
+    return folder == rhs.folder && id == rhs.id;
+}
+
+bool INode::operator!=(const INode& rhs) const {
+    return !(rhs == *this);
+}

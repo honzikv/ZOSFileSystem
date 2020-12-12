@@ -114,7 +114,7 @@ class FileStream {
        */
       void format(uint64_t bytes);
 
-      std::vector<FolderItem> readFolderItems(uint64_t address);
+      std::vector<FolderItem> readFolderItemBlock(uint64_t address);
 
       void writeSuperBlock(SuperBlock& superBlock);
 

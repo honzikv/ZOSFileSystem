@@ -17,7 +17,7 @@ class INodeIO {
 
       void append(INode& node, FolderItem& folderItem);
 
-      std::pair<std::vector<INode>, std::vector<std::string>> getItems(INode& node);
+      std::vector<FolderItem> getFolderItems(INode& node);
 
     private:
       void readFromBlockAddress(std::vector<FolderItem>& folderItems, uint64_t address);
@@ -31,6 +31,12 @@ class INodeIO {
       void
       appendToT2Block(uint32_t itemPosition, uint64_t t2Address, std::vector<uint64_t> allocations, FolderItem& folderItem);
 
+
+      void readFromDirectBlocks(std::vector<uint64_t> addressList, uint32_t count, std::vector<FolderItem>& result);
+
+      void readFromT1Address(uint64_t t1Address, uint64_t count, std::vector<FolderItem> result);
+
+      void readFromT2Address(uint64_t t2Address, uint32_t itemCount, std::vector<FolderItem> result);
 };
 
 #endif //INODEIO_HPP

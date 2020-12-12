@@ -3,6 +3,7 @@
 #include <iostream>
 #include "FileSystemController.hpp"
 #include "INodeIO.hpp"
+#include "PathContext.hpp"
 
 
 FileSystemController::FileSystemController(FileStream& fileStream) : fileStream(fileStream) {
@@ -42,12 +43,15 @@ FileSystemController::FileSystemController(FileStream& fileStream) : fileStream(
     superBlock = std::make_shared<SuperBlock>(fileSuperBlock); // zkopirujeme super blok objekt na heap do shared ptr
     memoryAllocator = std::make_shared<MemoryAllocator>(superBlock, fileStream);
     nodeIO = std::make_shared<INodeIO>(fileStream, *this);
-    pathInfo = std::make_shared<PathInfo>();
+    pathContext = std::make_shared<PathContext>(*this);
+}
+
+
+INode FileSystemController::getRoot() {
     auto root = INode();
     fileStream.moveTo(superBlock->nodeAddress);
     fileStream.readINode(root);
-    auto rootItems = nodeIO->getItems(root);
-    pathInfo->saveInfo(rootItems, root.id);
+    return root;
 }
 
 
@@ -71,10 +75,8 @@ void FileSystemController::reclaimMemory(std::vector<uint64_t>& memoryBlocks) {
 
 void FileSystemController::update(INode& node) {
     memoryAllocator->update(node);
-    if (node.id == pathInfo->getNodeId()) {
-        pathInfo->saveInfo(nodeIO->getItems(node), node.id); // refresh informaci
-    }
-    fileStream.moveTo(0);
+    pathContext->update(node);
+//    fileStream.moveTo(0);
 }
 
 uint64_t FileSystemController::nextBlock(AddressType type) {
@@ -106,11 +108,7 @@ void FileSystemController::cat(const std::string& file) {
 }
 
 void FileSystemController::ls(const std::string& path) {
-    if (path.empty()) {
-        for (const auto& file : pathInfo->getItemNames()) {
-            std::cout << file << std::endl;
-        }
-    }
+    pathContext->listItems(path);
 
 }
 
@@ -118,7 +116,7 @@ void FileSystemController::rmdir(const std::string& dirName) {
 
 }
 
-void FileSystemController::mkdir(const std::string& dirName) {
+void FileSystemController::mkdir(const std::string& path) {
 
 }
 
@@ -155,7 +153,6 @@ void FileSystemController::initDrive() {
 
     memoryAllocator = std::make_shared<MemoryAllocator>(superBlock, fileStream);
     nodeIO = std::make_shared<INodeIO>(fileStream, *this);
-    pathInfo = std::make_shared<PathInfo>();
 
     auto root = INode();
     root.id = 0;
@@ -172,11 +169,25 @@ void FileSystemController::initDrive() {
     }
 
     // tecka pro aktualni slozku a dve tecky pro "nadrazenou" slozku - v tomto pripaade se presune na root
-    auto dot = FolderItem(".", superBlock->nodeAddress, true);
-    auto dotDot = FolderItem("..", superBlock->nodeAddress, true);
+    auto dot = FolderItem("thisFolder", superBlock->nodeAddress, true);
+    auto dotDot = FolderItem("parent", superBlock->nodeAddress, true);
+    auto pogPog = FolderItem("..", superBlock->nodeAddress, true);
 
     nodeIO->append(root, dot);
     nodeIO->append(root, dotDot); // tato funkce automaticky aktualizuje pathInfo
+    nodeIO->append(root, pogPog); // tato funkce automaticky aktualizuje pathInfo
 
+    pathContext = std::make_shared<PathContext>(*this);
     driveState = DriveState::Valid;
+}
+
+std::vector<FolderItem> FileSystemController::getFolderItems(INode& node) {
+    return nodeIO->getFolderItems(node);
+}
+
+INode FileSystemController::getFolderItemINode(uint64_t nodeAddress) {
+    auto node = INode();
+    fileStream.moveTo(nodeAddress);
+    fileStream.readINode(node);
+    return node;
 }

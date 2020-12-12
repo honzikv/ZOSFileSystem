@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <limits>
+#include <string>
 
 /**
  * Namespace, ktery funguje jako singleton - protoze v programu muzeme mit nacteny pouze jeden disk v dany cas
@@ -82,6 +83,13 @@ namespace Globals {
         return bytes % BLOCK_SIZE_BYTES == 0 ? bytes / BLOCK_SIZE_BYTES : bytes / BLOCK_SIZE_BYTES + 1;
     }
 
+    static uint32_t maxFolderItems() {
+        return T0_ADDRESS_LIST_SIZE * FOLDER_ITEMS_PER_BLOCK() + POINTERS_PER_BLOCK() * FOLDER_ITEMS_PER_BLOCK() +
+               POINTERS_PER_BLOCK() * POINTERS_PER_BLOCK() * FOLDER_ITEMS_PER_BLOCK();
+    }
+
+    static const std::string CURRENT_FOLDER_SYMBOL = ".";
+    static const std::string PREVIOUS_FOLDER_SYMBOL = "..";
 }
 
 #endif //GLOBALS_HPP

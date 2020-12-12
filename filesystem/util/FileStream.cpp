@@ -47,7 +47,7 @@ void FileStream::writeFolderItem(FolderItem& folderItem, uint64_t address) {
     writeVector(folderItem.itemName);
 }
 
-std::vector<FolderItem> FileStream::readFolderItems(uint64_t address) {
+std::vector<FolderItem> FileStream::readFolderItemBlock(uint64_t address) {
     return readNFolderItems(address, Globals::FOLDER_ITEMS_PER_BLOCK());
 }
 

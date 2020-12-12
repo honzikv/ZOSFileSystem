@@ -4,10 +4,10 @@
 
 #include <string>
 #include "MemoryAllocator.hpp"
-#include "PathInfo.hpp"
 #include "../io/AddressType.h"
 #include "../util/FileStream.hpp"
 
+class PathContext;
 class INodeIO;
 
 /**
@@ -33,7 +33,7 @@ class FileSystemController {
 
       std::shared_ptr<INodeIO> nodeIO;
 
-      std::shared_ptr<PathInfo> pathInfo;
+      std::shared_ptr<PathContext> pathContext;
 
     public:
 
@@ -45,13 +45,15 @@ class FileSystemController {
 
       void diskInfo();
 
+      INode getRoot();
+
       void cp(const std::string& file, const std::string& path);
 
       void mv(const std::string& file, const std::string& path);
 
       void rm(const std::string& file);
 
-      void mkdir(const std::string& dirName);
+      void mkdir(const std::string& path);
 
       void rmdir(const std::string& dirName);
 
@@ -75,6 +77,9 @@ class FileSystemController {
 
       void update(INode& node);
 
+      std::vector<FolderItem> getFolderItems(INode& node);
+
+      INode getFolderItemINode(uint64_t nodeAddress);
 };
 
 

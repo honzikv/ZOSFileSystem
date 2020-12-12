@@ -5,3 +5,5 @@ const char* FSException::what() const noexcept {
 }
 
 FSException::FSException(std::string text) : text(std::move(text)) { }
+
+FSException::FSException() {}

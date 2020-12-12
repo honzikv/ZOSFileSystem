@@ -13,6 +13,8 @@ class FSException : public std::exception {
     public:
       explicit FSException(std::string text);
 
+      FSException();
+
     public:
       std::string getText() {
           return text;

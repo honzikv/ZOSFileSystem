@@ -28,7 +28,7 @@ void CLI::run() {
     std::cout << fileStream.good() << std::endl;
     auto input = std::string(); // TODO 2048 char limit
     while (running) {
-        std::cout << "#: ";
+        std::cout << "#:";
         std::getline(std::cin, input);
         try {
             if (input.empty()) {
