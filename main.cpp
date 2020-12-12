@@ -13,9 +13,6 @@ int main(int argc, char* argv[]) {
     }
 
     auto fileName = std::string(argv[1]);
-    auto cli = CLI(fileName);
-
-    cli.run();
-
+    CLI(fileName).run();
 }
 

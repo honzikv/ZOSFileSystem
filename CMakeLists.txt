@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.17)
 project(ZOSRework)
 set (${CMAKE_CXX_FLAGS} -Wall -Wextra)
-set(CMAKE_CXX_STANDARD 20 )
+set(CMAKE_CXX_STANDARD 20)
+
+include_directories(filesystem)
 
 add_executable(ZOSRework main.cpp
         filesystem/global/Globals.hpp
@@ -30,4 +32,4 @@ add_executable(ZOSRework main.cpp
         filesystem/components/MemoryAllocator.cpp
         filesystem/components/MemoryAllocator.hpp
         filesystem/components/INodeIO.cpp
-        filesystem/components/INodeIO.hpp filesystem/util/StringParsing.hpp filesystem/util/FileStream.cpp filesystem/util/FileStream.hpp)
+        filesystem/components/INodeIO.hpp filesystem/util/StringParsing.hpp filesystem/util/FileStream.cpp filesystem/util/FileStream.hpp filesystem/util/RelativePath.h)

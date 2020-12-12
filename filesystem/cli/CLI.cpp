@@ -36,7 +36,7 @@ void CLI::run() {
             } else {
                 auto tokens = splitByWhitespace(input);
 
-                // prevod na lowercase
+                // prevod na lowercase TODO zmenit
                 std::transform(tokens[0].begin(), tokens[0].end(), tokens[0].begin(), ::tolower);
                 input = tokens[0];
 
@@ -78,11 +78,11 @@ void CLI::executeScript(const std::vector<std::string>& tokens) {
     }
 
     for (auto& command : commands) {
-        auto command_tokens = splitByWhitespace(command);
-        if (command_tokens.empty()) {
+        auto commandTokens = splitByWhitespace(command);
+        if (commandTokens.empty()) {
             continue;
         }
-        execute(command_tokens);
+        execute(commandTokens);
     }
 }
 
