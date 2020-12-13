@@ -10,8 +10,9 @@
  * Trida pro "sofistikovane" operace se soubory
  */
 class FileOperations {
+      friend class PathContext;
 
-      PathContext pathContext;
+      std::unique_ptr<PathContext> pathContext;
 
       FileSystemController& fileSystemController;
 
@@ -45,6 +46,15 @@ class FileOperations {
       std::string getFolderName(uint64_t nodeAddress, const std::vector<FolderItem>& vector);
 
       void printCurrentPath();
+
+    private:
+      INode getRoot();
+
+      std::vector<FolderItem> getFolderItems(INode& node);
+
+      INode getINodeFromAddress(uint64_t address);
+
+      INode getUpdatedINode(INode& node);
 };
 
 

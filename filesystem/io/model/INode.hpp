@@ -7,9 +7,13 @@
 #include "../../global/Globals.hpp"
 
 class FolderItem;
+
 class FileStream;
 
-struct INode {
+class INode {
+      friend class FileStream;
+
+      friend class INodeIO;
 
       bool folder = false;
       uint32_t id = (uint32_t) Globals::INVALID_VALUE; // Id. Bude bud vypocteno z adresy INode nebo INVALID_VALUE
@@ -23,6 +27,11 @@ struct INode {
 
       uint64_t t1Address = Globals::INVALID_VALUE; // Odkaz na datovy blok s neprimymi adresami
       uint64_t t2Address = Globals::INVALID_VALUE; // Odkaz na blok s odkazy na neprime adresy
+
+    public:
+      uint32_t getId() const;
+
+      void setId(uint32_t id);
 
       /**
        * @return zda-li je INode volna
@@ -101,11 +110,15 @@ struct INode {
 
       void incrRefCount();
 
-    bool operator==(const INode& rhs) const;
+      bool operator==(const INode& rhs) const;
 
-    bool operator!=(const INode& rhs) const;
+      bool operator!=(const INode& rhs) const;
 
-    bool isFolderFull() const;
+      bool isFolderFull() const;
+
+      static INode createRoot();
+
+      void setTimestamp(uint64_t timestamp);
 };
 
 

@@ -13,11 +13,11 @@ MemoryAllocator::MemoryAllocator(std::shared_ptr<SuperBlock> superBlock, FileStr
 }
 
 void MemoryAllocator::update(INode& node) {
-    if (node.id == (uint32_t) Globals::INVALID_VALUE) {
+    if (node.getId() == (uint32_t) Globals::INVALID_VALUE) {
         throw FSException("Error, node does not have id"); // to by se nikdy nemelo stat, pouze pro debug
     }
 
-    auto nodeAddress = superBlock->nodeAddress + node.id * Globals::INODE_SIZE_BYTES();
+    auto nodeAddress = superBlock->nodeAddress + node.getId() * Globals::INODE_SIZE_BYTES();
     fileStream.moveTo(nodeAddress);
     fileStream.writeINode(node); // update INode na disku
     nodeBitmap->setAddress(nodeAddress, false);
@@ -39,12 +39,12 @@ INode MemoryAllocator::getINodeWithId(uint32_t nodeId) {
 }
 
 void MemoryAllocator::freeINode(INode& node) {
-    if (node.id == (uint32_t) Globals::INVALID_VALUE) {
+    if (node.getId() == (uint32_t) Globals::INVALID_VALUE) {
         throw FSException("Error, node does not have id"); // to by se nikdy nemelo stat, pouze pro debug
     }
 
-    node.id = (uint32_t) Globals::INVALID_VALUE;
-    auto nodeAddress = superBlock->nodeAddress + node.id * Globals::INODE_SIZE_BYTES();
+    node.setId((uint32_t) Globals::INVALID_VALUE);
+    auto nodeAddress = superBlock->nodeAddress + node.getId() * Globals::INODE_SIZE_BYTES();
     fileStream.moveTo(nodeAddress);
     fileStream.writeINode(node); // update INode na disku
     nodeBitmap->setAddress(nodeAddress, true);
@@ -77,8 +77,8 @@ INode MemoryAllocator::getINode() {
     auto nodeAddress = blockBitmap->getFirstEmptyAddress();
     auto id = blockBitmap->getIdFromAddress(nodeAddress);
     auto result = INode();
-    result.id = id;
-    result.timestamp = std::chrono::system_clock::now().time_since_epoch().count();
+    result.setId(id);
+    result.setTimestamp(std::chrono::system_clock::now().time_since_epoch().count());
     blockBitmap->setAddress(nodeAddress, false);
     return result;
 }
@@ -99,11 +99,11 @@ std::vector<uint64_t> MemoryAllocator::getNDataBlocks(uint64_t n, AddressType ad
 }
 
 uint64_t MemoryAllocator::getNodeAddress(INode& node) {
-    if (node.id == (uint32_t) Globals::INVALID_VALUE) {
+    if (node.getId() == (uint32_t) Globals::INVALID_VALUE) {
         throw FSException("Error, node id is invalid"); // nemelo by se stat, pouze pro debug
     }
 
-    return superBlock->nodeAddress + node.id * Globals::INODE_SIZE_BYTES();
+    return superBlock->nodeAddress + node.getId() * Globals::INODE_SIZE_BYTES();
 }
 
 

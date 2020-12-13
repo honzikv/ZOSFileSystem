@@ -1,15 +1,13 @@
 
 #include "../util/FileSystemPath.h"
 #include "PathContext.hpp"
+#include "FileOperations.hpp"
 
-PathContext::PathContext(FileSystemController& fileSystemController) : fileSystemController(fileSystemController) {
-    initialize();
-}
+PathContext::PathContext(FileOperations& fileOperations) : fileOperations(fileOperations) {
 
-void PathContext::initialize() {
-    auto root = fileSystemController.getRoot();
+    auto root = fileOperations.getRoot();
     absolutePath.push_back(root);
-    auto rootItems = fileSystemController.getFolderItems(root);
+    auto rootItems = fileOperations.getFolderItems(root);
     folderItems = rootItems;
 }
 
@@ -42,17 +40,17 @@ void PathContext::moveToRoot(bool fetchFolderItems) {
     absolutePath.push_back(root);
 
     if (fetchFolderItems) {
-        fileSystemController.getFolderItems(root);
+        fileOperations.getFolderItems(root);
     }
 }
 
 void PathContext::refresh() {
     auto updatedINodes = std::vector<INode>();
     for (auto& node : absolutePath) {
-        updatedINodes.push_back(fileSystemController.getUpdatedINode(node));
+        updatedINodes.push_back(fileOperations.getUpdatedINode(node));
     }
     absolutePath = updatedINodes;
-    folderItems = fileSystemController.getFolderItems(absolutePath.back());
+    folderItems = fileOperations.getFolderItems(absolutePath.back());
 }
 
 void PathContext::moveToPath(FileSystemPath& path) {
@@ -66,7 +64,7 @@ void PathContext::moveToPath(FileSystemPath& path) {
             continue;
         }
 
-        folderItems = fileSystemController.getFolderItems(absolutePath.back());
+        folderItems = fileOperations.getFolderItems(absolutePath.back());
         auto nextFolderIndex = getFolderItemIndex(nextFolder);
         if (nextFolderIndex == -1) {
             throw FSException("Error, specified path is not valid.");
@@ -75,7 +73,7 @@ void PathContext::moveToPath(FileSystemPath& path) {
         auto nextFolderNodeAddress = folderItems[nextFolderIndex].nodeAddress;
         INode nextFolderNode;
         try {
-            nextFolderNode = fileSystemController.getINodeFromAddress(nextFolderNodeAddress);
+            nextFolderNode = fileOperations.getINodeFromAddress(nextFolderNodeAddress);
             absolutePath.push_back(nextFolderNode);
         }
         catch (FSException& ex) {
@@ -85,6 +83,6 @@ void PathContext::moveToPath(FileSystemPath& path) {
 }
 
 void PathContext::loadItems() {
-    folderItems = fileSystemController.getFolderItems(absolutePath.back());
+    folderItems = fileOperations.getFolderItems(absolutePath.back());
 }
 

@@ -159,23 +159,15 @@ void FileSystemController::initDrive() {
 
     createINodes();
     fileOperations = std::make_shared<FileOperations>(*this);
-    fileStream.moveTo(0);
-    auto sb = SuperBlock();
-    fileStream.readSuperBlock(sb);
     driveState = DriveState::Valid;
 }
 
 
 void FileSystemController::createINodes() {
     // vytvoreni root inode
-    auto root = INode();
-    root.id = 0;
-    root.refCount = 1; // ref count = 1 aby root nesel nikdy odstranit
-    root.folder = true;
-    root.timestamp = std::chrono::system_clock::now().time_since_epoch().count(); // nastaveni casu vytvoreni
+    auto root = INode::createRoot();
 
     fileStream.moveTo(this->superBlock->nodeAddress);
-    std::cout << fileStream.getWritePosition() << std::endl;
     fileStream.writeINode(root);
 
     auto empty = INode();
@@ -214,7 +206,7 @@ void FileSystemController::reclaimINode(INode& node) {
 }
 
 INode FileSystemController::getUpdatedINode(INode& node) {
-    return memoryAllocator->getINodeWithId(node.id);
+    return memoryAllocator->getINodeWithId(node.getId());
 }
 
 void FileSystemController::linkFolderToParent(INode& child, uint64_t childAddress, uint64_t parentNodeAddress) {

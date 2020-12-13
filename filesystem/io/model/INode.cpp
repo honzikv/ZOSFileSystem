@@ -1,9 +1,12 @@
 
+#include <chrono>
 #include "INode.hpp"
 
 uint32_t INode::getFolderSize() const { return size; }
 
 INode::INode() {}
+
+
 
 bool INode::isFree() const { return id != (uint32_t) Globals::INVALID_VALUE; }
 
@@ -48,4 +51,25 @@ void INode::incrRefCount() {
 
 bool INode::isFolderFull() const {
     return size == Globals::MAX_FOLDER_ITEMS();
+}
+
+uint32_t INode::getId() const {
+    return id;
+}
+
+INode INode::createRoot() {
+    auto root = INode();
+    root.id = 0;
+    root.refCount = 1; // ref count = 1 aby root nesel nikdy odstranit
+    root.folder = true;
+    root.timestamp = std::chrono::system_clock::now().time_since_epoch().count(); // nastaveni casu vytvoreni
+    return root;
+}
+
+void INode::setId(uint32_t id) {
+    INode::id = id;
+}
+
+void INode::setTimestamp(uint64_t timestamp) {
+    INode::timestamp = timestamp;
 }
