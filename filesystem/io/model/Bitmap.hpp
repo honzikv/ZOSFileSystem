@@ -15,7 +15,7 @@ class Bitmap {
 
       uint64_t bitmapStartAddress; // pocatecni adresa bitmapy
       uint64_t objectStartAddress; // pocatecni adresa objektu
-      uint64_t sizeOfObject; // velikost daneho objektu - INode, Data block apod.
+      uint64_t objectSizeBytes; // velikost daneho objektu - INode, Data block apod.
 
       std::vector<uint8_t> bitmap; // bitmapa abychom nemuseli neustale cist ze souboru
 
@@ -23,10 +23,10 @@ class Bitmap {
       /**
        * @param bitmapStartAddress pocatecni adresa v souboru
        * @param count pocet prvku
-       * @param sizeOfObject velikost prvku
+       * @param objectSizeBytes velikost prvku
        * @param fileStream reference na fstream wrapper pro snazsi cteni
        */
-      Bitmap(uint64_t bitmapStartAddress, uint32_t count, uint64_t objectStartAddress, uint64_t sizeOfObject,
+      Bitmap(uint64_t bitmapStartAddress, uint32_t count, uint64_t objectStartAddress, uint64_t objectSizeBytes,
              FileStream& fileStream);
 
       bool isAddressEmpty(uint64_t address);
@@ -38,6 +38,8 @@ class Bitmap {
       void setAddress(uint64_t address, bool empty);
 
       static uint8_t getFirstEmptyBit(uint8_t byte);
+
+      uint64_t getIdFromAddress(uint64_t itemAddress) const;
 
       bool setPosition(uint8_t value, uint32_t pos, FileStream& fileStream);
 

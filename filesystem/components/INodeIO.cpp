@@ -50,7 +50,7 @@ void INodeIO::appendToT2Block(uint32_t itemPosition, uint64_t t2Address, std::ve
     appendToT1Block(itemPosition, t1Pointer, allocations, folderItem);
 }
 
-void INodeIO::append(INode& node, FolderItem& folderItem) {
+void INodeIO::append(INode& node, FolderItem& folderItem, bool increaseRefCount) {
     if (node.getFolderSize() == Globals::maxFolderItems()) {
         throw FSException("Error, this INode cannot hold more files / folders");
     }
@@ -84,6 +84,7 @@ void INodeIO::append(INode& node, FolderItem& folderItem) {
             appendToT1Block(itemPosition, node.getT1Address(), blockAllocations, folderItem);
         } else {
             if (node.t2Address == Globals::INVALID_VALUE) {
+                // pokud neexistuje 2. neprimy odkaz musime ho vytvorit
                 auto t2Address = fileSystemController.nextBlock(AddressType::Pointer);
                 node.t2Address = t2Address;
                 blockAllocations.push_back(t2Address);
@@ -91,9 +92,12 @@ void INodeIO::append(INode& node, FolderItem& folderItem) {
             appendToT2Block(itemPosition, node.getT2Address(), blockAllocations, folderItem);
         }
 
-        // aktualizujeme INode ve filesystemu
-        node.increaseFolderItems();
-        fileSystemController.update(node);
+        // zvysime ref count, resp. zvysime pokud se nejedna o reference ".." a "."
+        if (increaseRefCount) {
+            node.incrRefCount(); // zvyseni poctu referenci na INode
+        }
+        node.incrFolderItemCount(); // zvyseni poctu predmetu ve slozce
+        fileSystemController.refresh(node); // aktualizace INode pro PathContext a v souboru
     }
     catch (FSException& oom) {
         // preda filesystem controlleru alokovane bloky pro uvolneni
@@ -200,6 +204,13 @@ void INodeIO::readFromT2Address(uint64_t t2Address, uint32_t itemCount, std::vec
     }
 
     readFromT1Address(t1BlockList[remainderBlockIndex], remainder, result);
+}
+
+void INodeIO::linkFolderToParent(INode& current, uint64_t currentNodeAddress, uint64_t parentNodeAddress) {
+    auto dot = FolderItem(Globals::CURRENT_FOLDER_SYMBOL, currentNodeAddress, true);
+    auto dotDot = FolderItem(Globals::PARENT_FOLDER_SYMBOL, parentNodeAddress, true);
+    append(current, dot, false);
+    append(current, dotDot, false);
 }
 
 

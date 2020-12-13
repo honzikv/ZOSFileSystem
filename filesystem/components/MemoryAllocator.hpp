@@ -25,13 +25,21 @@ class MemoryAllocator {
 
       void update(INode& indode);
 
-      void free(uint64_t address);
+      void freeMemory(uint64_t address);
 
       void format(uint64_t address, AddressType addressType);
 
+      uint64_t getNodeAddress(INode& node);
+
       uint64_t getDataBlock(AddressType addressType);
 
+      INode getINode();
+
       std::vector<uint64_t> getNDataBlocks(uint64_t n, AddressType addressType);
+
+      void freeINode(INode& node);
+
+      INode getINodeWithId(uint32_t nodeId);
 };
 
 

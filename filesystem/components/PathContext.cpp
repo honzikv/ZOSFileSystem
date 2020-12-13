@@ -18,25 +18,19 @@ void PathContext::update(INode& node) {
     if (nodeIndex != -1) {
         absolutePath[nodeIndex] = node;
     }
-    if (nodeIndex == absolutePath.size() - 1) {
-        folderItems = fileSystemController.getFolderItems(absolutePath.back());
-    }
 }
 
 void PathContext::listItems(const std::string& path) {
     auto fsPath = FileSystemPath(path);
 
-    if (fsPath.getPathType() == PathType::CurrentFolder) {
+    if (fsPath.getPathType() == PathType::Empty) {
         // pokud zadame pouze ls
         printFolderItemNames();
         return;
     }
 
-    // zkopirujeme aktualni hodnoty protoze je nahradime novymi pro zlisteni ls
-    auto currentPath = std::vector<INode>();
-    currentPath = absolutePath;
-    auto currentFolderItems = std::vector<FolderItem>();
-    currentFolderItems = folderItems;
+    // zkopirujeme cestu, protoze bude potreba zmenit
+    auto currentPath = absolutePath;
 
     try {
         if (fsPath.getPathType() == PathType::Relative) {
@@ -49,14 +43,14 @@ void PathContext::listItems(const std::string& path) {
         std::cout << "Error, invalid path" << std::endl;
     }
 
-    // vratime "aktualni" hodnoty zpet
+    // vratime "aktualni" cestu zpet
     absolutePath = currentPath;
-    folderItems = currentFolderItems;
+    refresh();
 }
 
 
 int PathContext::getNodeIndex(INode& node) {
-    for (auto i = 0; i < absolutePath.size(); i++) {
+    for (auto i = 0; i < absolutePath.size(); i += 1) {
         if (node == absolutePath[i]) {
             return i;
         }
@@ -72,20 +66,18 @@ void PathContext::printFolderItemNames() {
 }
 
 void PathContext::printRelativePath(FileSystemPath& path) {
-    while (!path.isComplete()) {
+    for (auto i = 0; i < path.size() - 1; i++) {
         auto folder = path.get();
-        moveTo(folder);
+        moveTo(folder, false);
         path.next();
     }
+    auto lastFolder = path.get();
+    moveTo(lastFolder, true);
     printFolderItemNames();
 }
 
 void PathContext::printAbsolutePath(FileSystemPath& path) {
-    auto root = absolutePath[0];
-    auto newAbsolutePath = std::vector<INode>();
-    newAbsolutePath.push_back(root);
-    absolutePath = newAbsolutePath;
-
+    moveToRoot();
     printRelativePath(path);
 }
 
@@ -98,12 +90,12 @@ bool PathContext::folderItemExists(std::string& itemName) {
     return false;
 }
 
-void PathContext::moveTo(std::string& folderItemName) {
+void PathContext::moveTo(std::string& folderItemName, bool fetchFolderItems) {
     if (folderItemName == Globals::CURRENT_FOLDER_SYMBOL) {
         // kazda slozka ma referenci sama na sebe
         return;
     }
-    if (folderItemName == Globals::PREVIOUS_FOLDER_SYMBOL) {
+    if (folderItemName == Globals::PARENT_FOLDER_SYMBOL) {
         // kazda slozka ma referenci na slozku pred ni (i root, ktery ma sam na sebe)
         if (absolutePath.size() == 1) {
             // pokud je ".." kdyz je posledni prvek root, nic se neudela, protoze root ma referenci sam na sebe
@@ -127,7 +119,9 @@ void PathContext::moveTo(std::string& folderItemName) {
     }
 
     absolutePath.push_back(folderItemNode);
-    folderItems = fileSystemController.getFolderItems(folderItemNode);
+    if (fetchFolderItems) {
+        folderItems = fileSystemController.getFolderItems(folderItemNode);
+    }
 }
 
 int PathContext::getFolderItemIndex(std::string& folderItemName) {
@@ -140,5 +134,105 @@ int PathContext::getFolderItemIndex(std::string& folderItemName) {
         }
     }
     return -1;
+}
+
+void PathContext::printCurrentFolder() {
+    auto path = std::vector<std::string>();
+    if (absolutePath.size() == 1) {
+        std::cout << "/" << std::endl;
+    } else {
+        path.emplace_back("/");
+        for (auto i = 1; i < absolutePath.size(); i += 1) {
+            auto parentFolderItems = fileSystemController.getFolderItems(absolutePath[i - 1]);
+            auto itemName = getItemName(parentFolderItems, absolutePath[i]);
+            path.push_back(itemName);
+        }
+
+        auto delim = "/";
+
+        auto imploded = std::ostringstream();
+        std::copy(path.begin(), path.end(),
+                  std::ostream_iterator<std::string>(imploded, delim));
+
+        std::cout << imploded.str() << std::endl;
+    }
+}
+
+std::string PathContext::getItemName(const std::vector<FolderItem>& parentFolderItems, INode& node) {
+    for (auto& folderItem : parentFolderItems) {
+        if (folderItem.nodeAddress == fileSystemController.getNodeAddress(node)) {
+            return folderItem.getItemName();
+        }
+    }
+
+    throw FSException("Error, no such inode in current working directory"); // pouze pro debug
+}
+
+void PathContext::makeFolder(const std::string& path) {
+    auto fsPath = FileSystemPath(path);
+
+    auto currentAbsolutePath = absolutePath; // zkopirujeme absolute path protoze se muze zmenit
+
+    if (fsPath.size() > 1) {
+        if (fsPath.getPathType() == PathType::Absolute) {
+            moveToRoot();
+        } else if (fsPath.getPathType() == PathType::Empty) {
+            throw FSException("Error, provided path was empty"); //debug
+        }
+
+        for (auto i = 0; i < fsPath.size() - 1; i += 1) {
+            auto currItem = fsPath.get();
+            moveTo(currItem, false);
+            fsPath.next();
+        }
+        folderItems = fileSystemController.getFolderItems(absolutePath.back());
+    }
+
+    auto folderName = fsPath.get();
+    if (folderItemExists(folderName)) {
+        throw FSException("Error, this file/folder already exists");
+    }
+
+    auto node = fileSystemController.getFreeINode();
+    auto nodeAddress = fileSystemController.getNodeAddress(node);
+    node.folder = true;
+    node.refCount = 1;
+
+    fileSystemController.writeINode(node);
+    try {
+        auto folderItem = FolderItem(folderName, nodeAddress, true);
+        auto parent = absolutePath.back();
+        fileSystemController.addItem(parent, folderItem);
+    }
+    catch (FSException& nameException) {
+        fileSystemController.reclaimINode(node);
+        throw FSException(nameException.what());
+    }
+
+    // vraceni absolutni cesty zpet
+    bool doRefresh = absolutePath.back() == currentAbsolutePath.back();
+    absolutePath = currentAbsolutePath;
+    if (doRefresh) {
+        refresh();
+    }
+}
+
+void PathContext::moveToRoot(bool fetchFolderItems) {
+    auto root = absolutePath[0];
+    absolutePath = std::vector<INode>();
+    absolutePath.push_back(root);
+
+    if (fetchFolderItems) {
+        fileSystemController.getFolderItems(root);
+    }
+}
+
+void PathContext::refresh() {
+    auto updatedINodes = std::vector<INode>();
+    for (auto& node : absolutePath) {
+        updatedINodes.push_back(fileSystemController.getUpdatedINode(node));
+    }
+    absolutePath = updatedINodes;
+    folderItems = fileSystemController.getFolderItems(absolutePath.back());
 }
 

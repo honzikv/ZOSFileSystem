@@ -8,12 +8,12 @@
 #include "../util/FileStream.hpp"
 
 class PathContext;
+
 class INodeIO;
 
 /**
- * Trida, ktera slouzi pro ovladani filesystemu
+ * Stav disku (souboru)
  */
-
 enum class DriveState {
       NonExistent, // soubor (cesta) neexistuje
       Valid, // soubor obsahuje validni super block
@@ -21,6 +21,9 @@ enum class DriveState {
       Invalid // v souboru neni od adresy 0 super block
 };
 
+/**
+ * Trida, ktera slouzi pro ovladani filesystemu
+ */
 class FileSystemController {
 
       FileStream& fileStream; // reference na filestream ziskana z FileSystem tridy
@@ -75,11 +78,25 @@ class FileSystemController {
 
       void reclaimMemory(std::vector<uint64_t>& memoryBlocks);
 
-      void update(INode& node);
+      void refresh(INode& node);
+
+      void writeINode(INode& node);
 
       std::vector<FolderItem> getFolderItems(INode& node);
 
       INode getFolderItemINode(uint64_t nodeAddress);
+
+      uint64_t getNodeAddress(INode& node);
+
+      INode getFreeINode();
+
+      void addItem(INode& parent, FolderItem child);
+
+      void reclaimINode(INode& node);
+
+      void createINodes();
+
+      INode getUpdatedINode(INode& node);
 };
 
 

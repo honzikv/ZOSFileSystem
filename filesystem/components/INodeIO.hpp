@@ -15,9 +15,16 @@ class INodeIO {
 
       INodeIO(FileStream& fileStream, FileSystemController& fileSystemController);
 
-      void append(INode& node, FolderItem& folderItem);
+      void append(INode& node, FolderItem& folderItem, bool increaseRefCount = true);
 
       std::vector<FolderItem> getFolderItems(INode& node);
+
+      /**
+       * Vytvori "." a ".." reference pro danou INode
+       * @param current INode pro kterou se reference vytvori
+       * @param parent slozka ve ktere se slozka vyskytuje
+       */
+      void linkFolderToParent(INode& current, uint64_t currentNodeAddress, uint64_t parentNodeAddress);
 
     private:
       void readFromBlockAddress(std::vector<FolderItem>& folderItems, uint64_t address);

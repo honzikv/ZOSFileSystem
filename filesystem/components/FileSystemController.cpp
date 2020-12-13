@@ -69,14 +69,18 @@ void FileSystemController::diskInfo() {
 
 void FileSystemController::reclaimMemory(std::vector<uint64_t>& memoryBlocks) {
     for (auto& block : memoryBlocks) {
-        memoryAllocator->free(block);
+        memoryAllocator->freeMemory(block);
     }
 }
 
-void FileSystemController::update(INode& node) {
+void FileSystemController::refresh(INode& node) {
     memoryAllocator->update(node);
     pathContext->update(node);
-//    fileStream.moveTo(0);
+}
+
+
+void FileSystemController::writeINode(INode& node) {
+    memoryAllocator->update(node);
 }
 
 uint64_t FileSystemController::nextBlock(AddressType type) {
@@ -96,7 +100,7 @@ void FileSystemController::info(const std::string& file) {
 }
 
 void FileSystemController::pwd() {
-
+    pathContext->printCurrentFolder();
 }
 
 void FileSystemController::cd(const std::string& path) {
@@ -117,7 +121,7 @@ void FileSystemController::rmdir(const std::string& dirName) {
 }
 
 void FileSystemController::mkdir(const std::string& path) {
-
+    pathContext->makeFolder(path);
 }
 
 void FileSystemController::rm(const std::string& file) {
@@ -153,8 +157,16 @@ void FileSystemController::initDrive() {
 
     memoryAllocator = std::make_shared<MemoryAllocator>(superBlock, fileStream);
     nodeIO = std::make_shared<INodeIO>(fileStream, *this);
+
+    createINodes();
     pathContext = std::make_shared<PathContext>(*this);
 
+    driveState = DriveState::Valid;
+}
+
+
+void FileSystemController::createINodes() {
+    // vytvoreni root inode
     auto root = INode();
     root.id = 0;
     root.refCount = 1; // ref count = 1 aby root nesel nikdy odstranit
@@ -170,14 +182,7 @@ void FileSystemController::initDrive() {
         fileStream.writeINode(empty);
     }
 
-    // tecka pro aktualni slozku a dve tecky pro "nadrazenou" slozku - v tomto pripaade se presune na root
-    auto dot = FolderItem(".", superBlock->nodeAddress, true);
-    auto dotDot = FolderItem("okay", superBlock->nodeAddress, true);
-
-    nodeIO->append(root, dot);
-    nodeIO->append(root, dotDot); // tato funkce automaticky aktualizuje pathInfo
-
-    driveState = DriveState::Valid;
+    nodeIO->linkFolderToParent(root, superBlock->nodeAddress, superBlock->nodeAddress);
 }
 
 std::vector<FolderItem> FileSystemController::getFolderItems(INode& node) {
@@ -190,3 +195,25 @@ INode FileSystemController::getFolderItemINode(uint64_t nodeAddress) {
     fileStream.readINode(node);
     return node;
 }
+
+uint64_t FileSystemController::getNodeAddress(INode& node) {
+    return memoryAllocator->getNodeAddress(node);
+}
+
+INode FileSystemController::getFreeINode() {
+    return memoryAllocator->getINode();
+}
+
+void FileSystemController::addItem(INode& parent, FolderItem child) {
+    nodeIO->append(parent, child);
+}
+
+void FileSystemController::reclaimINode(INode& node) {
+    memoryAllocator->freeINode(node);
+}
+
+INode FileSystemController::getUpdatedINode(INode& node) {
+    return memoryAllocator->getINodeWithId(node.id);
+}
+
+

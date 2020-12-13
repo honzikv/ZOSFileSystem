@@ -2,10 +2,9 @@
 #include "Bitmap.hpp"
 #include "../../util/FSException.hpp"
 
-Bitmap::Bitmap(uint64_t bitmapStartAddress, uint32_t count, uint64_t objectStartAddress, uint64_t sizeOfObject,
-               FileStream& fileStream) :
-        bitmapStartAddress(bitmapStartAddress), fstream(fileStream), sizeOfObject(sizeOfObject),
-        objectStartAddress(objectStartAddress) {
+Bitmap::Bitmap(uint64_t bitmapStartAddress, uint32_t count, uint64_t objectStartAddress, uint64_t objectSizeBytes,
+               FileStream& fileStream) : bitmapStartAddress(bitmapStartAddress), fstream(fileStream),
+                                         objectSizeBytes(objectSizeBytes), objectStartAddress(objectStartAddress) {
     fileStream.moveTo(bitmapStartAddress);
     auto bytes = count % 8 > 0 ? (count / 8) + 1 : (count / 8);
 
@@ -48,7 +47,7 @@ void Bitmap::updateBitmap(uint64_t bitmapIndex, uint8_t value) {
 }
 
 bool Bitmap::isAddressEmpty(uint64_t address) {
-    auto bitmapAddress = (address - bitmapStartAddress) / sizeOfObject;
+    auto bitmapAddress = (address - bitmapStartAddress) / objectSizeBytes;
     auto bitmapIndex = bitmapAddress / 8;
     auto bit = bitmapAddress % 8;
 
@@ -68,14 +67,14 @@ uint64_t Bitmap::getFirstEmptyAddress() {
 
     if (index != -1) {
         auto bit = getFirstEmptyBit(bitmap[index]);
-        return (index * 8 + bit) * sizeOfObject + objectStartAddress;
+        return (index * 8 + bit) * objectSizeBytes + objectStartAddress;
     } else {
         throw FSException("Error bitmap is full");
     }
 }
 
 void Bitmap::setAddress(uint64_t address, bool empty) {
-    auto bitmapAddress = (address - objectStartAddress) / sizeOfObject;
+    auto bitmapAddress = (address - objectStartAddress) / objectSizeBytes;
     auto bitmapIndex = bitmapAddress / 8;
     auto bit = bitmapAddress % 8;
 
@@ -94,4 +93,8 @@ uint8_t Bitmap::getFirstEmptyBit(uint8_t byte) {
         }
     }
     return -1;
+}
+
+uint64_t Bitmap::getIdFromAddress(uint64_t itemAddress) const {
+    return (itemAddress - objectStartAddress) / objectSizeBytes;
 }

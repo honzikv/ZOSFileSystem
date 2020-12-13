@@ -25,6 +25,8 @@ class PathContext {
 
       void update(INode& node);
 
+      void refresh();
+
       void listItems(const std::string& path);
 
       int getNodeIndex(INode& node);
@@ -33,15 +35,21 @@ class PathContext {
 
       bool folderItemExists(std::string& itemName);
 
-      void printLocalFolderItem(FileSystemPath& path);
+      void printCurrentFolder();
 
       void printRelativePath(FileSystemPath& path);
 
       void printAbsolutePath(FileSystemPath& path);
 
-      void moveTo(std::string& folderItemName);
+      void moveTo(std::string& folderItemName, bool fetchFolderItems);
 
       int getFolderItemIndex(std::string& folderItemName);
+
+      std::string getItemName(const std::vector<FolderItem>& parentFolderItems, INode& node);
+
+      void makeFolder(const std::string& path);
+
+      void moveToRoot(bool fetchFolderItems = false);
 };
 
 

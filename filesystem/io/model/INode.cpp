@@ -30,8 +30,7 @@ INode::INode(bool isFolder, uint32_t id) {
     this->id = id;
 }
 
-void INode::increaseFolderItems() {
-    refCount += 1;
+void INode::incrFolderItemCount() {
     size += 1;
 }
 
@@ -41,4 +40,8 @@ bool INode::operator==(const INode& rhs) const {
 
 bool INode::operator!=(const INode& rhs) const {
     return !(rhs == *this);
+}
+
+void INode::incrRefCount() {
+    refCount += 1;
 }

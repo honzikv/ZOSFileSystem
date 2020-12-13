@@ -9,7 +9,7 @@
 #include <optional>
 
 enum class PathType {
-      CurrentFolder,
+      Empty,
       Relative,
       Absolute
 };
@@ -27,9 +27,12 @@ class FileSystemPath {
           return pathType;
       }
 
-    public:
       bool hasNext() {
           return currentIndex < path.size();
+      }
+
+      uint32_t size() {
+          return path.size();
       }
 
       bool isComplete() {
@@ -50,7 +53,7 @@ class FileSystemPath {
 
       explicit FileSystemPath(const std::string& path) {
           if (path.empty()) {
-              pathType = PathType::CurrentFolder;
+              pathType = PathType::Empty;
               return;
           }
           // prepise se na local pokud je relativni a ma velikost 1

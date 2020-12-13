@@ -89,7 +89,7 @@ namespace Globals {
     }
 
     static const std::string CURRENT_FOLDER_SYMBOL = ".";
-    static const std::string PREVIOUS_FOLDER_SYMBOL = "..";
+    static const std::string PARENT_FOLDER_SYMBOL = "..";
 }
 
 #endif //GLOBALS_HPP

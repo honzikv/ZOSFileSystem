@@ -97,7 +97,9 @@ struct INode {
        */
       INode();
 
-      void increaseFolderItems();
+      void incrFolderItemCount();
+
+      void incrRefCount();
 
     bool operator==(const INode& rhs) const;
 

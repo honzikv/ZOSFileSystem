@@ -49,6 +49,7 @@ void FileSystem::execute(const std::vector<std::string>& commandWithArguments) {
         if (args.size() != 1) {
             throw FSException(INCORRECT_NUM_PARAMS + "\"rm\"");
         }
+
         fileSystemController->rm(args[0]);
     } else if (command == "mkdir") {
         if (args.size() != 1) {
@@ -64,7 +65,6 @@ void FileSystem::execute(const std::vector<std::string>& commandWithArguments) {
         if (args.size() > 1) {
             throw FSException(INCORRECT_NUM_PARAMS + "\"ls\"");
         }
-
         if (args.empty()) {
             fileSystemController->ls("");
         } else {
