@@ -28,28 +28,8 @@ class FileSystemPath {
           return pathType;
       }
 
-      bool hasNext() {
-          return currentIndex < path.size();
-      }
-
       uint32_t size() {
           return path.size();
-      }
-
-      bool isComplete() {
-          return currentIndex == path.size();
-      }
-
-      bool hasLastElement() {
-          return currentIndex != path.size() - 1;
-      }
-
-      std::string get() {
-          return path[currentIndex];
-      }
-
-      void next() {
-          currentIndex += 1;
       }
 
       explicit FileSystemPath(const std::string& path) {
@@ -62,11 +42,6 @@ class FileSystemPath {
                                            : PathType::Relative;
           auto result = StringParsing::parsePath(path);
           this->path = result;
-      }
-
-      FileSystemPath(std::vector<std::string>& path, PathType pathType) {
-          this->path = path;
-          this->pathType = pathType;
       }
 
       std::string operator[](int i) {

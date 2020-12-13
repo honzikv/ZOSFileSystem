@@ -158,7 +158,9 @@ void FileSystemController::initDrive() {
 
     createINodes();
     fileOperations = std::make_shared<FileOperations>(*this);
-
+    fileStream.moveTo(0);
+    auto sb = SuperBlock();
+    fileStream.readSuperBlock(sb);
     driveState = DriveState::Valid;
 }
 

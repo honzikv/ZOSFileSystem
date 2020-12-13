@@ -62,6 +62,10 @@ class FileStream {
               lastOp = LastOperation::Write;
           }
           fstream.write(reinterpret_cast<char*>(&object), sizeof(T));
+
+          if (!fstream.good()) {
+              throw FSException("Error while writing to file");
+          }
       }
 
       template<typename T>

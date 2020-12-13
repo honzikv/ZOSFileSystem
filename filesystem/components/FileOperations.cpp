@@ -34,6 +34,7 @@ void FileOperations::listItems(const std::string& path) {
     }
     catch (FSException& ex) {
         std::cout << ex.what() << std::endl;
+        return;
     }
 
     // nacteme predmety a vytiskneme
@@ -60,7 +61,7 @@ void FileOperations::makeDirectory(const std::string& path) {
             pathContext.moveToRoot(false); // presuneme se na root pokud je cesta absolutni
         }
 
-        pathContext.moveToPath(fsPath);
+        pathContext.moveToPath(fsPath); // presuneme se do aktualni cesty
     }
 
     pathContext.loadItems(); // nacteme soubory
@@ -91,7 +92,7 @@ void FileOperations::makeDirectory(const std::string& path) {
         fileSystemController.append(parentNode, parentNodeFolderItem);
     } catch (FSException& ex) {
         //todo clear folderNode
-        fileSystemController.reclaimINode(folderNode);
+      //  fileSystemController.reclaimINode(folderNode);
         throw FSException("Error, not enough space to create new folder");
     }
 

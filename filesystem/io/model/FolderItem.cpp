@@ -1,7 +1,6 @@
 #include <sstream>
 #include "FolderItem.hpp"
 #include "../../util/FSException.hpp"
-#include "../../util/FileStream.hpp"
 
 void FolderItem::validateFileName(const std::string& input) {
     if (input.empty()) {

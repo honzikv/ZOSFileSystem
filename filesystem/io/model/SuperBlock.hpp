@@ -36,8 +36,6 @@ struct SuperBlock {
 
     SuperBlock() = default;
 
-    friend FileStream& operator>>(FileStream& fileStream, SuperBlock& superBlock);
-
     [[nodiscard]] bool isValid() const;
 
     static uint64_t getBlockCount(uint64_t sizeBytes);
@@ -45,8 +43,6 @@ struct SuperBlock {
     static uint64_t getNodeCount(uint64_t blockCount);
 
     static uint64_t getBitmapSize(uint64_t objectCount);
-
-    friend std::ostream& operator<<(std::ostream& os, const SuperBlock& block);
 
     void printInfo() const;
 };

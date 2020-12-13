@@ -15,7 +15,7 @@ namespace Globals {
 
     static constexpr uint64_t MIN_DRIVE_SIZE = 1024 * 10 * 1024;
     static constexpr uint16_t SUPER_BLOCK_MAGIC_NUMBER = 0x53ef;
-    static constexpr uint64_t SUPERBLOCK_SIZE_BYTES = 7 * sizeof(uint64_t) + sizeof(uint16_t);
+    static constexpr uint64_t SUPERBLOCK_SIZE_BYTES = 10 * sizeof(uint64_t) + sizeof(uint16_t);
 
     static constexpr uint64_t INVALID_VALUE = std::numeric_limits<uint64_t>::max(); // invalid value pro kontrolu
     static uint32_t BLOCK_SIZE_BYTES = 4096;
