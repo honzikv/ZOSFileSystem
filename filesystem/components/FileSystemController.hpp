@@ -13,6 +13,7 @@ class INodeIO;
 
 class FileOperations;
 
+
 /**
  * Stav disku (souboru)
  */
@@ -27,28 +28,27 @@ enum class DriveState {
  * Trida, ktera slouzi pro ovladani filesystemu
  */
 class FileSystemController {
+      friend class FileSystem;
 
       FileStream& fileStream; // reference na filestream ziskana z FileSystem tridy
 
-      DriveState driveState = DriveState::Empty;
+      DriveState driveState = DriveState::Empty; // stav disku
 
-      std::shared_ptr<SuperBlock> superBlock;
+      std::shared_ptr<SuperBlock> superBlock; // reference na super blok disku
 
-      std::shared_ptr<MemoryAllocator> memoryAllocator;
+      std::shared_ptr<MemoryAllocator> memoryAllocator; // reference na memory alokator pro prirazovani pameti
 
-      std::shared_ptr<INodeIO> nodeIO;
-//
-//      std::shared_ptr<PathContext> pathContext;
+      std::shared_ptr<INodeIO> nodeIO; // reference na praci s INodes
 
-      std::shared_ptr<FileOperations> fileOperations;
+      std::shared_ptr<FileOperations> fileOperations; // reference na praci se soubory
+
+      void initDrive();
 
     public:
 
       [[nodiscard]] DriveState getDriveState() const;
 
       explicit FileSystemController(FileStream& fileStream);
-
-      void initDrive();
 
       void diskInfo();
 
