@@ -103,7 +103,7 @@ void FileSystemController::pwd() {
 }
 
 void FileSystemController::cd(const std::string& path) {
-
+    fileOperations->changeDirectory(path);
 }
 
 void FileSystemController::cat(const std::string& file) {

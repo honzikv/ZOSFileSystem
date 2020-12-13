@@ -100,4 +100,23 @@ void FileOperations::makeDirectory(const std::string& path) {
     pathContext.refresh();
 }
 
+void FileOperations::changeDirectory(const std::string& path) {
+    auto fsPath = FileSystemPath(path);
+    auto absolutePath = pathContext.absolutePath; // kopie pro pripad ze se zmena slozky nezdari
+
+    if (fsPath.getPathType() == PathType::Absolute) {
+        pathContext.moveToRoot();
+    }
+
+    try {
+        pathContext.moveToPath(fsPath);
+    }
+    catch (FSException& ex) {
+        std::cout << ex.what() << std::endl;
+        pathContext.absolutePath = absolutePath;
+    }
+
+    pathContext.refresh();
+}
+
 

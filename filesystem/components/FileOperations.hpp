@@ -35,6 +35,8 @@ class FileOperations {
        * @param path cesta
        */
       void makeDirectory(const std::string& path);
+
+      void changeDirectory(const std::string& path);
 };
 
 

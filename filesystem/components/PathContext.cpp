@@ -59,7 +59,10 @@ void PathContext::moveToPath(FileSystemPath& path) {
     for (auto i = 0; i < path.size(); i++) {
         auto nextFolder = path[i];
 
-        if (nextFolder == ".." || nextFolder == ".") {
+        if (nextFolder == ".." && absolutePath.size() > 1) {
+            absolutePath.pop_back();
+            continue;
+        } else if (nextFolder == ".") {
             continue;
         }
 
