@@ -35,4 +35,4 @@ add_executable(ZOSRework main.cpp
         filesystem/util/FileStream.cpp
         filesystem/util/FileStream.hpp
         filesystem/util/FileSystemPath.h
-        filesystem/util/StringParsing.cpp)
+        filesystem/util/StringParsing.cpp filesystem/components/FileOperations.cpp filesystem/components/FileOperations.hpp)

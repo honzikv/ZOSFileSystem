@@ -104,6 +104,8 @@ struct INode {
     bool operator==(const INode& rhs) const;
 
     bool operator!=(const INode& rhs) const;
+
+    bool isFolderFull() const;
 };
 
 

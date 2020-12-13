@@ -16,6 +16,8 @@ struct FolderItem {
       std::vector<char> itemName = std::vector<char>(Globals::FILE_NAME_CHAR_ARRAY_LENGTH, (char) 0); // nazev souboru
       uint64_t nodeAddress = Globals::INVALID_VALUE; // reference na INode
 
+      static void validateFolderName(const std::string& input);
+
     public:
 
       FolderItem(const std::string& itemName, uint64_t nodeAddress, bool isFolder);
@@ -43,7 +45,6 @@ struct FolderItem {
     private:
       void validateFileName(const std::string& input);
 
-      static void validateFolderName(const std::string& input);
 };
 
 

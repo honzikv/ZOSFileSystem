@@ -51,7 +51,7 @@ void INodeIO::appendToT2Block(uint32_t itemPosition, uint64_t t2Address, std::ve
 }
 
 void INodeIO::append(INode& node, FolderItem& folderItem, bool increaseRefCount) {
-    if (node.getFolderSize() == Globals::maxFolderItems()) {
+    if (node.getFolderSize() == Globals::MAX_FOLDER_ITEMS()) {
         throw FSException("Error, this INode cannot hold more files / folders");
     }
 
@@ -104,6 +104,7 @@ void INodeIO::append(INode& node, FolderItem& folderItem, bool increaseRefCount)
         fileSystemController.reclaimMemory(blockAllocations);
         // neni potreba dale nijak upravovat INode, protoze se INode v souboru neaktualizuje pokud nekdy v prubehu vyhodi
         // memory allocator FSException ze doslo misto
+        throw FSException("FolderItem could not have been added");
     }
 }
 

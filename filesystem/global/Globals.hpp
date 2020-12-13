@@ -83,13 +83,14 @@ namespace Globals {
         return bytes % BLOCK_SIZE_BYTES == 0 ? bytes / BLOCK_SIZE_BYTES : bytes / BLOCK_SIZE_BYTES + 1;
     }
 
-    static uint32_t maxFolderItems() {
+    static uint32_t MAX_FOLDER_ITEMS() {
         return T0_ADDRESS_LIST_SIZE * FOLDER_ITEMS_PER_BLOCK() + POINTERS_PER_BLOCK() * FOLDER_ITEMS_PER_BLOCK() +
                POINTERS_PER_BLOCK() * POINTERS_PER_BLOCK() * FOLDER_ITEMS_PER_BLOCK();
     }
 
     static const std::string CURRENT_FOLDER_SYMBOL = ".";
     static const std::string PARENT_FOLDER_SYMBOL = "..";
+
 }
 
 #endif //GLOBALS_HPP

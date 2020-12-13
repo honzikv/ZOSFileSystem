@@ -4,6 +4,7 @@
 #include "FileSystemController.hpp"
 #include "INodeIO.hpp"
 #include "PathContext.hpp"
+#include "FileOperations.hpp"
 
 
 FileSystemController::FileSystemController(FileStream& fileStream) : fileStream(fileStream) {
@@ -43,7 +44,7 @@ FileSystemController::FileSystemController(FileStream& fileStream) : fileStream(
     superBlock = std::make_shared<SuperBlock>(fileSuperBlock); // zkopirujeme super blok objekt na heap do shared ptr
     memoryAllocator = std::make_shared<MemoryAllocator>(superBlock, fileStream);
     nodeIO = std::make_shared<INodeIO>(fileStream, *this);
-    pathContext = std::make_shared<PathContext>(*this);
+    fileOperations = std::make_shared<FileOperations>(*this);
 }
 
 
@@ -75,7 +76,6 @@ void FileSystemController::reclaimMemory(std::vector<uint64_t>& memoryBlocks) {
 
 void FileSystemController::refresh(INode& node) {
     memoryAllocator->update(node);
-    pathContext->update(node);
 }
 
 
@@ -100,7 +100,6 @@ void FileSystemController::info(const std::string& file) {
 }
 
 void FileSystemController::pwd() {
-    pathContext->printCurrentFolder();
 }
 
 void FileSystemController::cd(const std::string& path) {
@@ -112,8 +111,7 @@ void FileSystemController::cat(const std::string& file) {
 }
 
 void FileSystemController::ls(const std::string& path) {
-    pathContext->listItems(path);
-
+    fileOperations->listItems(path);
 }
 
 void FileSystemController::rmdir(const std::string& dirName) {
@@ -121,7 +119,7 @@ void FileSystemController::rmdir(const std::string& dirName) {
 }
 
 void FileSystemController::mkdir(const std::string& path) {
-    pathContext->makeFolder(path);
+    fileOperations->makeDirectory(path);
 }
 
 void FileSystemController::rm(const std::string& file) {
@@ -159,7 +157,7 @@ void FileSystemController::initDrive() {
     nodeIO = std::make_shared<INodeIO>(fileStream, *this);
 
     createINodes();
-    pathContext = std::make_shared<PathContext>(*this);
+    fileOperations = std::make_shared<FileOperations>(*this);
 
     driveState = DriveState::Valid;
 }
@@ -189,7 +187,7 @@ std::vector<FolderItem> FileSystemController::getFolderItems(INode& node) {
     return nodeIO->getFolderItems(node);
 }
 
-INode FileSystemController::getFolderItemINode(uint64_t nodeAddress) {
+INode FileSystemController::getINodeFromAddress(uint64_t nodeAddress) {
     auto node = INode();
     fileStream.moveTo(nodeAddress);
     fileStream.readINode(node);
@@ -204,7 +202,7 @@ INode FileSystemController::getFreeINode() {
     return memoryAllocator->getINode();
 }
 
-void FileSystemController::addItem(INode& parent, FolderItem child) {
+void FileSystemController::append(INode& parent, FolderItem child) {
     nodeIO->append(parent, child);
 }
 
@@ -214,6 +212,10 @@ void FileSystemController::reclaimINode(INode& node) {
 
 INode FileSystemController::getUpdatedINode(INode& node) {
     return memoryAllocator->getINodeWithId(node.id);
+}
+
+void FileSystemController::linkFolderToParent(INode& child, uint64_t childAddress, uint64_t parentNodeAddress) {
+    nodeIO->linkFolderToParent(child, childAddress, parentNodeAddress);
 }
 
 

@@ -87,6 +87,7 @@ void FolderItem::validateFolderName(const std::string& input) {
     }
 }
 
+
 bool FolderItem::operator==(const FolderItem& other) const {
     return std::equal(itemName.begin(), itemName.end(), other.itemName.begin()) &&
            nodeAddress == other.nodeAddress;

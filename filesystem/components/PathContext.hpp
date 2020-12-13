@@ -11,6 +11,7 @@
  * informace o aktualnim adresari, souborech apod.
  */
 class PathContext {
+      friend class FileOperations;
 
       std::vector<INode> absolutePath; // absolutni cesta od rootu, kdy prvni INode je root
 
@@ -50,6 +51,10 @@ class PathContext {
       void makeFolder(const std::string& path);
 
       void moveToRoot(bool fetchFolderItems = false);
+
+      void moveToPath(FileSystemPath& path);
+
+      void loadItems();
 };
 
 

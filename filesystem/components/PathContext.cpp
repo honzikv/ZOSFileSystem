@@ -112,7 +112,7 @@ void PathContext::moveTo(std::string& folderItemName, bool fetchFolderItems) {
         throw FSException();
     }
     auto folderItem = folderItems[folderItemIndex];
-    auto folderItemNode = fileSystemController.getFolderItemINode(folderItem.nodeAddress);
+    auto folderItemNode = fileSystemController.getINodeFromAddress(folderItem.nodeAddress);
 
     if (!folderItemNode.isFolder()) {
         throw FSException("Error, incorrect path");
@@ -170,7 +170,6 @@ std::string PathContext::getItemName(const std::vector<FolderItem>& parentFolder
 
 void PathContext::makeFolder(const std::string& path) {
     auto fsPath = FileSystemPath(path);
-
     auto currentAbsolutePath = absolutePath; // zkopirujeme absolute path protoze se muze zmenit
 
     if (fsPath.size() > 1) {
@@ -193,28 +192,27 @@ void PathContext::makeFolder(const std::string& path) {
         throw FSException("Error, this file/folder already exists");
     }
 
-    auto node = fileSystemController.getFreeINode();
-    auto nodeAddress = fileSystemController.getNodeAddress(node);
-    node.folder = true;
-    node.refCount = 1;
+    auto newFolderNode = fileSystemController.getFreeINode(); // inode pro novou slozku
+    auto newFolderNodeAddress = fileSystemController.getNodeAddress(newFolderNode); // adresa inode
+    newFolderNode.folder = true; // nastaveni ze je inode slozka
+    newFolderNode.refCount = 1; // nastaveni referenci na 1
 
-    fileSystemController.writeINode(node);
     try {
-        auto folderItem = FolderItem(folderName, nodeAddress, true);
+        auto folderItem = FolderItem(folderName, newFolderNodeAddress, true);
         auto parent = absolutePath.back();
-        fileSystemController.addItem(parent, folderItem);
+        auto parentAddress = fileSystemController.getNodeAddress(parent);
+        fileSystemController.writeINode(newFolderNode);
+        fileSystemController.linkFolderToParent(newFolderNode, newFolderNodeAddress, parentAddress);
+        fileSystemController.append(parent, folderItem);
     }
     catch (FSException& nameException) {
-        fileSystemController.reclaimINode(node);
+        fileSystemController.reclaimINode(newFolderNode);
         throw FSException(nameException.what());
     }
 
     // vraceni absolutni cesty zpet
-    bool doRefresh = absolutePath.back() == currentAbsolutePath.back();
     absolutePath = currentAbsolutePath;
-    if (doRefresh) {
-        refresh();
-    }
+    refresh();
 }
 
 void PathContext::moveToRoot(bool fetchFolderItems) {
@@ -233,6 +231,36 @@ void PathContext::refresh() {
         updatedINodes.push_back(fileSystemController.getUpdatedINode(node));
     }
     absolutePath = updatedINodes;
+    folderItems = fileSystemController.getFolderItems(absolutePath.back());
+}
+
+void PathContext::moveToPath(FileSystemPath& path) {
+    for (auto i = 0; i < path.size(); i++) {
+        auto nextFolder = path[i];
+
+        if (nextFolder == ".." || nextFolder == ".") {
+            continue;
+        }
+
+        folderItems = fileSystemController.getFolderItems(absolutePath.back());
+        auto nextFolderIndex = getFolderItemIndex(nextFolder);
+        if (nextFolderIndex == -1) {
+            throw FSException("Error, specified path is not valid.");
+        }
+
+        auto nextFolderNodeAddress = folderItems[nextFolderIndex].nodeAddress;
+        INode nextFolderNode;
+        try {
+            nextFolderNode = fileSystemController.getINodeFromAddress(nextFolderNodeAddress);
+            absolutePath.push_back(nextFolderNode);
+        }
+        catch (FSException& ex) {
+            throw FSException("Error while reading INode @ PathContext"); //debug
+        }
+    }
+}
+
+void PathContext::loadItems() {
     folderItems = fileSystemController.getFolderItems(absolutePath.back());
 }
 

@@ -11,6 +11,8 @@ class PathContext;
 
 class INodeIO;
 
+class FileOperations;
+
 /**
  * Stav disku (souboru)
  */
@@ -35,8 +37,10 @@ class FileSystemController {
       std::shared_ptr<MemoryAllocator> memoryAllocator;
 
       std::shared_ptr<INodeIO> nodeIO;
+//
+//      std::shared_ptr<PathContext> pathContext;
 
-      std::shared_ptr<PathContext> pathContext;
+      std::shared_ptr<FileOperations> fileOperations;
 
     public:
 
@@ -84,19 +88,21 @@ class FileSystemController {
 
       std::vector<FolderItem> getFolderItems(INode& node);
 
-      INode getFolderItemINode(uint64_t nodeAddress);
+      INode getINodeFromAddress(uint64_t nodeAddress);
 
       uint64_t getNodeAddress(INode& node);
 
       INode getFreeINode();
 
-      void addItem(INode& parent, FolderItem child);
+      void append(INode& parent, FolderItem child);
 
       void reclaimINode(INode& node);
 
       void createINodes();
 
       INode getUpdatedINode(INode& node);
+
+      void linkFolderToParent(INode& child, uint64_t childAddress, uint64_t parentNodeAddress);
 };
 
 

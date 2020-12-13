@@ -79,6 +79,7 @@ INode MemoryAllocator::getINode() {
     auto result = INode();
     result.id = id;
     result.timestamp = std::chrono::system_clock::now().time_since_epoch().count();
+    blockBitmap->setAddress(nodeAddress, false);
     return result;
 }
 

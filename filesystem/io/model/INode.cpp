@@ -45,3 +45,7 @@ bool INode::operator!=(const INode& rhs) const {
 void INode::incrRefCount() {
     refCount += 1;
 }
+
+bool INode::isFolderFull() const {
+    return size == Globals::MAX_FOLDER_ITEMS();
+}
