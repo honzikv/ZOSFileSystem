@@ -36,7 +36,15 @@ class FileOperations {
        */
       void makeDirectory(const std::string& path);
 
+      /**
+       * Zmeni aktualni adresar
+       * @param path
+       */
       void changeDirectory(const std::string& path);
+
+      std::string getFolderName(uint64_t nodeAddress, const std::vector<FolderItem>& vector);
+
+      void printCurrentPath();
 };
 
 

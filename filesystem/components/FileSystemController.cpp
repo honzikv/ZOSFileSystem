@@ -100,6 +100,7 @@ void FileSystemController::info(const std::string& file) {
 }
 
 void FileSystemController::pwd() {
+    fileOperations->printCurrentPath();
 }
 
 void FileSystemController::cd(const std::string& path) {

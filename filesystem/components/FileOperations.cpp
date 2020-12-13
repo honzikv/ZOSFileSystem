@@ -119,4 +119,36 @@ void FileOperations::changeDirectory(const std::string& path) {
     pathContext.refresh();
 }
 
+std::string FileOperations::getFolderName(uint64_t nodeAddress, const std::vector<FolderItem>& folderItems) {
+    for (auto& folderItem : folderItems) {
+        if (folderItem.getNodeAddress() == nodeAddress) {
+            return folderItem.getItemName();
+        }
+    }
+
+    throw FSException("Error no folder item with ")
+}
+
+void FileOperations::printCurrentPath() {
+    if (pathContext.absolutePath.size() == 1) {
+        std::cout << "/" << std::endl;
+        return;
+    }
+
+    auto path = std::vector<std::string>();
+    path.emplace_back(""); // pro "/" na zacatku
+    for (auto i = 1; i < pathContext.absolutePath.size(); i++) {
+        auto folderItems = fileSystemController.getFolderItems(pathContext.absolutePath[i - 1]);
+        auto nodeAddress = fileSystemController.getNodeAddress(pathContext.absolutePath[i]);
+        auto folderName = getFolderName(nodeAddress, folderItems);
+        path.push_back(folderName);
+    }
+
+    auto delim = "/";
+    auto stringStream = std::ostringstream();
+    std::copy(path.begin(), path.end(), std::ostream_iterator<std::string>(stringStream, delim));
+
+    std::cout << stringStream.str() << std::endl;
+}
+
 
