@@ -52,7 +52,7 @@ class FileSystemPath {
           return path.back();
       }
 
-      void popBack() {
+      void pop() {
           path.pop_back();
       }
 };

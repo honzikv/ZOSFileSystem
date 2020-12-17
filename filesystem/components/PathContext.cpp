@@ -77,7 +77,7 @@ void PathContext::moveToPath(FileSystemPath& path) {
             absolutePath.push_back(nextFolderNode);
         }
         catch (FSException& ex) {
-            throw FSException("Error while reading INode @ PathContext"); //debug
+            throw FSException("Error while reading INode @ PathContext"); //debug, nemelo by se stat
         }
     }
 }

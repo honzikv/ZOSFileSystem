@@ -1,12 +1,11 @@
 
 #include <chrono>
+#include <iostream>
 #include "INode.hpp"
 
 uint32_t INode::getFolderSize() const { return size; }
 
 INode::INode() {}
-
-
 
 bool INode::isFree() const { return id != (uint32_t) Globals::INVALID_VALUE; }
 
@@ -72,4 +71,16 @@ void INode::setId(uint32_t id) {
 
 void INode::setTimestamp(uint64_t timestamp) {
     INode::timestamp = timestamp;
+}
+
+void INode::printInfo() {
+    if (folder) {
+        std::cout << "INode with id: " << id << " folder " << "items: " << size << " refCount:" << refCount << std::endl;
+    }
+    else {
+        std::cout << "Inode with id: " << id << " file " << "size in bytes: " << size << " refCount" << refCount << std::endl;
+    }
+//
+//    bool checkNextBlock = t0AddressList[0] != Globals::INVALID_VALUE;
+//    while (chec)
 }

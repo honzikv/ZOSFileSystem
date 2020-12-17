@@ -16,8 +16,6 @@ class PathContext {
       std::vector<INode> absolutePath; // absolutni cesta od rootu, kdy prvni INode je root
 
       std::vector<FolderItem> folderItems; // folder item objekty pro posledni INode v absolute path
-//
-//      FileSystemController& fileSystemController; // reference na filesystem controller
 
       FileOperations& fileOperations;
 
@@ -32,6 +30,10 @@ class PathContext {
 
       void moveToRoot(bool fetchFolderItems = false);
 
+      /**
+       * Presune se do dane cesty a nebo vyhodi exception, pokud cesta neexistuje
+       * @param path dana cesta
+       */
       void moveToPath(FileSystemPath& path);
 
       void loadItems();

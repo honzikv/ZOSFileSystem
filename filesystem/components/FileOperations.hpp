@@ -47,6 +47,8 @@ class FileOperations {
 
       void printCurrentPath();
 
+      void getInfo(const std::string& path);
+
     private:
       INode getRoot();
 
@@ -55,6 +57,14 @@ class FileOperations {
       INode getINodeFromAddress(uint64_t address);
 
       INode getUpdatedINode(INode& node);
+
+      /**
+       * Vrati zpet stav PathContext objektu pred provedenim operace
+       * @param absolutePath
+       */
+      void restorePathContextState(const std::vector<INode>& absolutePath);
+
+      bool checkIfIsFolder(FileSystemPath& fsPath);
 };
 
 

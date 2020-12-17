@@ -96,7 +96,7 @@ void FileSystemController::incp(const std::string& fileOut, const std::string& f
 }
 
 void FileSystemController::info(const std::string& file) {
-
+    fileOperations->getInfo(file);
 }
 
 void FileSystemController::pwd() {

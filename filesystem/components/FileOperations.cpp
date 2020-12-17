@@ -53,7 +53,7 @@ void FileOperations::makeDirectory(const std::string& path) {
     auto absolutePath = pathContext->absolutePath;
 
     auto folderName = fsPath.back(); // nazev souboru je posledni prvek objektu FileSystemPath
-    fsPath.popBack(); // odstranime nazev slozky, protoze tam se presouvat nebudeme
+    fsPath.pop(); // odstranime nazev slozky, protoze tam se presouvat nebudeme
 
     if (fsPath.size() > 0) {
         // pokud je cesta vetsi nez 0, tak je potreba se nekam presunout
@@ -96,6 +96,10 @@ void FileOperations::makeDirectory(const std::string& path) {
         throw FSException("Error, not enough space to create new folder");
     }
 
+    restorePathContextState(absolutePath);
+}
+
+void FileOperations::restorePathContextState(const std::vector<INode>& absolutePath) {
     pathContext->absolutePath = absolutePath;
     pathContext->refresh();
 }
@@ -147,7 +151,6 @@ void FileOperations::printCurrentPath() {
     auto delim = "/";
     auto stringStream = std::ostringstream();
     std::copy(path.begin(), path.end(), std::ostream_iterator<std::string>(stringStream, delim));
-
     std::cout << stringStream.str() << std::endl;
 }
 
@@ -165,6 +168,52 @@ INode FileOperations::getINodeFromAddress(uint64_t address) {
 
 INode FileOperations::getUpdatedINode(INode& node) {
     return fileSystemController.getUpdatedINode(node);
+}
+
+void FileOperations::getInfo(const std::string& path) {
+    auto absolutePath = pathContext->absolutePath;
+    auto fsPath = FileSystemPath(path);
+    pathContext->moveToPath(fsPath);
+
+    auto isFolder = checkIfIsFolder(fsPath);
+    if (isFolder) {
+        pathContext->absolutePath.back().printInfo(); // vytiskneme info posledni INode v ceste
+    } else { // jinak je posledni prvek soubor
+        auto fileName = fsPath.back();
+        fsPath.pop();
+
+        try {
+            pathContext->moveToPath(fsPath);
+            pathContext->loadItems();
+            auto index = pathContext->getFolderItemIndex(fileName);
+
+            if (index == -1) {
+                throw FSException("Error, file does not exist");
+            }
+
+            auto folderItem = pathContext->folderItems[index];
+            auto node = fileSystemController.getINodeFromAddress(folderItem.nodeAddress);
+            node.printInfo();
+        }
+        catch (FSException& ex) {
+            restorePathContextState(absolutePath);
+            throw FSException(ex.what());
+        }
+    }
+
+    restorePathContextState(absolutePath);
+}
+
+bool FileOperations::checkIfIsFolder(FileSystemPath& fsPath) {
+    auto absolutePath = pathContext->absolutePath;
+    try {
+        pathContext->moveToPath(fsPath);
+    }
+    catch (FSException& ex) {
+        restorePathContextState(absolutePath);
+        return false;
+    }
+    return true;
 }
 
 

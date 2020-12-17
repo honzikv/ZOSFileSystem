@@ -119,6 +119,8 @@ class INode {
       static INode createRoot();
 
       void setTimestamp(uint64_t timestamp);
+
+      void printInfo();
 };
 
 
