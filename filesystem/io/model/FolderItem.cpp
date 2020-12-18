@@ -11,21 +11,28 @@ void FolderItem::validateFileName(const std::string& input) {
         throw FSException("File name with extension is too long");
     }
 
-    auto stringStream = std::istringstream(input);
-    auto token = std::string();
-    auto tokens = std::vector<std::string>();
+    if (input.find('.') == std::string::npos) {
+        if (input.length() > Globals::FILE_NAME_CHAR_LIMIT) {
+            throw FSException("Error file name is too long");
+        }
+    } else {
 
-    while (std::getline(stringStream, token, '.')) {
-        tokens.push_back(token);
+        auto stringStream = std::istringstream(input);
+        auto token = std::string();
+        auto tokens = std::vector<std::string>();
+
+
+        while (std::getline(stringStream, token, '.')) {
+            tokens.push_back(token);
+        }
+
+        if (tokens[tokens.size() - 1].length() > Globals::FILE_EXTENSION_CHAR_LIMIT) {
+            throw FSException(
+                    "Extension is too long, make sure it is less or equal to " +
+                    std::to_string(Globals::FILE_EXTENSION_CHAR_LIMIT)
+            );
+        }
     }
-
-    if (tokens[tokens.size() - 1].length() > Globals::FILE_EXTENSION_CHAR_LIMIT) {
-        throw FSException(
-                "Extension is too long, make sure it is less or equal to " +
-                std::to_string(Globals::FILE_EXTENSION_CHAR_LIMIT)
-        );
-    }
-
 }
 
 FolderItem::FolderItem(const std::string& itemName, uint64_t nodeAddress, bool isFolder) : nodeAddress(nodeAddress) {

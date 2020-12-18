@@ -78,7 +78,7 @@ void INode::printInfo() {
         std::cout << "INode with id: " << id << " folder " << "items: " << size << " refCount: " << refCount << std::endl;
     }
     else {
-        std::cout << "Inode with id: " << id << " file " << "size in bytes: " << size << " refCount" << refCount << std::endl;
+        std::cout << "Inode with id: " << id << " file " << "size in bytes: " << size << " refCount: " << refCount << std::endl;
     }
 }
 

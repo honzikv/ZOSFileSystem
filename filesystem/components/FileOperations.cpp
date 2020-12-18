@@ -272,6 +272,7 @@ void FileOperations::copyIntoFileSystem(const std::string& outPath, const std::s
         throw FSException("Error, specified file does not exist!");
     }
 
+    outputFileStream.open();
     if (outputFileStream.getFileSize() > Globals::MAX_FILE_SIZE_BYTES()) {
         throw FSException("Error, file is too large");
     }
@@ -304,5 +305,7 @@ void FileOperations::copyIntoFileSystem(const std::string& outPath, const std::s
 
     auto folderItem = FolderItem(fileName, nodeAddress, false);
     fileSystemController.appendFile(parentNode, fileNode, folderItem, outputFileStream);
+
+    restorePathContextState(absolutePath);
 }
 

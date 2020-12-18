@@ -57,7 +57,7 @@ void INodeIO::writeAt(INode& node, uint32_t index, FolderItem& folderItem) {
     node.size = swap;
 }
 
-void INodeIO::appendFile(INode& parent, INode& child, FolderItem& folderItem, FileStream& externalFileStream) {
+void INodeIO::appendFile(INode& parent, INode& node, FolderItem& folderItem, FileStream& externalFileStream) {
     auto bytes = externalFileStream.getFileSize();
     auto dataBlocksRequired = Globals::getBlockCount(bytes); // pocet bloku, kde jsou pouze data
     auto extraBlocksRequired = getExtraBlocks(bytes); // pocet bloku navic - bloky s pointery
@@ -68,12 +68,66 @@ void INodeIO::appendFile(INode& parent, INode& child, FolderItem& folderItem, Fi
 
     auto dataBlocks = fileSystemController.nextNBlocks(dataBlocksRequired, AddressType::RAW_DATA);
     auto pointerBlocks = fileSystemController.nextNBlocks(extraBlocksRequired, AddressType::Pointer);
+    auto pointerBlockIndex = 0;
 
     auto buffer = std::vector<char>(Globals::BLOCK_SIZE_BYTES, '\0');
+    auto bytesRemaining = bytes;
 
+    externalFileStream.moveTo(0);
     for (auto currentBlock = 0; currentBlock < dataBlocksRequired; currentBlock += 1) {
+        if (bytesRemaining < Globals::BLOCK_SIZE_BYTES) {
+            buffer = std::vector<char>(bytesRemaining, '\0');
+        }
+        externalFileStream.readVector(buffer); // precteme velikost bloku ze souboru
+        bytesRemaining -= Globals::BLOCK_SIZE_BYTES;
 
+        if (currentBlock < Globals::T0_ADDRESS_LIST_SIZE) { // pokud je blok primy odkaz
+            node.t0AddressList[currentBlock] = dataBlocks[currentBlock];
+            fileStream.moveTo(dataBlocks[currentBlock]);
+            fileStream.writeVector(buffer);
+        } else if (currentBlock - Globals::T0_ADDRESS_LIST_SIZE < Globals::POINTERS_PER_BLOCK()) {
+            // pokud je blok v rozmezi 1. neprimeho odkazu
+            if (node.t1Address == Globals::INVALID_VALUE) {
+                node.t1Address = pointerBlocks[pointerBlockIndex];
+                pointerBlockIndex += 1;
+            }
+
+            auto t1Row = currentBlock - Globals::T0_ADDRESS_LIST_SIZE; // relativni radek v 1. neprimeme odkazu
+            fileStream.moveTo(node.t1Address + t1Row * Globals::POINTER_SIZE_BYTES);
+            fileStream.write(dataBlocks[currentBlock]);
+
+            fileStream.moveTo(dataBlocks[currentBlock]);
+            fileStream.writeVector(buffer);
+        } else {
+            if (node.t2Address == Globals::INVALID_VALUE) {
+                node.t2Address = pointerBlocks[pointerBlockIndex];
+                pointerBlockIndex += 1;
+            }
+
+            auto relativeBlock = currentBlock - Globals::T0_ADDRESS_LIST_SIZE - Globals::POINTERS_PER_BLOCK();
+            auto t2Row = relativeBlock / Globals::POINTERS_PER_BLOCK();
+            auto t1Row = relativeBlock % Globals::POINTERS_PER_BLOCK();
+
+            if (t1Row == 0) {
+                fileStream.moveTo(node.t2Address + t2Row * Globals::POINTER_SIZE_BYTES);
+                fileStream.write(pointerBlocks[pointerBlockIndex]);
+                pointerBlockIndex += 1;
+            }
+
+            uint64_t t1Address;
+            fileStream.moveTo(node.t2Address + t2Row * Globals::POINTER_SIZE_BYTES);
+            fileStream.read(t1Address);
+
+            fileStream.moveTo(t1Address + t1Row * Globals::POINTER_SIZE_BYTES);
+            fileStream.write(currentBlock);
+
+            fileStream.moveTo(currentBlock);
+            fileStream.write(buffer);
+        }
     }
+    node.size = bytes;
+    fileSystemController.refresh(node);
+    appendFolderItem(parent, folderItem);
 }
 
 void INodeIO::appendFolderItem(INode& node, FolderItem& folderItem, bool increaseRefCount) {
@@ -352,7 +406,6 @@ void INodeIO::removeLast(INode& node) {
         auto t1Row = itemRelativePosition / Globals::FOLDER_ITEMS_PER_BLOCK();
         auto itemIndex = itemRelativePosition % Globals::FOLDER_ITEMS_PER_BLOCK();
 
-
         if (itemIndex == 0) { // pokud je predmet na 0tem indexu v bloku, musime blok smazat
             uint64_t blockAddress;
             fileStream.moveTo(node.t1Address + t1Row * Globals::POINTER_SIZE_BYTES);
@@ -360,7 +413,8 @@ void INodeIO::removeLast(INode& node) {
             deallocations.push_back(blockAddress);
 
             fileStream.moveTo(node.t1Address + t1Row * Globals::POINTER_SIZE_BYTES);
-            fileStream.write(Globals::INVALID_VALUE);
+            auto invalid = Globals::INVALID_VALUE;
+            fileStream.write(invalid);
 
             if (t1Row == 0) { // pokud je navic i index bloku 0, tak odstranenim musime smazat i blok s pointery
                 deallocations.push_back(node.t1Address);
@@ -390,13 +444,15 @@ void INodeIO::removeLast(INode& node) {
             deallocations.push_back(blockAddress);
 
             fileStream.moveTo(t1Address + blockRow * Globals::POINTER_SIZE_BYTES);
-            fileStream.write(Globals::INVALID_VALUE);
+            auto invalid = Globals::INVALID_VALUE;
+            fileStream.write(invalid);
         }
 
         if (itemIndex == 0 && blockRow == 0) { // pokud je index v bloku 0 a index v t1 0 odstranime i t1 blok
             deallocations.push_back(t1Address);
             fileStream.moveTo(node.t2Address + t2Row * Globals::POINTER_SIZE_BYTES);
-            fileStream.write(Globals::INVALID_VALUE);
+            auto invalid = Globals::INVALID_VALUE;
+            fileStream.write(invalid);
         }
 
         if (itemIndex == 0 && blockRow == 0 && t2Row == 0) {

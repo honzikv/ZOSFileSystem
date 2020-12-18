@@ -87,12 +87,17 @@ std::vector<uint64_t> MemoryAllocator::getNDataBlocks(uint64_t n, AddressType ad
     auto dataBlocks = std::vector<uint64_t>();
     dataBlocks.reserve(n);
     for (auto i = 0; i < n; i++) {
-        dataBlocks.push_back(blockBitmap->getFirstEmptyAddress()); // muze vyhodit exception pokud nebude misto
-    }
+        try {
+            auto emptyAddress = getDataBlock(addressType);
+            dataBlocks.push_back(emptyAddress);
+        }
+        catch (FSException& ex) {
+            for (auto block : dataBlocks) {
+                blockBitmap->setAddress(block, true);
+            }
 
-    for (auto dataBlock : dataBlocks) {
-        blockBitmap->setAddress(dataBlock, false);
-        format(dataBlock, addressType);
+            throw FSException(ex.what());
+        }
     }
 
     return dataBlocks;
