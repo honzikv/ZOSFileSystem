@@ -52,7 +52,13 @@ class FileSystemPath {
           return path.back();
       }
 
-      void pop() {
+      std::string releaseBack() {
+          auto back = path.back();
+          path.pop_back();
+          return back;
+      }
+
+      void popBack() {
           path.pop_back();
       }
 };

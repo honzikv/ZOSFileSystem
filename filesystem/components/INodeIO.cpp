@@ -214,5 +214,73 @@ void INodeIO::linkFolderToParent(INode& current, uint64_t currentNodeAddress, ui
     append(current, dotDot, false);
 }
 
+void INodeIO::printINodeInfo(INode& node) {
+    node.printInfo();
+
+    auto blocks = getINodeBlocks(node);
+    std::cout << "INode blocks:" << std::endl;
+    for (auto block : blocks) {
+        std::cout << +block << std::endl;
+    }
+}
+
+std::vector<uint64_t> INodeIO::getINodeBlocks(INode& node) {
+    auto result = std::vector<uint64_t>();
+
+    // Nacitame adresy, pokud je nejaka nevalidni ukoncime, protoze se data vzdy nejprve ukladaji do primych bloku,
+    // pak do neprimeho a druheho neprimeho odkazu ...
+    for (auto block : node.t0AddressList) {
+        if (block == Globals::INVALID_VALUE) {
+            return result;
+        }
+        result.push_back(block);
+    }
+
+    if (node.t1Address == Globals::INVALID_VALUE) { // pokud je adresa neprimeho bloku INVALID vratime se
+        return result;
+    }
+
+    // jinak nacteme vsechny bloky a iterujeme pres ne
+    auto t1Blocks = std::vector<uint64_t>(Globals::POINTERS_PER_BLOCK(), Globals::INVALID_VALUE);
+    fileStream.moveTo(node.t1Address);
+    fileStream.readVector(t1Blocks);
+
+    for (auto block : t1Blocks) {
+        if (block == Globals::INVALID_VALUE) {
+            return result;
+        }
+        result.push_back(block);
+    }
+
+    // stejne pro odkaz 2. radu, akorat navic pro kazdy prvek nacteme blok 1. radu
+    if (node.t2Address == Globals::INVALID_VALUE) {
+        return result;
+    }
+
+    auto t2Blocks = std::vector<uint64_t>(Globals::POINTERS_PER_BLOCK(), Globals::INVALID_VALUE);
+    fileStream.moveTo(node.t2Address);
+    fileStream.readVector(t2Blocks);
+
+    for (auto t2Block : t2Blocks) {
+        if (t2Block == Globals::INVALID_VALUE) {
+            return result;
+        }
+        result.push_back(t2Block);
+
+        t1Blocks = std::vector<uint64_t>(Globals::POINTERS_PER_BLOCK(), Globals::INVALID_VALUE);
+        fileStream.moveTo(t2Block);
+        fileStream.readVector(t1Blocks);
+        for (auto block : t1Blocks) {
+            if (block == Globals::INVALID_VALUE) {
+                return result;
+            }
+            result.push_back(block);
+        }
+    }
+
+    return result;
+}
+
+
 
 

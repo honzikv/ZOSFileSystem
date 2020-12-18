@@ -92,7 +92,7 @@ class FileSystemController {
 
       uint64_t getNodeAddress(INode& node);
 
-      INode getFreeINode();
+      INode getFreeINode(bool isFolder);
 
       void append(INode& parent, FolderItem child);
 
@@ -103,6 +103,8 @@ class FileSystemController {
       INode getUpdatedINode(INode& node);
 
       void linkFolderToParent(INode& child, uint64_t childAddress, uint64_t parentNodeAddress);
+
+      void printINodeInfo(INode& node);
 };
 
 

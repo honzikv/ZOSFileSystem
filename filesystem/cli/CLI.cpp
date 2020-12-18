@@ -34,7 +34,6 @@ void CLI::run() {
             } else {
                 auto tokens = splitByWhitespace(input);
 
-                // prevod na lowercase TODO zmenit
                 std::transform(tokens[0].begin(), tokens[0].end(), tokens[0].begin(), ::tolower);
                 input = tokens[0];
 

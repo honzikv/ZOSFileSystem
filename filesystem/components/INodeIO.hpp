@@ -26,6 +26,8 @@ class INodeIO {
        */
       void linkFolderToParent(INode& current, uint64_t currentNodeAddress, uint64_t parentNodeAddress);
 
+      void printINodeInfo(INode& node);
+
     private:
       void readFromBlockAddress(std::vector<FolderItem>& folderItems, uint64_t address);
 
@@ -44,6 +46,8 @@ class INodeIO {
       void readFromT1Address(uint64_t t1Address, uint64_t count, std::vector<FolderItem> result);
 
       void readFromT2Address(uint64_t t2Address, uint32_t itemCount, std::vector<FolderItem> result);
+
+      std::vector<uint64_t> getINodeBlocks(INode& node);
 };
 
 #endif //INODEIO_HPP

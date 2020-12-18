@@ -33,7 +33,7 @@ class MemoryAllocator {
 
       uint64_t getDataBlock(AddressType addressType);
 
-      INode getINode();
+      INode getINode(bool isFolder);
 
       std::vector<uint64_t> getNDataBlocks(uint64_t n, AddressType addressType);
 

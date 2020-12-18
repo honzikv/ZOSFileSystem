@@ -193,8 +193,8 @@ uint64_t FileSystemController::getNodeAddress(INode& node) {
     return memoryAllocator->getNodeAddress(node);
 }
 
-INode FileSystemController::getFreeINode() {
-    return memoryAllocator->getINode();
+INode FileSystemController::getFreeINode(bool isFolder) {
+    return memoryAllocator->getINode(isFolder);
 }
 
 void FileSystemController::append(INode& parent, FolderItem child) {
@@ -211,6 +211,10 @@ INode FileSystemController::getUpdatedINode(INode& node) {
 
 void FileSystemController::linkFolderToParent(INode& child, uint64_t childAddress, uint64_t parentNodeAddress) {
     nodeIO->linkFolderToParent(child, childAddress, parentNodeAddress);
+}
+
+void FileSystemController::printINodeInfo(INode& node) {
+    nodeIO->printINodeInfo(node);
 }
 
 

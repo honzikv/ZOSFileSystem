@@ -33,6 +33,8 @@ class INode {
 
       void setId(uint32_t id);
 
+      void setFolder(bool folder);
+
       /**
        * @return zda-li je INode volna
        */

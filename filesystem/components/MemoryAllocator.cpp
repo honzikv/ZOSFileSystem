@@ -73,11 +73,12 @@ uint64_t MemoryAllocator::getDataBlock(AddressType addressType) {
     return address;
 }
 
-INode MemoryAllocator::getINode() {
+INode MemoryAllocator::getINode(bool isFolder) {
     auto nodeAddress = blockBitmap->getFirstEmptyAddress();
     auto id = blockBitmap->getIdFromAddress(nodeAddress);
     auto result = INode();
     result.setId(id);
+    result.setFolder(isFolder);
     result.setTimestamp(std::chrono::system_clock::now().time_since_epoch().count());
     blockBitmap->setAddress(nodeAddress, false);
     return result;
