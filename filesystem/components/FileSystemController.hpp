@@ -58,11 +58,11 @@ class FileSystemController {
 
       void mv(const std::string& file, const std::string& path);
 
-      void rm(const std::string& file);
+      void rm(const std::string& path);
 
       void mkdir(const std::string& path);
 
-      void rmdir(const std::string& dirName);
+      void rmdir(const std::string& path);
 
       void ls(const std::string& path);
 
@@ -74,7 +74,7 @@ class FileSystemController {
 
       void info(const std::string& file);
 
-      void incp(const std::string& fileOut, const std::string& fileFS);
+      void incp(const std::string& readPath, const std::string& path);
 
       void outcp(const std::string& fileIn, const std::string& fileOut);
 
@@ -90,11 +90,11 @@ class FileSystemController {
 
       INode getINodeFromAddress(uint64_t nodeAddress);
 
-      uint64_t getNodeAddress(INode& node);
+      uint64_t getINodeAddress(INode& node);
 
       INode getFreeINode(bool isFolder);
 
-      void append(INode& parent, FolderItem child);
+      void appendFolder(INode& parent, FolderItem child);
 
       void reclaimINode(INode& node);
 
@@ -105,6 +105,12 @@ class FileSystemController {
       void linkFolderToParent(INode& child, uint64_t childAddress, uint64_t parentNodeAddress);
 
       void printINodeInfo(INode& node);
+
+      void removeFolderItem(INode& node, FolderItem& folderItem);
+
+      void appendFile(INode& parent, INode& child, FolderItem& folderItem, FileStream& externalFileStream);
+
+      std::vector<uint64_t> nextNBlocks(uint32_t n, AddressType addressType);
 };
 
 

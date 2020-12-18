@@ -8,10 +8,8 @@ INodeIO::INodeIO(FileStream& fileStream, FileSystemController& fileSystemControl
 
 void INodeIO::appendToT1Block(uint64_t itemPosition, uint64_t t1Address, std::vector<uint64_t> allocations,
                               FolderItem& folderItem) {
-    auto t1Index = itemPosition - (Globals::T0_ADDRESS_LIST_SIZE *
-                                   Globals::FOLDER_ITEMS_PER_BLOCK()); // relativni index v t1 indirect bloku
-    auto t1Row = t1Index / Globals::FOLDER_ITEM_SIZE_BYTES; // dany index v 1. neprime adrese
-    auto blockRow = t1Index % Globals::FOLDER_ITEM_SIZE_BYTES; // pozice v bloku
+    auto t1Row = itemPosition / Globals::FOLDER_ITEMS_PER_BLOCK(); // dany index v 1. neprime adrese
+    auto blockRow = itemPosition % Globals::FOLDER_ITEMS_PER_BLOCK(); // pozice v bloku
 
     uint64_t pointer;
     fileStream.moveTo(t1Address + t1Row * Globals::POINTER_SIZE_BYTES); // precteme pointer
@@ -32,10 +30,7 @@ void INodeIO::appendToT1Block(uint64_t itemPosition, uint64_t t1Address, std::ve
 
 void INodeIO::appendToT2Block(uint32_t itemPosition, uint64_t t2Address, std::vector<uint64_t> allocations,
                               FolderItem& folderItem) {
-    auto t2Index = itemPosition - Globals::T0_ADDRESS_LIST_SIZE -
-                   Globals::POINTERS_PER_BLOCK() *
-                   Globals::FOLDER_ITEMS_PER_BLOCK(); // index v t2 indirect bloku
-    auto t2Row = t2Index / (Globals::POINTERS_PER_BLOCK() * Globals::FOLDER_ITEMS_PER_BLOCK());
+    auto t2Row = itemPosition / (Globals::POINTERS_PER_BLOCK() * Globals::FOLDER_ITEMS_PER_BLOCK());
 
     uint64_t t1Pointer;
     fileStream.moveTo(t2Address + t2Row * Globals::POINTER_SIZE_BYTES);
@@ -47,10 +42,41 @@ void INodeIO::appendToT2Block(uint32_t itemPosition, uint64_t t2Address, std::ve
         fileStream.moveTo(t2Address + t2Row * Globals::POINTER_SIZE_BYTES);
         fileStream.write(t1Pointer);
     }
-    appendToT1Block(itemPosition, t1Pointer, allocations, folderItem);
+
+    auto relativePosition = itemPosition % (Globals::POINTERS_PER_BLOCK() * Globals::FOLDER_ITEMS_PER_BLOCK());
+    appendToT1Block(relativePosition, t1Pointer, allocations, folderItem);
 }
 
-void INodeIO::append(INode& node, FolderItem& folderItem, bool increaseRefCount) {
+
+void INodeIO::writeAt(INode& node, uint32_t index, FolderItem& folderItem) {
+    // write na jiz alokovanou pozici lze zaridit pomoci INodeIO::append, kdy zmenime velikost INode na index, kam
+    // chceme prvek zapsat, funkce by nemela nikdy spadnout, protoze bloky uz alokovane jsou
+    auto swap = node.size;
+    node.size = index;
+    appendFolderItem(node, folderItem, false);
+    node.size = swap;
+}
+
+void INodeIO::appendFile(INode& parent, INode& child, FolderItem& folderItem, FileStream& externalFileStream) {
+    auto bytes = externalFileStream.getFileSize();
+    auto dataBlocksRequired = Globals::getBlockCount(bytes); // pocet bloku, kde jsou pouze data
+    auto extraBlocksRequired = getExtraBlocks(bytes); // pocet bloku navic - bloky s pointery
+
+    if (dataBlocksRequired + extraBlocksRequired > Globals::maxAddressableBlocksPerINode()) {
+        throw FSException("Error, file is too large to contain in the filesystem");
+    }
+
+    auto dataBlocks = fileSystemController.nextNBlocks(dataBlocksRequired, AddressType::RAW_DATA);
+    auto pointerBlocks = fileSystemController.nextNBlocks(extraBlocksRequired, AddressType::Pointer);
+
+    auto buffer = std::vector<char>(Globals::BLOCK_SIZE_BYTES, '\0');
+
+    for (auto currentBlock = 0; currentBlock < dataBlocksRequired; currentBlock += 1) {
+
+    }
+}
+
+void INodeIO::appendFolderItem(INode& node, FolderItem& folderItem, bool increaseRefCount) {
     if (node.getFolderSize() == Globals::MAX_FOLDER_ITEMS()) {
         throw FSException("Error, this INode cannot hold more files / folders");
     }
@@ -81,7 +107,8 @@ void INodeIO::append(INode& node, FolderItem& folderItem, bool increaseRefCount)
                 node.t1Address = t1Address;
                 blockAllocations.push_back(t1Address);
             }
-            appendToT1Block(itemPosition, node.getT1Address(), blockAllocations, folderItem);
+            auto t1ItemPosition = itemPosition - Globals::T0_ADDRESS_LIST_SIZE * Globals::FOLDER_ITEMS_PER_BLOCK();
+            appendToT1Block(t1ItemPosition, node.getT1Address(), blockAllocations, folderItem);
         } else {
             if (node.t2Address == Globals::INVALID_VALUE) {
                 // pokud neexistuje 2. neprimy odkaz musime ho vytvorit
@@ -89,7 +116,9 @@ void INodeIO::append(INode& node, FolderItem& folderItem, bool increaseRefCount)
                 node.t2Address = t2Address;
                 blockAllocations.push_back(t2Address);
             }
-            appendToT2Block(itemPosition, node.getT2Address(), blockAllocations, folderItem);
+            auto t2ItemPosition = itemPosition - Globals::T0_ADDRESS_LIST_SIZE * Globals::FOLDER_ITEMS_PER_BLOCK() -
+                                  Globals::POINTERS_PER_BLOCK() * Globals::FOLDER_ITEMS_PER_BLOCK();
+            appendToT2Block(t2ItemPosition, node.getT2Address(), blockAllocations, folderItem);
         }
 
         // zvysime ref count, resp. zvysime pokud se nejedna o reference ".." a "."
@@ -186,7 +215,7 @@ void INodeIO::readFromT1Address(uint64_t t1Address, uint64_t count, std::vector<
     readFromDirectBlocks(addressList, count, result);
 }
 
-void INodeIO::readFromT2Address(uint64_t t2Address, uint32_t itemCount, std::vector<FolderItem> result) {
+void INodeIO::readFromT2Address(uint64_t t2Address, uint32_t itemCount, const std::vector<FolderItem>& result) {
     auto fullBlocks = itemCount / (Globals::POINTERS_PER_BLOCK() * Globals::FOLDER_ITEMS_PER_BLOCK());
     auto remainder = itemCount % (Globals::POINTERS_PER_BLOCK() * Globals::FOLDER_ITEMS_PER_BLOCK());
 
@@ -210,8 +239,8 @@ void INodeIO::readFromT2Address(uint64_t t2Address, uint32_t itemCount, std::vec
 void INodeIO::linkFolderToParent(INode& current, uint64_t currentNodeAddress, uint64_t parentNodeAddress) {
     auto dot = FolderItem(Globals::CURRENT_FOLDER_SYMBOL, currentNodeAddress, true);
     auto dotDot = FolderItem(Globals::PARENT_FOLDER_SYMBOL, parentNodeAddress, true);
-    append(current, dot, false);
-    append(current, dotDot, false);
+    appendFolderItem(current, dot, false);
+    appendFolderItem(current, dotDot, false);
 }
 
 void INodeIO::printINodeInfo(INode& node) {
@@ -222,6 +251,7 @@ void INodeIO::printINodeInfo(INode& node) {
     for (auto block : blocks) {
         std::cout << +block << std::endl;
     }
+    std::cout << std::endl;
 }
 
 std::vector<uint64_t> INodeIO::getINodeBlocks(INode& node) {
@@ -280,6 +310,128 @@ std::vector<uint64_t> INodeIO::getINodeBlocks(INode& node) {
 
     return result;
 }
+
+void INodeIO::removeFolderItem(INode& node, FolderItem& folderItem) {
+    auto items = getFolderItems(node); // ziskame predmety slozky pro zjisteni indexu
+    auto index = -1;
+
+    for (auto i = 0; i < items.size(); i++) {
+        if (items[i] == folderItem) {
+            index = i;
+            break;
+        }
+    }
+
+    if (index == -1) {
+        throw FSException("Error, item not found");
+    }
+
+    auto last = items.back();
+    if (index != items.size() - 1) {
+        writeAt(node, index,
+                last); // zapiseme posledni prvek misto indexu, abychom nemuseli kopirovat vetsi mnozsti prvku
+    }
+
+    removeLast(node);
+    fileSystemController.refresh(node);
+}
+
+void INodeIO::removeLast(INode& node) {
+    auto last = node.size - 1;
+    auto blockIndex = last / Globals::FOLDER_ITEMS_PER_BLOCK();
+    auto itemPosition = last % Globals::FOLDER_ITEMS_PER_BLOCK();
+
+    auto deallocations = std::vector<uint64_t>();
+    if (blockIndex < Globals::T0_ADDRESS_LIST_SIZE) {
+        if (itemPosition == 0) {
+            deallocations.push_back(node.t0AddressList[blockIndex]);
+            node.t0AddressList[blockIndex] = Globals::INVALID_VALUE;
+        }
+    } else if (blockIndex - Globals::T0_ADDRESS_LIST_SIZE < Globals::POINTERS_PER_BLOCK()) {
+        auto itemRelativePosition = itemPosition - (Globals::T0_ADDRESS_LIST_SIZE * Globals::FOLDER_ITEMS_PER_BLOCK());
+        auto t1Row = itemRelativePosition / Globals::FOLDER_ITEMS_PER_BLOCK();
+        auto itemIndex = itemRelativePosition % Globals::FOLDER_ITEMS_PER_BLOCK();
+
+
+        if (itemIndex == 0) { // pokud je predmet na 0tem indexu v bloku, musime blok smazat
+            uint64_t blockAddress;
+            fileStream.moveTo(node.t1Address + t1Row * Globals::POINTER_SIZE_BYTES);
+            fileStream.read(blockAddress);
+            deallocations.push_back(blockAddress);
+
+            fileStream.moveTo(node.t1Address + t1Row * Globals::POINTER_SIZE_BYTES);
+            fileStream.write(Globals::INVALID_VALUE);
+
+            if (t1Row == 0) { // pokud je navic i index bloku 0, tak odstranenim musime smazat i blok s pointery
+                deallocations.push_back(node.t1Address);
+                node.t1Address = Globals::INVALID_VALUE; // nastavime v INode hodnotu na invalid value
+            }
+        }
+
+    } else {
+        // relativni index v t2 bloku
+        auto t2Index = itemPosition - Globals::T0_ADDRESS_LIST_SIZE * Globals::FOLDER_ITEMS_PER_BLOCK() -
+                       Globals::POINTERS_PER_BLOCK() * Globals::FOLDER_ITEMS_PER_BLOCK();
+
+        // index v t2 bloku
+        auto t2Row = t2Index / (Globals::POINTERS_PER_BLOCK() * Globals::FOLDER_ITEMS_PER_BLOCK());
+        auto t1Row = t2Index % (Globals::POINTERS_PER_BLOCK() * Globals::FOLDER_ITEMS_PER_BLOCK());
+        auto blockRow = t1Row / Globals::FOLDER_ITEMS_PER_BLOCK();
+        auto itemIndex = t1Row % Globals::FOLDER_ITEMS_PER_BLOCK();
+
+        uint64_t t1Address;
+        fileStream.moveTo(node.t2Address + t2Row * Globals::POINTER_SIZE_BYTES);
+        fileStream.read(t1Address);
+
+        if (itemIndex == 0) { // pokud je index v bloku 0, pak odstranime index v t1 tabulce
+            uint64_t blockAddress;
+            fileStream.moveTo(t1Address + blockRow * Globals::POINTER_SIZE_BYTES);
+            fileStream.read(blockAddress);
+            deallocations.push_back(blockAddress);
+
+            fileStream.moveTo(t1Address + blockRow * Globals::POINTER_SIZE_BYTES);
+            fileStream.write(Globals::INVALID_VALUE);
+        }
+
+        if (itemIndex == 0 && blockRow == 0) { // pokud je index v bloku 0 a index v t1 0 odstranime i t1 blok
+            deallocations.push_back(t1Address);
+            fileStream.moveTo(node.t2Address + t2Row * Globals::POINTER_SIZE_BYTES);
+            fileStream.write(Globals::INVALID_VALUE);
+        }
+
+        if (itemIndex == 0 && blockRow == 0 && t2Row == 0) {
+            // pokud je index v bloku 0 a index v t1 0 a index v t2 0 odstranime i t2 blok
+            deallocations.push_back(node.t2Address);
+            node.t2Address = Globals::INVALID_VALUE;
+        }
+
+    }
+
+    fileSystemController.reclaimMemory(deallocations); // smazani vsech bloku, ktere jsme oznacili pri odstranovani
+    node.refCount -= 1; // snizeni refCountu
+    node.size -= 1; // snizeni velikosti slozky
+
+}
+
+uint64_t INodeIO::getExtraBlocks(uint64_t bytes) {
+    auto remainingBytes = bytes;
+    if (remainingBytes <= Globals::T0_ADDRESS_LIST_CAPACITY_BYTES()) {
+        return 0;
+    }
+
+    remainingBytes -= Globals::T0_ADDRESS_LIST_CAPACITY_BYTES();
+    if (remainingBytes <= Globals::T1_POINTER_CAPACITY_BYTES()) {
+        return 1;
+    }
+
+    remainingBytes -= Globals::T1_POINTER_CAPACITY_BYTES();
+    auto t1Blocks = remainingBytes % Globals::T1_POINTER_CAPACITY_BYTES() == 0 ?
+                    remainingBytes / Globals::T1_POINTER_CAPACITY_BYTES() :
+                    remainingBytes / Globals::T1_POINTER_CAPACITY_BYTES() + 1;
+
+    return t1Blocks + 1; // + 1 t2 blok
+}
+
 
 
 

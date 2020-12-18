@@ -35,6 +35,8 @@ class INode {
 
       void setFolder(bool folder);
 
+      uint64_t getRefCount() const;
+
       /**
        * @return zda-li je INode volna
        */

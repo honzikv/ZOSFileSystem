@@ -18,6 +18,8 @@ struct FolderItem {
 
       static void validateFolderName(const std::string& input);
 
+      static void validateFileName(const std::string& input);
+
     public:
 
       FolderItem(const std::string& itemName, uint64_t nodeAddress, bool isFolder);
@@ -42,8 +44,6 @@ struct FolderItem {
 
       bool operator!=(const FolderItem& other) const;
 
-    private:
-      void validateFileName(const std::string& input);
 
 };
 

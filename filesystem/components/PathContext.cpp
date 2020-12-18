@@ -53,7 +53,7 @@ void PathContext::refresh() {
     folderItems = fileOperations.getFolderItems(absolutePath.back());
 }
 
-void PathContext::moveToPath(FileSystemPath& path) {
+void PathContext::moveTo(FileSystemPath& path) {
     for (auto i = 0; i < path.size(); i++) {
         auto nextFolder = path[i];
 

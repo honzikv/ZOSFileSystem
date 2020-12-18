@@ -37,6 +37,12 @@ class FileOperations {
        */
       void makeDirectory(const std::string& path);
 
+      void removeDirectory(const std::string& path);
+
+      void removeFile(const std::string& path);
+
+      void copyIntoFileSystem(const std::string& outPath, const std::string& path);
+
       /**
        * Zmeni aktualni adresar
        * @param path
@@ -64,7 +70,6 @@ class FileOperations {
        */
       void restorePathContextState(const std::vector<INode>& absolutePath);
 
-      bool checkIfIsFolder(FileSystemPath& fsPath);
 };
 
 

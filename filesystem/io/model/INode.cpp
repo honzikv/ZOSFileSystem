@@ -85,3 +85,7 @@ void INode::printInfo() {
 void INode::setFolder(bool folder) {
     INode::folder = folder;
 }
+
+uint64_t INode::getRefCount() const {
+    return refCount;
+}

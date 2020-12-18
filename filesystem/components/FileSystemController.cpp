@@ -91,8 +91,8 @@ void FileSystemController::outcp(const std::string& fileIn, const std::string& f
 
 }
 
-void FileSystemController::incp(const std::string& fileOut, const std::string& fileFS) {
-
+void FileSystemController::incp(const std::string& readPath, const std::string& path) {
+    fileOperations->copyIntoFileSystem(readPath, path);
 }
 
 void FileSystemController::info(const std::string& file) {
@@ -115,16 +115,16 @@ void FileSystemController::ls(const std::string& path) {
     fileOperations->listItems(path);
 }
 
-void FileSystemController::rmdir(const std::string& dirName) {
-
+void FileSystemController::rmdir(const std::string& path) {
+    fileOperations->removeDirectory(path);
 }
 
 void FileSystemController::mkdir(const std::string& path) {
     fileOperations->makeDirectory(path);
 }
 
-void FileSystemController::rm(const std::string& file) {
-
+void FileSystemController::rm(const std::string& path) {
+    fileOperations->removeFile(path);
 }
 
 void FileSystemController::mv(const std::string& file, const std::string& path) {
@@ -189,7 +189,7 @@ INode FileSystemController::getINodeFromAddress(uint64_t nodeAddress) {
     return node;
 }
 
-uint64_t FileSystemController::getNodeAddress(INode& node) {
+uint64_t FileSystemController::getINodeAddress(INode& node) {
     return memoryAllocator->getNodeAddress(node);
 }
 
@@ -197,8 +197,8 @@ INode FileSystemController::getFreeINode(bool isFolder) {
     return memoryAllocator->getINode(isFolder);
 }
 
-void FileSystemController::append(INode& parent, FolderItem child) {
-    nodeIO->append(parent, child);
+void FileSystemController::appendFolder(INode& parent, FolderItem child) {
+    nodeIO->appendFolderItem(parent, child);
 }
 
 void FileSystemController::reclaimINode(INode& node) {
@@ -215,6 +215,19 @@ void FileSystemController::linkFolderToParent(INode& child, uint64_t childAddres
 
 void FileSystemController::printINodeInfo(INode& node) {
     nodeIO->printINodeInfo(node);
+}
+
+void FileSystemController::removeFolderItem(INode& node, FolderItem& folderItem) {
+    nodeIO->removeFolderItem(node, folderItem);
+}
+
+void
+FileSystemController::appendFile(INode& parent, INode& child, FolderItem& folderItem, FileStream& externalFileStream) {
+    nodeIO->appendFile(parent, child, folderItem, externalFileStream);
+}
+
+std::vector<uint64_t> FileSystemController::nextNBlocks(uint32_t n, AddressType addressType) {
+    return memoryAllocator->getNDataBlocks(n, addressType);
 }
 
 

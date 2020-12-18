@@ -38,10 +38,10 @@ namespace Globals {
 
     static uint64_t INODE_SIZE_BYTES() {
         return sizeof(bool) //folder
-        + 2 * sizeof(uint32_t) // id, size
-        + 2 * sizeof(uint64_t) // timestamp, refcount
-        + Globals::T0_ADDRESS_LIST_SIZE * sizeof(uint64_t) // prime adresy
-        + 2 * sizeof(uint64_t); // t1 a t2 adresy
+               + 2 * sizeof(uint32_t) // id, size
+               + 2 * sizeof(uint64_t) // timestamp, refcount
+               + Globals::T0_ADDRESS_LIST_SIZE * sizeof(uint64_t) // prime adresy
+               + 2 * sizeof(uint64_t); // t1 a t2 adresy
 
     }
 
@@ -91,6 +91,13 @@ namespace Globals {
     static const std::string CURRENT_FOLDER_SYMBOL = ".";
     static const std::string PARENT_FOLDER_SYMBOL = "..";
 
+
+    uint64_t MAX_FILE_SIZE_BYTES() {
+        return (T0_ADDRESS_LIST_SIZE * FOLDER_ITEMS_PER_BLOCK() + // prime linky
+                FOLDER_ITEMS_PER_BLOCK() * POINTERS_PER_BLOCK() + // 1. neprimy odkaz
+                POINTERS_PER_BLOCK() * POINTERS_PER_BLOCK() + FOLDER_ITEMS_PER_BLOCK() // 2. neprimy odkaz
+               ) * FOLDER_ITEM_SIZE_BYTES; // x velikost v bytech
+    }
 }
 
 #endif //GLOBALS_HPP

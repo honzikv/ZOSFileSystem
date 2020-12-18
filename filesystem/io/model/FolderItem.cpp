@@ -26,14 +26,6 @@ void FolderItem::validateFileName(const std::string& input) {
         );
     }
 
-    auto trailingZeros = Globals::FILE_NAME_CHAR_ARRAY_LENGTH - input.length();
-    itemName = std::vector(input.begin(), input.end());
-
-    // doplneni \0 do maximalni velikosti nazvu
-    for (auto i = 0; i < trailingZeros; i++) {
-        itemName.push_back((char) 0);
-    }
-
 }
 
 FolderItem::FolderItem(const std::string& itemName, uint64_t nodeAddress, bool isFolder) : nodeAddress(nodeAddress) {

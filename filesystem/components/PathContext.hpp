@@ -34,7 +34,7 @@ class PathContext {
        * Presune se do dane cesty a nebo vyhodi exception, pokud cesta neexistuje
        * @param path dana cesta
        */
-      void moveToPath(FileSystemPath& path);
+      void moveTo(FileSystemPath& path);
 
       void loadItems();
 
