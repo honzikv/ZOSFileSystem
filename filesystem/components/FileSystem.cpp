@@ -86,10 +86,14 @@ void FileSystem::execute(const std::vector<std::string>& commandWithArguments) {
         }
         fileSystemController->pwd();
     } else if (command == "info") {
-        if (args.size() != 1) {
+        if (args.size() > 1) {
             throw FSException(INCORRECT_NUM_PARAMS + "\"info\"");
         }
-        fileSystemController->info(args[0]);
+        if (args.empty()) {
+            fileSystemController->info("");
+        } else {
+            fileSystemController->info(args[0]);
+        }
     } else if (command == "incp") {
         if (args.size() != 2) {
             throw FSException(INCORRECT_NUM_PARAMS + "\"incp\"");
