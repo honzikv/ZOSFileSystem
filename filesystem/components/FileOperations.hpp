@@ -43,6 +43,8 @@ class FileOperations {
 
       void copyIntoFileSystem(const std::string& outPath, const std::string& path);
 
+      void readFile(const std::string& path);
+
       /**
        * Zmeni aktualni adresar
        * @param path

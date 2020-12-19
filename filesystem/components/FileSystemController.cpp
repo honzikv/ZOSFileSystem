@@ -108,7 +108,7 @@ void FileSystemController::cd(const std::string& path) {
 }
 
 void FileSystemController::cat(const std::string& file) {
-
+    fileOperations->readFile(file);
 }
 
 void FileSystemController::ls(const std::string& path) {
@@ -228,6 +228,10 @@ FileSystemController::appendFile(INode& parent, INode& child, FolderItem& folder
 
 std::vector<uint64_t> FileSystemController::nextNBlocks(uint32_t n, AddressType addressType) {
     return memoryAllocator->getNDataBlocks(n, addressType);
+}
+
+void FileSystemController::readFile(INode& node) {
+    nodeIO->readFile(node);
 }
 
 

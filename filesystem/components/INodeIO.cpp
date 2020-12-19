@@ -77,9 +77,11 @@ void INodeIO::appendFile(INode& parent, INode& node, FolderItem& folderItem, Fil
     for (auto currentBlock = 0; currentBlock < dataBlocksRequired; currentBlock += 1) {
         if (bytesRemaining < Globals::BLOCK_SIZE_BYTES) {
             buffer = std::vector<char>(bytesRemaining, '\0');
+            bytesRemaining = 0;
+        } else {
+            bytesRemaining -= Globals::BLOCK_SIZE_BYTES;
         }
         externalFileStream.readVector(buffer); // precteme velikost bloku ze souboru
-        bytesRemaining -= Globals::BLOCK_SIZE_BYTES;
 
         if (currentBlock < Globals::T0_ADDRESS_LIST_SIZE) { // pokud je blok primy odkaz
             node.t0AddressList[currentBlock] = dataBlocks[currentBlock];
@@ -108,6 +110,7 @@ void INodeIO::appendFile(INode& parent, INode& node, FolderItem& folderItem, Fil
             auto t2Row = relativeBlock / Globals::POINTERS_PER_BLOCK();
             auto t1Row = relativeBlock % Globals::POINTERS_PER_BLOCK();
 
+
             if (t1Row == 0) {
                 fileStream.moveTo(node.t2Address + t2Row * Globals::POINTER_SIZE_BYTES);
                 fileStream.write(pointerBlocks[pointerBlockIndex]);
@@ -119,10 +122,10 @@ void INodeIO::appendFile(INode& parent, INode& node, FolderItem& folderItem, Fil
             fileStream.read(t1Address);
 
             fileStream.moveTo(t1Address + t1Row * Globals::POINTER_SIZE_BYTES);
-            fileStream.write(currentBlock);
+            fileStream.write(dataBlocks[currentBlock]);
 
-            fileStream.moveTo(currentBlock);
-            fileStream.write(buffer);
+            fileStream.moveTo(dataBlocks[currentBlock]);
+            fileStream.writeVector(buffer);
         }
     }
     node.size = bytes;
@@ -233,16 +236,6 @@ std::vector<FolderItem> INodeIO::getFolderItems(INode& node) {
     return result;
 }
 
-
-void INodeIO::readFromBlockAddress(std::vector<FolderItem>& folderItems, uint64_t address) {
-    auto blockItems = fileStream.readFolderItemBlock(address);
-    folderItems.insert(folderItems.end(), blockItems.begin(), blockItems.end());
-}
-
-void INodeIO::readNFolderItems(std::vector<FolderItem>& folderItems, uint64_t blockAddress, uint32_t count) {
-    auto blockItems = fileStream.readNFolderItems(blockAddress, count);
-    folderItems.insert(folderItems.end(), blockItems.begin(), blockItems.end());
-}
 
 void INodeIO::readFromDirectBlocks(std::vector<uint64_t> addressList, uint32_t count, std::vector<FolderItem>& result) {
     auto fullBlocks = count / Globals::FOLDER_ITEMS_PER_BLOCK();
@@ -481,11 +474,65 @@ uint64_t INodeIO::getExtraBlocks(uint64_t bytes) {
     }
 
     remainingBytes -= Globals::T1_POINTER_CAPACITY_BYTES();
-    auto t1Blocks = remainingBytes % Globals::T1_POINTER_CAPACITY_BYTES() == 0 ?
-                    remainingBytes / Globals::T1_POINTER_CAPACITY_BYTES() :
-                    remainingBytes / Globals::T1_POINTER_CAPACITY_BYTES() + 1;
+    uint64_t t1Blocks;
+    t1Blocks = remainingBytes % Globals::T1_POINTER_CAPACITY_BYTES() == 0 ?
+               remainingBytes / Globals::T1_POINTER_CAPACITY_BYTES() :
+               remainingBytes / Globals::T1_POINTER_CAPACITY_BYTES() + 1;
 
-    return t1Blocks + 1; // + 1 t2 blok
+    return t1Blocks + 2; // + 1 t2 blok + t1 blok pro INode
+}
+
+void INodeIO::readFile(INode& node) {
+    auto bytes = node.size;
+    auto blockCount = Globals::getBlockCount(bytes);
+    auto remainingBytes = bytes;
+
+    auto buffer = std::vector<char>(Globals::BLOCK_SIZE_BYTES, '\0');
+    for (auto currentBlock = 0; currentBlock < blockCount; currentBlock += 1) {
+        if (remainingBytes < Globals::BLOCK_SIZE_BYTES) {
+            buffer = std::vector<char>(remainingBytes, '\0');
+            remainingBytes = 0;
+        } else {
+            remainingBytes -= Globals::BLOCK_SIZE_BYTES;
+        }
+
+        if (currentBlock < Globals::T0_ADDRESS_LIST_SIZE) {
+            fileStream.moveTo(node.t0AddressList[currentBlock]);
+            fileStream.readVector(buffer);
+        } else if (currentBlock - Globals::T0_ADDRESS_LIST_SIZE < Globals::POINTERS_PER_BLOCK()) {
+            auto t1Row = currentBlock - Globals::T0_ADDRESS_LIST_SIZE;
+
+            uint64_t address;
+            fileStream.moveTo(node.t1Address + t1Row * Globals::POINTER_SIZE_BYTES);
+            fileStream.read(address);
+            fileStream.moveTo(address);
+            fileStream.readVector(buffer);
+        } else {
+            auto relativeIndex = currentBlock - Globals::T0_ADDRESS_LIST_SIZE - Globals::POINTERS_PER_BLOCK();
+            auto t2Row = relativeIndex / Globals::POINTERS_PER_BLOCK();
+            auto t1Row = t2Row % Globals::POINTERS_PER_BLOCK();
+
+            uint64_t t1Address;
+            fileStream.moveTo(node.t2Address + t2Row * Globals::POINTER_SIZE_BYTES);
+            fileStream.read(t1Address);
+
+            uint64_t blockAddress;
+            fileStream.moveTo(t1Address + t1Row * Globals::POINTER_SIZE_BYTES);
+            fileStream.read(blockAddress);
+
+            fileStream.moveTo(blockAddress);
+            fileStream.readVector(buffer);
+        }
+
+        printBuffer(buffer);
+    }
+
+    std::cout << std::endl;
+}
+
+void INodeIO::printBuffer(std::vector<char> vector) {
+    auto text = std::string(vector.data());
+    std::cout << text << std::flush;
 }
 
 

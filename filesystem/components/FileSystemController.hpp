@@ -111,6 +111,8 @@ class FileSystemController {
       void appendFile(INode& parent, INode& child, FolderItem& folderItem, FileStream& externalFileStream);
 
       std::vector<uint64_t> nextNBlocks(uint32_t n, AddressType addressType);
+
+      void readFile(INode& node);
 };
 
 

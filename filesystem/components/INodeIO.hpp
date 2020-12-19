@@ -32,6 +32,8 @@ class INodeIO {
 
       void removeFolderItem(INode& node, FolderItem& folderItem);
 
+      void readFile(INode& node);
+
     private:
       void readFromBlockAddress(std::vector<FolderItem>& folderItems, uint64_t address);
 
@@ -59,6 +61,8 @@ class INodeIO {
       void writeAt(INode& node, uint32_t index, FolderItem& folderItem);
 
       uint64_t getExtraBlocks(uint64_t bytes);
+
+      static void printBuffer(std::vector<char> vector);
 };
 
 #endif //INODEIO_HPP
