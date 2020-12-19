@@ -40,6 +40,8 @@ class FileStream {
        */
       void open();
 
+      void openAppendOnly();
+
       /**
        * Manualne zavre fstream, tuto funkci neni nutno volat na konci programu protoze fstream je RAII, tzn stream
        * se zavre sam po smazani tohoto objektu

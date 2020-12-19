@@ -15,6 +15,10 @@ void FileStream::open() {
     fstream.open(filePath, std::ios::binary | std::ios::in | std::ios::out);
 }
 
+void FileStream::openAppendOnly() {
+    fstream.open(filePath, std::ios::binary | std::ios::out | std::ios::app);
+}
+
 void FileStream::createFileIfNotExists(const std::filesystem::path& filePath) {
     if (filePath.has_parent_path()) {
         auto folders = filePath.parent_path();
@@ -158,4 +162,5 @@ long FileStream::getReadPosition() {
 FileStream::~FileStream() {
     fstream.flush();
 }
+
 

@@ -272,11 +272,11 @@ void FileOperations::copyIntoFileSystem(const std::string& outPath, const std::s
         throw FSException("Error, specified file does not exist!");
     }
 
-    outputFileStream.open();
     if (outputFileStream.getFileSize() > Globals::MAX_FILE_SIZE_BYTES()) {
         throw FSException("Error, file is too large");
     }
 
+    outputFileStream.open();
     auto fsPath = FileSystemPath(path);
     auto absolutePath = pathContext->absolutePath;
     auto fileName = fsPath.releaseBack();
@@ -353,7 +353,7 @@ void FileOperations::exportFromFileSystem(const std::string& path, const std::st
     }
 
     outputFileStream.createFile();
-    outputFileStream.open();
+    outputFileStream.openAppendOnly();
 
     auto fsPath = FileSystemPath(path);
     auto file = fsPath.releaseBack();

@@ -76,10 +76,11 @@ void INodeIO::appendFile(INode& parent, INode& node, FolderItem& folderItem, Fil
     externalFileStream.moveTo(0);
     for (auto currentBlock = 0; currentBlock < dataBlocksRequired; currentBlock += 1) {
         if (bytesRemaining < Globals::BLOCK_SIZE_BYTES) {
+            // pokud zbyva mene bytu nez je velikost bloku musime precist mensi mnozstvi (jinak se fstream rozbije)
             buffer = std::vector<char>(bytesRemaining, '\0');
             bytesRemaining = 0;
         } else {
-            bytesRemaining -= Globals::BLOCK_SIZE_BYTES;
+            bytesRemaining -= Globals::BLOCK_SIZE_BYTES; // odecteme velikost bloku
         }
         externalFileStream.readVector(buffer); // precteme velikost bloku ze souboru
 
@@ -484,9 +485,6 @@ uint64_t INodeIO::getExtraBlocks(uint64_t bytes) {
 
 
 void INodeIO::exportFile(INode& node, FileStream& outputFileStream) {
-    outputFileStream.moveTo(0);
-    outputFileStream.format(node.size);
-    outputFileStream.moveTo(0);
     auto bytes = node.size;
     auto blockCount = Globals::getBlockCount(bytes);
     auto remainingBytes = bytes;
@@ -514,7 +512,7 @@ void INodeIO::exportFile(INode& node, FileStream& outputFileStream) {
         } else {
             auto relativeIndex = currentBlock - Globals::T0_ADDRESS_LIST_SIZE - Globals::POINTERS_PER_BLOCK();
             auto t2Row = relativeIndex / Globals::POINTERS_PER_BLOCK();
-            auto t1Row = t2Row % Globals::POINTERS_PER_BLOCK();
+            auto t1Row = relativeIndex % Globals::POINTERS_PER_BLOCK();
 
             uint64_t t1Address;
             fileStream.moveTo(node.t2Address + t2Row * Globals::POINTER_SIZE_BYTES);
@@ -561,7 +559,7 @@ void INodeIO::readFile(INode& node) {
         } else {
             auto relativeIndex = currentBlock - Globals::T0_ADDRESS_LIST_SIZE - Globals::POINTERS_PER_BLOCK();
             auto t2Row = relativeIndex / Globals::POINTERS_PER_BLOCK();
-            auto t1Row = t2Row % Globals::POINTERS_PER_BLOCK();
+            auto t1Row = relativeIndex % Globals::POINTERS_PER_BLOCK();
 
             uint64_t t1Address;
             fileStream.moveTo(node.t2Address + t2Row * Globals::POINTER_SIZE_BYTES);
@@ -585,8 +583,3 @@ void INodeIO::printBuffer(std::vector<char> vector) {
     auto text = std::string(vector.data());
     std::cout << text << std::flush;
 }
-
-
-
-
-
