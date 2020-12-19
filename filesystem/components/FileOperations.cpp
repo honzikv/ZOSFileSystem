@@ -345,3 +345,48 @@ void FileOperations::readFile(const std::string& path) {
     }
 }
 
+void FileOperations::exportFromFileSystem(const std::string& path, const std::string& exportPath) {
+    auto outputFileStream = FileStream(exportPath);
+
+    if (outputFileStream.fileExists()) {
+        throw FSException("Error, file already exists!");
+    }
+
+    outputFileStream.createFile();
+    outputFileStream.open();
+
+    auto fsPath = FileSystemPath(path);
+    auto file = fsPath.releaseBack();
+
+    auto absolutePath = pathContext->absolutePath;
+    if (fsPath.size() > 0) {
+        pathContext->moveTo(fsPath);
+        pathContext->loadItems();
+    }
+
+    auto folderItemIndex = pathContext->getFolderItemIndex(file);
+    if (folderItemIndex == -1) {
+        throw FSException("Error, file not found");
+    }
+
+    auto folderItem = pathContext->folderItems[folderItemIndex];
+    auto nodeAddress = folderItem.nodeAddress;
+    auto node = fileSystemController.getINodeFromAddress(nodeAddress);
+
+    if (node.isFolder()) {
+        throw FSException("Error, specified file is a folder");
+    }
+
+    try {
+        fileSystemController.exportFile(node, outputFileStream);
+    }
+    catch (FSException& ex) {
+        restorePathContextState(absolutePath);
+        throw FSException(ex.what());
+    }
+
+    if (fsPath.size() > 0) {
+        restorePathContextState(absolutePath);
+    }
+}
+

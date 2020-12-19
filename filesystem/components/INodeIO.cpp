@@ -482,6 +482,57 @@ uint64_t INodeIO::getExtraBlocks(uint64_t bytes) {
     return t1Blocks + 2; // + 1 t2 blok + t1 blok pro INode
 }
 
+
+void INodeIO::exportFile(INode& node, FileStream& outputFileStream) {
+    outputFileStream.moveTo(0);
+    outputFileStream.format(node.size);
+    outputFileStream.moveTo(0);
+    auto bytes = node.size;
+    auto blockCount = Globals::getBlockCount(bytes);
+    auto remainingBytes = bytes;
+
+    auto buffer = std::vector<char>(Globals::BLOCK_SIZE_BYTES, '\0');
+    for (auto currentBlock = 0; currentBlock < blockCount; currentBlock += 1) {
+        if (remainingBytes < Globals::BLOCK_SIZE_BYTES) {
+            buffer = std::vector<char>(remainingBytes, '\0');
+            remainingBytes = 0;
+        } else {
+            remainingBytes -= Globals::BLOCK_SIZE_BYTES;
+        }
+
+        if (currentBlock < Globals::T0_ADDRESS_LIST_SIZE) {
+            fileStream.moveTo(node.t0AddressList[currentBlock]);
+            fileStream.readVector(buffer);
+        } else if (currentBlock - Globals::T0_ADDRESS_LIST_SIZE < Globals::POINTERS_PER_BLOCK()) {
+            auto t1Row = currentBlock - Globals::T0_ADDRESS_LIST_SIZE;
+
+            uint64_t address;
+            fileStream.moveTo(node.t1Address + t1Row * Globals::POINTER_SIZE_BYTES);
+            fileStream.read(address);
+            fileStream.moveTo(address);
+            fileStream.readVector(buffer);
+        } else {
+            auto relativeIndex = currentBlock - Globals::T0_ADDRESS_LIST_SIZE - Globals::POINTERS_PER_BLOCK();
+            auto t2Row = relativeIndex / Globals::POINTERS_PER_BLOCK();
+            auto t1Row = t2Row % Globals::POINTERS_PER_BLOCK();
+
+            uint64_t t1Address;
+            fileStream.moveTo(node.t2Address + t2Row * Globals::POINTER_SIZE_BYTES);
+            fileStream.read(t1Address);
+
+            uint64_t blockAddress;
+            fileStream.moveTo(t1Address + t1Row * Globals::POINTER_SIZE_BYTES);
+            fileStream.read(blockAddress);
+
+            fileStream.moveTo(blockAddress);
+            fileStream.readVector(buffer);
+        }
+
+        outputFileStream.writeVector(buffer);
+    }
+}
+
+
 void INodeIO::readFile(INode& node) {
     auto bytes = node.size;
     auto blockCount = Globals::getBlockCount(bytes);

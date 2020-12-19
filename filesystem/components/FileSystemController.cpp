@@ -87,8 +87,8 @@ uint64_t FileSystemController::nextBlock(AddressType type) {
     return memoryAllocator->getDataBlock(type);
 }
 
-void FileSystemController::outcp(const std::string& fileIn, const std::string& fileOut) {
-
+void FileSystemController::outcp(const std::string& path, const std::string& exportPath) {
+    fileOperations->exportFromFileSystem(path, exportPath);
 }
 
 void FileSystemController::incp(const std::string& readPath, const std::string& path) {
@@ -232,6 +232,10 @@ std::vector<uint64_t> FileSystemController::nextNBlocks(uint32_t n, AddressType 
 
 void FileSystemController::readFile(INode& node) {
     nodeIO->readFile(node);
+}
+
+void FileSystemController::exportFile(INode& node, FileStream& outputFileStream) {
+    nodeIO->exportFile(node, outputFileStream);
 }
 
 

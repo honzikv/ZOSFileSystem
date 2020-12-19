@@ -45,6 +45,8 @@ class FileOperations {
 
       void readFile(const std::string& path);
 
+      void exportFromFileSystem(const std::string& path, const std::string& exportPath);
+
       /**
        * Zmeni aktualni adresar
        * @param path

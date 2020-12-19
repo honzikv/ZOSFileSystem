@@ -76,7 +76,7 @@ class FileSystemController {
 
       void incp(const std::string& readPath, const std::string& path);
 
-      void outcp(const std::string& fileIn, const std::string& fileOut);
+      void outcp(const std::string& path, const std::string& exportPath);
 
       uint64_t nextBlock(AddressType type);
 
@@ -113,6 +113,8 @@ class FileSystemController {
       std::vector<uint64_t> nextNBlocks(uint32_t n, AddressType addressType);
 
       void readFile(INode& node);
+
+      void exportFile(INode& node, FileStream& outputFileStream);
 };
 
 
