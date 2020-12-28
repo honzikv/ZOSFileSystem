@@ -6,9 +6,9 @@ MemoryAllocator::MemoryAllocator(std::shared_ptr<SuperBlock> superBlock, FileStr
         fileStream) {
     this->superBlock = superBlock;
     blockBitmap = std::make_shared<Bitmap>(superBlock->blockBitmapAddress, superBlock->blockCount,
-                                           superBlock->dataAddress, Globals::BLOCK_SIZE_BYTES, fileStream);
+                                           superBlock->dataAddress, Globals::BLOCK_SIZE_BYTES, fileStream, "blockBitmap");
     nodeBitmap = std::make_shared<Bitmap>(superBlock->nodeBitmapAddress, superBlock->nodeCount, superBlock->nodeAddress,
-                                          Globals::INODE_SIZE_BYTES(), fileStream);
+                                          Globals::INODE_SIZE_BYTES(), fileStream, "nodeBitmap");
 }
 
 void MemoryAllocator::update(INode& node) {
@@ -77,13 +77,13 @@ uint64_t MemoryAllocator::getDataBlock(AddressType addressType) {
 }
 
 INode MemoryAllocator::getINode(bool isFolder) {
-    auto nodeAddress = blockBitmap->getFirstEmptyAddress();
-    auto id = blockBitmap->getIdFromAddress(nodeAddress);
+    auto nodeAddress = nodeBitmap->getFirstEmptyAddress();
+    auto id = nodeBitmap->getIdFromAddress(nodeAddress);
     auto result = INode();
     result.setId(id);
     result.setFolder(isFolder);
     result.setTimestamp(std::chrono::system_clock::now().time_since_epoch().count());
-    blockBitmap->setAddress(nodeAddress, false);
+    nodeBitmap->setAddress(nodeAddress, false);
     return result;
 }
 
