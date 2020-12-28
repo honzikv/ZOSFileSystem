@@ -123,18 +123,15 @@ void FileOperations::changeDirectory(const std::string& path) {
     auto fsPath = FileSystemPath(path);
     auto absolutePath = pathContext->absolutePath; // kopie pro pripad ze se zmena slozky nezdari
 
-    if (fsPath.getPathType() == PathType::Absolute) {
-        pathContext->moveToRoot();
-    }
-
     try {
         pathContext->moveTo(fsPath);
     }
     catch (FSException& ex) {
+        restorePathContextState(absolutePath);
         std::cout << ex.what() << std::endl;
     }
 
-    restorePathContextState(absolutePath);
+    pathContext->loadItems();
 }
 
 std::string FileOperations::getFolderName(uint64_t nodeAddress, const std::vector<FolderItem>& folderItems) {
