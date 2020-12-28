@@ -205,6 +205,10 @@ void FileOperations::removeDirectory(const std::string& path) {
     auto fsPath = FileSystemPath(path);
     auto folder = fsPath.releaseBack();
 
+    if (folder == ".") {
+        throw FSException("Failed to remove '.', invalid argument");
+    }
+
     auto absolutePath = pathContext->absolutePath;
     if (fsPath.size() > 0) {
         pathContext->moveTo(fsPath);
