@@ -223,16 +223,15 @@ void FileOperations::removeDirectory(const std::string& path) {
         throw FSException("Error, cannot remove file with \"rmdir\" command");
     }
 
-    if (folderNode.getFolderSize() != 0) {
+    // slozku lze smazat pouze, kdyz v ni je '.' a '..' - tzn. 2 predmety
+    if (folderNode.getFolderSize() != 2) {
         throw FSException("Error, folder is not empty");
     }
 
     auto parent = pathContext->absolutePath.back();
     fileSystemController.removeFolderItem(parent, folderItem);
 
-    folderNode.decreaseRefCount();
-    if (folderNode.getRefCount() == 1) {
-        // todo 0 | 1
+    if (folderNode.getRefCount() == 0) {
         fileSystemController.reclaimINode(folderNode);
     }
 

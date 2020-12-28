@@ -25,6 +25,16 @@ void FileSystem::execute(const std::vector<std::string>& commandWithArguments) {
         args = std::vector<std::string>(commandWithArguments.begin() + 1, commandWithArguments.end());
     }
 
+    if (command == "debugblockbitmap") {
+        fileSystemController->debugBlockBitmap();
+        return;
+    }
+
+    if (command == "debugnodebitmap") {
+        fileSystemController->debugNodeBitmap();
+        return;
+    }
+
     if (command == "format") {
         if (args.size() > 2 || args.empty()) {
             throw FSException(INCORRECT_NUM_PARAMS + "\"format\"");

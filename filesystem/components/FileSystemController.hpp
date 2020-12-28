@@ -78,6 +78,10 @@ class FileSystemController {
 
       void outcp(const std::string& path, const std::string& exportPath);
 
+      void debugBlockBitmap();
+
+      void debugNodeBitmap();
+
       uint64_t nextBlock(AddressType type);
 
       void reclaimMemory(std::vector<uint64_t>& memoryBlocks);

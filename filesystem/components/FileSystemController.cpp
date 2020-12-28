@@ -238,4 +238,12 @@ void FileSystemController::exportFile(INode& node, FileStream& outputFileStream)
     nodeIO->exportFile(node, outputFileStream);
 }
 
+void FileSystemController::debugBlockBitmap() {
+    memoryAllocator->debugBlockBitmap();
+}
+
+void FileSystemController::debugNodeBitmap() {
+    memoryAllocator->debugNodeBitmap();
+}
+
 

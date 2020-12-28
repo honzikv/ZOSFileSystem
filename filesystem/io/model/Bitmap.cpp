@@ -80,7 +80,9 @@ void Bitmap::setAddress(uint64_t address, bool empty) {
 
     auto bitSet = std::bitset<8>(bitmap[bitmapIndex]);
     bitSet[bit] = !empty;
+    std::cout << +bitmap[bitmapIndex] << std::endl;
     uint8_t byteValue = bitSet.to_ulong();
+    std::cout << +byteValue << std::endl;
     bitmap[bitmapIndex] = byteValue;
     updateBitmap(bitmapIndex, byteValue);
 }
@@ -97,4 +99,13 @@ uint8_t Bitmap::getFirstEmptyBit(uint8_t byte) {
 
 uint64_t Bitmap::getIdFromAddress(uint64_t itemAddress) const {
     return (itemAddress - objectStartAddress) / objectSizeBytes;
+}
+
+void Bitmap::debug() {
+    std::cout << "BITMAP start address: " << bitmapStartAddress << std::endl;
+    for (auto i = 0; i < bitmap.size(); i += 1) {
+        if (bitmap[i] != 0x00) {
+            std::cout << "Non empty byte at ( " << i << " ): " << +bitmap[i] << std::endl;
+        }
+    }
 }

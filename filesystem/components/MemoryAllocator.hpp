@@ -55,6 +55,14 @@ class MemoryAllocator {
       void freeINode(INode& node);
 
       INode getINodeWithId(uint32_t nodeId);
+
+      void debugNodeBitmap() {
+          nodeBitmap->debug();
+      }
+
+      void debugBlockBitmap() {
+          blockBitmap->debug();
+      }
 };
 
 

@@ -51,6 +51,8 @@ class Bitmap {
        * @param index index objektu - inode nebo blok
        */
       void getEmptyPositions(std::vector<uint8_t>& positions, uint32_t index);
+
+      void debug();
 };
 
 
