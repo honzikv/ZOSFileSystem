@@ -246,4 +246,8 @@ void FileSystemController::debugNodeBitmap() {
     memoryAllocator->debugNodeBitmap();
 }
 
+void FileSystemController::copyData(INode source, INode dest) {
+    nodeIO->copyData(source, dest);
+}
+
 

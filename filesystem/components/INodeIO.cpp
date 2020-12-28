@@ -191,7 +191,7 @@ void INodeIO::appendFolderItem(INode& node, FolderItem& folderItem, bool increas
         fileSystemController.reclaimMemory(blockAllocations);
         // neni potreba dale nijak upravovat INode, protoze se INode v souboru neaktualizuje pokud nekdy v prubehu vyhodi
         // memory allocator FSException ze doslo misto
-        throw FSException("FolderItem could not have been added");
+        throw FSException("Error, not enough memory");
     }
 }
 
@@ -582,4 +582,8 @@ void INodeIO::readFile(INode& node) {
 void INodeIO::printBuffer(std::vector<char> vector) {
     auto text = std::string(vector.data());
     std::cout << text << std::flush;
+}
+
+void INodeIO::copyData(INode& source, INode& dest) {
+
 }

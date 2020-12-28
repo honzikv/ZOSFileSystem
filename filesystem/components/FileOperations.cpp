@@ -587,6 +587,7 @@ void FileOperations::copyFile(const std::string& fileSource, const std::string& 
         throw FSException(ex.what());
     }
 
+    // ziskani nove inode
     auto newFileNode = fileSystemController.getFreeINode(false);
     auto newFileNodeAddress = fileSystemController.getINodeAddress(newFileNode);
     auto newFolderItem = FolderItem(destFileName, newFileNodeAddress);
@@ -596,9 +597,28 @@ void FileOperations::copyFile(const std::string& fileSource, const std::string& 
     if (newParent.isFolderFull()) {
         fileSystemController.reclaimINode(newFileNode);
         restorePathContextState(absolutePath);
+        throw FSException("Error, folder is full");
+    }
+
+    if (pathContext->folderItemExists(destFileName)) {
+        fileSystemController.reclaimINode(newFileNode);
+        restorePathContextState(absolutePath);
+        throw FSException("Error, file with this name exists");
     }
 
     pathContext->moveTo(destPath);
+
+    try {
+        fileSystemController.appendFolderItem(newParent, newFolderItem);
+        fileSystemController.copyData(fileNode, newFileNode);
+    }
+    catch (FSException& ex) {
+        restorePathContextState(absolutePath);
+        fileSystemController.reclaimINode(newFileNode);
+        throw FSException(ex.what());
+    }
+
+
 
 }
 

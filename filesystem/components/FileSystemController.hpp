@@ -119,6 +119,8 @@ class FileSystemController {
       void readFile(INode& node);
 
       void exportFile(INode& node, FileStream& outputFileStream);
+
+      void copyData(INode source, INode dest);
 };
 
 

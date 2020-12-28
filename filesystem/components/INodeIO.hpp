@@ -36,6 +36,8 @@ class INodeIO {
 
       void exportFile(INode& node, FileStream& outputFileStream);
 
+      void copyData(INode& source, INode& dest);
+
     private:
       void readFromBlockAddress(std::vector<FolderItem>& folderItems, uint64_t address);
 
