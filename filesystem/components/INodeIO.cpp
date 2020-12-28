@@ -285,8 +285,8 @@ void INodeIO::readFromT2Address(uint64_t t2Address, uint32_t itemCount, const st
 }
 
 void INodeIO::linkFolderToParent(INode& current, uint64_t currentNodeAddress, uint64_t parentNodeAddress) {
-    auto dot = FolderItem(Globals::CURRENT_FOLDER_SYMBOL, currentNodeAddress, true);
-    auto dotDot = FolderItem(Globals::PARENT_FOLDER_SYMBOL, parentNodeAddress, true);
+    auto dot = FolderItem(Globals::CURRENT_FOLDER_SYMBOL, currentNodeAddress);
+    auto dotDot = FolderItem(Globals::PARENT_FOLDER_SYMBOL, parentNodeAddress);
     appendFolderItem(current, dot, false);
     appendFolderItem(current, dotDot, false);
 }
@@ -458,7 +458,7 @@ void INodeIO::removeLast(INode& node) {
     }
 
     fileSystemController.reclaimMemory(deallocations); // smazani vsech bloku, ktere jsme oznacili pri odstranovani
-    node.refCount -= 1; // snizeni refCountu
+    node.refCount -= 1; // snizeni poctu referenci
     node.size -= 1; // snizeni velikosti slozky
 
 }

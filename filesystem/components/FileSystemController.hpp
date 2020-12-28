@@ -98,7 +98,7 @@ class FileSystemController {
 
       INode getFreeINode(bool isFolder);
 
-      void appendFolder(INode& parent, FolderItem child);
+      void appendFolderItem(INode& parent, FolderItem child);
 
       void reclaimINode(INode& node);
 
@@ -112,7 +112,7 @@ class FileSystemController {
 
       void removeFolderItem(INode& node, FolderItem& folderItem);
 
-      void appendFile(INode& parent, INode& child, FolderItem& folderItem, FileStream& externalFileStream);
+      void appendExternalFile(INode& parent, INode& child, FolderItem& folderItem, FileStream& externalFileStream);
 
       std::vector<uint64_t> nextNBlocks(uint32_t n, AddressType addressType);
 

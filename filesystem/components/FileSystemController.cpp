@@ -128,7 +128,7 @@ void FileSystemController::rm(const std::string& path) {
 }
 
 void FileSystemController::mv(const std::string& file, const std::string& path) {
-
+    fileOperations->moveFile(file, path, true);
 }
 
 void FileSystemController::cp(const std::string& file, const std::string& path) {
@@ -197,7 +197,7 @@ INode FileSystemController::getFreeINode(bool isFolder) {
     return memoryAllocator->getINode(isFolder);
 }
 
-void FileSystemController::appendFolder(INode& parent, FolderItem child) {
+void FileSystemController::appendFolderItem(INode& parent, FolderItem child) {
     nodeIO->appendFolderItem(parent, child);
 }
 
@@ -221,8 +221,8 @@ void FileSystemController::removeFolderItem(INode& node, FolderItem& folderItem)
     nodeIO->removeFolderItem(node, folderItem);
 }
 
-void
-FileSystemController::appendFile(INode& parent, INode& child, FolderItem& folderItem, FileStream& externalFileStream) {
+void FileSystemController::appendExternalFile(INode& parent, INode& child, FolderItem& folderItem,
+                                              FileStream& externalFileStream) {
     nodeIO->appendFile(parent, child, folderItem, externalFileStream);
 }
 

@@ -22,19 +22,12 @@ struct FolderItem {
 
     public:
 
-      FolderItem(const std::string& itemName, uint64_t nodeAddress, bool isFolder);
+      FolderItem(const std::string& itemName, uint64_t nodeAddress);
 
       /**
        * Konstruktor pro invalid folder item
        */
       FolderItem();
-
-      /**
-       * Vrati, zda-li je dany FolderItem invalid. To lze pouzit jako ukonceni pri iterovani po bloku
-       * @param folderItem reference na folder item
-       * @return true, pokud je folder item nevalidni - tzn. adresa nepointuje na zadnou inode, jinak false
-       */
-      [[nodiscard]] bool isEmpty() const;
 
       [[nodiscard]] std::string getItemName() const;
 

@@ -54,6 +54,10 @@ void PathContext::refresh() {
 }
 
 void PathContext::moveTo(FileSystemPath& path) {
+    if (path.getPathType() == PathType::Absolute) {
+        moveToRoot(false); // presuneme se na root pokud je cesta absolutni
+    }
+
     for (auto i = 0; i < path.size(); i++) {
         auto nextFolder = path[i];
 
@@ -74,6 +78,9 @@ void PathContext::moveTo(FileSystemPath& path) {
         INode nextFolderNode;
         try {
             nextFolderNode = fileOperations.getINodeFromAddress(nextFolderNodeAddress);
+            if (!nextFolderNode.isFolder()) {
+                throw FSException("Error, path contains file instead of a folder");
+            }
             absolutePath.push_back(nextFolderNode);
         }
         catch (FSException& ex) {

@@ -35,12 +35,7 @@ void FolderItem::validateFileName(const std::string& input) {
     }
 }
 
-FolderItem::FolderItem(const std::string& itemName, uint64_t nodeAddress, bool isFolder) : nodeAddress(nodeAddress) {
-    if (isFolder) {
-        validateFolderName(itemName);
-    } else {
-        validateFileName(itemName);
-    }
+FolderItem::FolderItem(const std::string& itemName, uint64_t nodeAddress) : nodeAddress(nodeAddress) {
     this->itemName = std::vector<char>(itemName.begin(), itemName.end());
     auto paddingBytes = Globals::FILE_NAME_CHAR_ARRAY_LENGTH - itemName.size();
     for (auto i = 0; i < paddingBytes; i++) {
@@ -69,10 +64,6 @@ std::string FolderItem::getItemName() const {
 
 uint64_t FolderItem::getNodeAddress() const {
     return nodeAddress;
-}
-
-bool FolderItem::isEmpty() const {
-    return nodeAddress == Globals::INVALID_VALUE;
 }
 
 void FolderItem::validateFolderName(const std::string& input) {

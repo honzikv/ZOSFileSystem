@@ -59,6 +59,10 @@ class FileOperations {
 
       void getInfo(const std::string& path);
 
+      void moveFile(const std::string& fileSource, const std::string& fileDest, bool deleteFromSource);
+
+      void copyFile(const std::string& fileSource, const std::string& fileDest);
+
     private:
       INode getRoot();
 
@@ -73,7 +77,6 @@ class FileOperations {
        * @param absolutePath
        */
       void restorePathContextState(const std::vector<INode>& absolutePath);
-
 };
 
 
