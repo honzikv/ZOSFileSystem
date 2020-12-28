@@ -1,7 +1,5 @@
 #include <bitset>
-#include <utility>
 #include "Bitmap.hpp"
-#include "../../util/FSException.hpp"
 
 Bitmap::Bitmap(uint64_t bitmapStartAddress, uint32_t count, uint64_t objectStartAddress, uint64_t objectSizeBytes,
                FileStream& fileStream, std::string name) : bitmapStartAddress(bitmapStartAddress), fstream(fileStream),
@@ -12,18 +10,6 @@ Bitmap::Bitmap(uint64_t bitmapStartAddress, uint32_t count, uint64_t objectStart
 
     bitmap = std::vector<uint8_t>(bytes, 0);
     fileStream.readVector(bitmap);
-}
-
-bool Bitmap::setPosition(uint8_t value, uint32_t pos, FileStream& fileStream) {
-    auto index = pos / 8;
-    auto bit = pos % 8;
-    auto bitSet = std::bitset<8>(bitmap[index]);
-    bitSet[bit] = value;
-    auto byteValue = (uint8_t) bitSet.to_ulong();
-    bitmap[index] = byteValue;
-    fileStream.moveTo(bitmapStartAddress + pos / 8);
-    fileStream.write(byteValue);
-    return true;
 }
 
 
@@ -37,7 +23,6 @@ uint64_t Bitmap::getFirstEmptyAddress() {
     uint32_t index = -1;
     for (auto i = 0; i < bitmap.size(); i += 1) {
         if (bitmap[i] < 0xff) {
-            std::cout << name << "found empty byte on index: " << +i << std::endl;
             index = i;
             break;
         }
@@ -59,7 +44,6 @@ void Bitmap::setAddress(uint64_t address, bool empty) {
 
     bitSet[bit] = empty ? 0 : 1;
     uint8_t byteValue = bitSet.to_ulong();
-    std::cout << name <<   std::endl;
     bitmap[bitmapIndex] = byteValue;
     updateBitmap(bitmapIndex, byteValue);
 }
@@ -68,7 +52,6 @@ uint8_t Bitmap::getFirstEmptyBit(uint8_t byte) {
     auto bitSet = std::bitset<8>(byte);
     for (auto i = 0; i < bitSet.size(); i += 1) {
         if (bitSet[i] == 0) {
-            std::cout << name <<  " found empty bit: " << i << std::endl;
             return i;
         }
     }

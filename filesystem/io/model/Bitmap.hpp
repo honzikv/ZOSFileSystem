@@ -40,8 +40,6 @@ class Bitmap {
 
       [[nodiscard]] uint64_t getIdFromAddress(uint64_t itemAddress) const;
 
-      bool setPosition(uint8_t value, uint32_t pos, FileStream& fileStream);
-
       void debug();
 };
 

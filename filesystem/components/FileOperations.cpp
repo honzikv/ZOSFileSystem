@@ -232,7 +232,6 @@ void FileOperations::removeDirectory(const std::string& path) {
     fileSystemController.removeFolderItem(parent, folderItem);
 
     if (folderNode.getRefCount() == 0) {
-        std::cout << "ref count is zero, reclaiming inode" << std::endl;
         fileSystemController.reclaimINode(folderNode);
     }
 

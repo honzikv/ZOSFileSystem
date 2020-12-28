@@ -47,10 +47,7 @@ void MemoryAllocator::freeINode(INode& node) {
     fileStream.moveTo(nodeAddress);
     fileStream.writeINode(emptyNode); // update INode na disku
     nodeBitmap->setAddress(nodeAddress, true);
-
-    if (!node.isFolder()) {
-        freeMemory(node);
-    }
+    freeMemory(node);
 }
 
 void MemoryAllocator::format(uint64_t address, AddressType addressType) {
