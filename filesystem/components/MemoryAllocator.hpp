@@ -12,12 +12,11 @@
  */
 class MemoryAllocator {
 
-      std::shared_ptr<SuperBlock> superBlock; // reference (shared pointer) na super blok
-
       FileStream& fileStream; // reference na filestream
 
-      std::shared_ptr<Bitmap> nodeBitmap; // reference na bitmapu pro INodes
+      std::shared_ptr<SuperBlock> superBlock; // reference (shared pointer) na super blok
 
+      std::shared_ptr<Bitmap> nodeBitmap; // reference na bitmapu pro INodes
       std::shared_ptr<Bitmap> blockBitmap; // reference na bitmapu pro bloky
 
     public:
@@ -25,7 +24,23 @@ class MemoryAllocator {
 
       void update(INode& indode);
 
+      /**
+       * Uvolni jeden datovy blok. Zaroven pricte do superbloku volne misto
+       * @param address
+       */
       void freeMemory(uint64_t address);
+
+      /**
+       * Uvolni pamet pro INode pomoci freeMemory funkce
+       * @param node inode, pro kterou se pamet dealokuje
+       */
+      void freeMemory(INode& node);
+
+      void updateSuperBlock();
+
+      void freeT1Address(uint64_t t1Address);
+
+      void freeT2Address(uint64_t t2Address);
 
       void format(uint64_t address, AddressType addressType);
 

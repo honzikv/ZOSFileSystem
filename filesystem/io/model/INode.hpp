@@ -125,6 +125,8 @@ class INode {
       void setTimestamp(uint64_t timestamp);
 
       void printInfo();
+
+      void decreaseRefCount();
 };
 
 

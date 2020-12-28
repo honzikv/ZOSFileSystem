@@ -223,13 +223,18 @@ void FileOperations::removeDirectory(const std::string& path) {
         throw FSException("Error, cannot remove file with \"rmdir\" command");
     }
 
-    if (folderNode.getRefCount() != 0) {
+    if (folderNode.getFolderSize() != 0) {
         throw FSException("Error, folder is not empty");
     }
 
     auto parent = pathContext->absolutePath.back();
     fileSystemController.removeFolderItem(parent, folderItem);
-    fileSystemController.reclaimINode(folderNode);
+
+    folderNode.decreaseRefCount();
+    if (folderNode.getRefCount() == 1) {
+        // todo 0 | 1
+        fileSystemController.reclaimINode(folderNode);
+    }
 
     restorePathContextState(absolutePath);
 }
@@ -259,6 +264,7 @@ void FileOperations::removeFile(const std::string& path) {
     }
 
     auto parent = pathContext->absolutePath.back();
+    // odstranime folder item ze slozky a vratime vsechnu pamet filesystemu
     fileSystemController.removeFolderItem(parent, fileFolderItem);
     fileSystemController.reclaimINode(fileNode);
 

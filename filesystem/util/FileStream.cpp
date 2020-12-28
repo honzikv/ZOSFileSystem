@@ -129,7 +129,6 @@ void FileStream::writeINode(INode& node) {
     write(node.t1Address);
     write(node.t2Address);
     writeVector(node.t0AddressList);
-//    std::cout << "Writing inode @ " << getWritePosition() << std::endl;
 }
 
 void FileStream::readINode(INode& node) {

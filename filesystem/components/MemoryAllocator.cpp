@@ -42,11 +42,12 @@ void MemoryAllocator::freeINode(INode& node) {
         throw FSException("Error, node does not have id"); // to by se nikdy nemelo stat, pouze pro debug
     }
 
-    node.setId((uint32_t) Globals::INVALID_VALUE);
     auto nodeAddress = superBlock->nodeAddress + node.getId() * Globals::INODE_SIZE_BYTES();
+    auto emptyNode = INode();
     fileStream.moveTo(nodeAddress);
-    fileStream.writeINode(node); // update INode na disku
+    fileStream.writeINode(emptyNode); // update INode na disku
     nodeBitmap->setAddress(nodeAddress, true);
+    freeMemory(node);
 }
 
 void MemoryAllocator::format(uint64_t address, AddressType addressType) {
@@ -94,6 +95,7 @@ std::vector<uint64_t> MemoryAllocator::getNDataBlocks(uint64_t n, AddressType ad
         catch (FSException& ex) {
             for (auto block : dataBlocks) {
                 blockBitmap->setAddress(block, true);
+                superBlock->freeBlocks += 1;
             }
 
             throw FSException(ex.what());
@@ -110,5 +112,58 @@ uint64_t MemoryAllocator::getNodeAddress(INode& node) {
 
     return superBlock->nodeAddress + node.getId() * Globals::INODE_SIZE_BYTES();
 }
+
+void MemoryAllocator::freeMemory(INode& node) {
+    for (auto address : node.getT0AddressList()) {
+        if (address == Globals::INVALID_VALUE) {
+            break;
+        }
+        freeMemory(address);
+    }
+
+    freeT1Address(node.getT1Address()); // vycisteni 1. neprimeho odkazu pokud existuje
+    freeT2Address(node.getT2Address()); // vycisteni 2. neprimeho odkazu pokud existuje
+}
+
+void MemoryAllocator::freeT1Address(uint64_t t1Address) {
+    if (t1Address == Globals::INVALID_VALUE) {
+        return;
+    }
+
+    fileStream.moveTo(t1Address);
+    auto t1AddressList = std::vector<uint64_t>(Globals::POINTERS_PER_BLOCK(), Globals::INVALID_VALUE);
+    fileStream.readVector(t1AddressList);
+
+    for (auto address : t1AddressList) {
+        if (address == Globals::INVALID_VALUE) { // pokud je adresa neplatna, vratime se
+            break;
+        }
+
+        freeMemory(address); // jinak oznacime jako volnou a pokracujeme
+    }
+
+    freeMemory(t1Address); // dale oznacime blok s adresami jako volny
+}
+
+void MemoryAllocator::freeT2Address(uint64_t t2Address) {
+    if (t2Address == Globals::INVALID_VALUE) { // pokud neexistuje navrat zpet
+        return;
+    }
+
+    fileStream.moveTo(t2Address); // presun na t2 adresu a nacteni dat
+    auto t2AddressList = std::vector<uint64_t>(Globals::POINTERS_PER_BLOCK(), Globals::INVALID_VALUE);
+    fileStream.readVector(t2AddressList);
+
+    for (auto t1Address : t2AddressList) { // iterujeme a pro kazdy odkaz pouzijeme freeT1Address funkci
+        if (t1Address == Globals::INVALID_VALUE) {
+            break;
+        }
+
+        freeT1Address(t1Address);
+    }
+
+    freeMemory(t2Address); // nakonec dealokujeme i 2. neprimy odkaz
+}
+
 
 

@@ -90,3 +90,7 @@ void INode::setFolder(bool folder) {
 uint64_t INode::getRefCount() const {
     return refCount;
 }
+
+void INode::decreaseRefCount() {
+    refCount -= 1;
+}

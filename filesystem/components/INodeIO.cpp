@@ -400,7 +400,7 @@ void INodeIO::removeLast(INode& node) {
         auto t1Row = itemRelativePosition / Globals::FOLDER_ITEMS_PER_BLOCK();
         auto itemIndex = itemRelativePosition % Globals::FOLDER_ITEMS_PER_BLOCK();
 
-        if (itemIndex == 0) { // pokud je predmet na 0tem indexu v bloku, musime blok smazat
+        if (itemIndex == 0) { // pokud je predmet na nultem indexu v bloku, musime blok smazat
             uint64_t blockAddress;
             fileStream.moveTo(node.t1Address + t1Row * Globals::POINTER_SIZE_BYTES);
             fileStream.read(blockAddress);
