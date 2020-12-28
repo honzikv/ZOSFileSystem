@@ -15,7 +15,7 @@ void FileOperations::printCurrentFolderItems() {
 void FileOperations::listItems(const std::string& path) {
     auto fsPath = FileSystemPath(path);
 
-    if (fsPath.getPathType() == PathType::Empty) {
+    if (fsPath.size() == 0) {
         printCurrentFolderItems();
         return;
     }
@@ -31,6 +31,8 @@ void FileOperations::listItems(const std::string& path) {
 
     try {
         pathContext->moveTo(fsPath);
+        // nacteme predmety a vytiskneme
+        pathContext->loadItems();
     }
     catch (FSException& ex) {
         restorePathContextState(absolutePath);
@@ -38,8 +40,6 @@ void FileOperations::listItems(const std::string& path) {
         return;
     }
 
-    // nacteme predmety a vytiskneme
-    pathContext->loadItems();
     printCurrentFolderItems();
 
     // vratime zpet puvodni cestu a nacteme predmety
@@ -336,7 +336,7 @@ void FileOperations::copyIntoFileSystem(const std::string& outPath, const std::s
             pathContext->moveTo(fsPath);
             pathContext->loadItems();
         }
-        catch(FSException& ex) {
+        catch (FSException& ex) {
             restorePathContextState(absolutePath);
             throw FSException(ex.what());
         }
@@ -618,7 +618,7 @@ void FileOperations::copyFile(const std::string& fileSource, const std::string& 
         throw FSException(ex.what());
     }
 
-
-
+    restorePathContextState(absolutePath);
+    std::cout << "OK" << std::endl;
 }
 

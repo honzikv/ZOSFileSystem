@@ -57,7 +57,88 @@ void INodeIO::writeAt(INode& node, uint32_t index, FolderItem& folderItem) {
     node.size = swap;
 }
 
-void INodeIO::appendFile(INode& parent, INode& node, FolderItem& folderItem, FileStream& externalFileStream) {
+void INodeIO::copyData(INode& source, INode& dest) {
+    auto bytes = source.size;
+    auto dataBlocksRequired = Globals::getBlockCount(bytes);
+    auto extraBlocksRequired = getExtraBlocks(bytes);
+
+    auto dataBlocks = fileSystemController.nextNBlocks(dataBlocksRequired, AddressType::RAW_DATA);
+    auto pointerBlocks = fileSystemController.nextNBlocks(extraBlocksRequired, AddressType::Pointer);
+    auto pointerBlockIndex = 0;
+
+    auto buffer = std::vector<char>(Globals::BLOCK_SIZE_BYTES, '\0');
+    auto bytesRemaining = bytes;
+
+    for (auto currBlockIndex = 0; currBlockIndex < dataBlocksRequired; currBlockIndex += 1) {
+        if (bytesRemaining < Globals::BLOCK_SIZE_BYTES) {
+            // pokud zbyva mene bytu nez je velikost bloku musime precist mensi mnozstvi
+            buffer = std::vector<char>(bytesRemaining, '\0');
+            bytesRemaining = 0;
+        } else {
+            bytesRemaining -= Globals::BLOCK_SIZE_BYTES; // odecteme velikost bloku
+        }
+
+        if (currBlockIndex < Globals::T0_ADDRESS_LIST_SIZE) {
+            fileStream.moveTo(source.t0AddressList[currBlockIndex]);
+            fileStream.readVector(buffer);
+
+            dest.t0AddressList[currBlockIndex] = dataBlocks[currBlockIndex];
+            fileStream.moveTo(dest.t0AddressList[currBlockIndex]);
+            fileStream.writeVector(buffer);
+        } else if (currBlockIndex - Globals::T0_ADDRESS_LIST_SIZE < Globals::POINTERS_PER_BLOCK()) {
+            if (dest.t1Address == Globals::INVALID_VALUE) {
+                dest.t1Address = pointerBlocks[pointerBlockIndex];
+                pointerBlockIndex += 1;
+            }
+
+            auto t1Row = currBlockIndex - Globals::T0_ADDRESS_LIST_SIZE; // relativni radek v t1 odkazu
+            fileStream.moveTo(source.t1Address + t1Row * Globals::POINTER_SIZE_BYTES);
+            fileStream.readVector(buffer);
+
+            fileStream.moveTo(dest.t1Address + t1Row * Globals::POINTER_SIZE_BYTES);
+            fileStream.writeVector(buffer);
+        } else {
+            if (dest.t2Address == Globals::INVALID_VALUE) {
+                dest.t2Address = pointerBlocks[pointerBlockIndex];
+                pointerBlockIndex += 1;
+            }
+
+            auto relativeBlockIndex = currBlockIndex - Globals::T0_ADDRESS_LIST_SIZE - Globals::POINTERS_PER_BLOCK();
+            auto t2Row = relativeBlockIndex / Globals::POINTERS_PER_BLOCK();
+            auto t1Row = relativeBlockIndex % Globals::POINTERS_PER_BLOCK();
+
+            if (t1Row == 0) {
+                fileStream.moveTo(dest.t2Address + t2Row * Globals::POINTER_SIZE_BYTES);
+                fileStream.write(pointerBlocks[pointerBlockIndex]);
+                pointerBlockIndex += 1;
+            }
+
+            uint64_t t1Address;
+            fileStream.moveTo(source.t2Address + t2Row * Globals::POINTER_SIZE_BYTES);
+            fileStream.read(t1Address);
+
+            uint64_t blockAddress;
+            fileStream.moveTo(t1Address + t1Row * Globals::POINTER_SIZE_BYTES);
+            fileStream.read(blockAddress);
+
+            fileStream.moveTo(blockAddress);
+            fileStream.readVector(buffer);
+
+            fileStream.moveTo(dest.t2Address + t2Row * Globals::POINTER_SIZE_BYTES);
+            fileStream.read(t1Address);
+            fileStream.moveTo(t1Address + t1Row * Globals::POINTER_SIZE_BYTES);
+            fileStream.write(dataBlocks[currBlockIndex]);
+
+            fileStream.moveTo(dataBlocks[currBlockIndex]);
+            fileStream.writeVector(buffer);
+        }
+    }
+
+    dest.size = bytes;
+    fileSystemController.refresh(dest);
+}
+
+void INodeIO::appendExternalFile(INode& parent, INode& node, FolderItem& folderItem, FileStream& externalFileStream) {
     auto bytes = externalFileStream.getFileSize();
     auto dataBlocksRequired = Globals::getBlockCount(bytes); // pocet bloku, kde jsou pouze data
     auto extraBlocksRequired = getExtraBlocks(bytes); // pocet bloku navic - bloky s pointery
@@ -584,6 +665,3 @@ void INodeIO::printBuffer(std::vector<char> vector) {
     std::cout << text << std::flush;
 }
 
-void INodeIO::copyData(INode& source, INode& dest) {
-
-}

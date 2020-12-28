@@ -17,7 +17,7 @@ class INodeIO {
 
       void appendFolderItem(INode& node, FolderItem& folderItem, bool increaseRefCount = true);
 
-      void appendFile(INode& parent, INode& node, FolderItem& folderItem, FileStream& externalFileStream);
+      void appendExternalFile(INode& parent, INode& node, FolderItem& folderItem, FileStream& externalFileStream);
 
       std::vector<FolderItem> getFolderItems(INode& node);
 

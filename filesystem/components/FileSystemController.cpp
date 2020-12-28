@@ -223,7 +223,7 @@ void FileSystemController::removeFolderItem(INode& node, FolderItem& folderItem)
 
 void FileSystemController::appendExternalFile(INode& parent, INode& child, FolderItem& folderItem,
                                               FileStream& externalFileStream) {
-    nodeIO->appendFile(parent, child, folderItem, externalFileStream);
+    nodeIO->appendExternalFile(parent, child, folderItem, externalFileStream);
 }
 
 std::vector<uint64_t> FileSystemController::nextNBlocks(uint32_t n, AddressType addressType) {
