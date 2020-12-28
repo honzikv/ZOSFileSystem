@@ -500,7 +500,6 @@ void FileOperations::moveFile(const std::string& fileSource, const std::string& 
     // ziskame folder item a jeho inode
     auto folderItem = pathContext->folderItems[folderItemIndex];
     auto fileNode = fileSystemController.getINodeFromAddress(folderItem.nodeAddress);
-
     auto parent = pathContext->absolutePath.back();
 
     if (destPath.size() > 0) {
@@ -526,8 +525,14 @@ void FileOperations::moveFile(const std::string& fileSource, const std::string& 
     fileSystemController.appendFolderItem(newParent, newFolderItem); // pridame folder item do nove slozky
 
     if (deleteFromSource) {
-        // pokud se jedna o prikaz "mv", pak odstranime z puvodni slozky, pro hardlink pouze zkopirujeme folder item
-        fileSystemController.removeFolderItem(parent, folderItem); // odstranime predmet z aktualni slozky
+
+        if (newParent == parent) {
+            fileSystemController.removeFolderItem(newParent, folderItem);
+        } else {
+            // pokud se jedna o prikaz "mv", pak odstranime z puvodni slozky, pro hardlink pouze zkopirujeme folder item
+            fileSystemController.removeFolderItem(parent, folderItem); // odstranime predmet z aktualni slozky
+        }
+
     }
 
     std::cout << "OK" << std::endl;
@@ -540,7 +545,6 @@ void FileOperations::copyFile(const std::string& fileSource, const std::string& 
 
     auto sourceFileName = sourcePath.releaseBack();
     auto destFileName = destPath.releaseBack();
-
     auto absolutePath = pathContext->absolutePath; // zaloha absolutni cesty path kontextu pro navrat
 
     if (destPath.size() > 0) {
