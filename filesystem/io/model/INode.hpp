@@ -19,7 +19,7 @@ class INode {
       uint32_t id = (uint32_t) Globals::INVALID_VALUE; // Id. Bude bud vypocteno z adresy INode nebo INVALID_VALUE
       uint32_t size = 0; // Velikost souboru nebo pocet prvku ve slozce
       uint64_t timestamp = Globals::INVALID_VALUE; // Timestamp pro posledni pristup k souboru
-      uint64_t refCount = 0; // kolik referenci ukazuje na inode - lze smazat pouze, pokud je refCount = 0 (resp. 1)
+      uint64_t refCount = 0; // kolik extra referenci ukazuje na inode - data lze smazat pouze, pokud je refCount = 0
 
       std::vector<uint64_t> t0AddressList = std::vector(Globals::T0_ADDRESS_LIST_SIZE,
                                                         Globals::INVALID_VALUE); // Seznam vsech primych adres
@@ -95,9 +95,15 @@ class INode {
 
       [[nodiscard]] bool isFolderFull() const;
 
+      /**
+       * Factory metoda pro vytvoreni rootu
+       * @return
+       */
       static INode createRoot();
 
       void setTimestamp(uint64_t timestamp);
+
+      void decrRefCount();
 };
 
 

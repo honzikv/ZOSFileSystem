@@ -38,6 +38,7 @@ void PathContext::moveToRoot(bool fetchFolderItems) {
 }
 
 void PathContext::refresh() {
+    // aktualizuje cestu - kazdou INode znovu nacte a ziska predmety posledni INode
     auto updatedINodes = std::vector<INode>();
     for (auto& node : absolutePath) {
         updatedINodes.push_back(fileOperations.getUpdatedINode(node));

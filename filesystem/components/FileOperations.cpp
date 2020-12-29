@@ -7,8 +7,8 @@ FileOperations::FileOperations(FileSystemController& fileSystemController) : fil
 }
 
 void FileOperations::printCurrentFolderItems() {
+    // iterace pres vsechny folder items a vytisteni jejich jmena
     for (auto& item : pathContext->folderItems) {
-
         auto node = fileSystemController.getINodeFromAddress(item.nodeAddress);
         std::cout << (node.isFolder() ? "+" : "-") << item.getItemName() << std::endl;
     }
@@ -66,6 +66,7 @@ void FileOperations::makeDirectory(const std::string& path) {
         throw FSException("EXISTS (nelze zalozit, jiz existuje)");
     }
 
+    // ziskani inode rodice (slozky) a adresy rodice
     auto parentNode = pathContext->absolutePath.back();
     auto parentNodeAddress = fileSystemController.getINodeAddress(parentNode);
 
@@ -79,13 +80,13 @@ void FileOperations::makeDirectory(const std::string& path) {
     auto folderNodeAddress = fileSystemController.getINodeAddress(folderNode); // ziskani adresy
 
     try {
-        FolderItem::validateFolderName(folderName);
+        FolderItem::validateFolderName(folderName); // validace jmena slozky, jinak vyhodi exception
     }
     catch (FSException& ex) {
         restorePathContextState(absolutePath);
         throw FSException(ex.what());
     }
-    auto parentNodeFolderItem = FolderItem(folderName, folderNodeAddress);
+    auto parentNodeFolderItem = FolderItem(folderName, folderNodeAddress); // folder item v parent node
 
     try {
         fileSystemController.linkFolderToParent(folderNode, folderNodeAddress, parentNodeAddress);
@@ -293,6 +294,10 @@ void FileOperations::removeFile(const std::string& path) {
     if (fileNode.getRefCount() == 0) {
         fileSystemController.reclaimINode(fileNode);
     }
+    else {
+        fileNode.decrRefCount();
+        fileSystemController.refresh(fileNode);
+    }
 
     restorePathContextState(absolutePath);
     std::cout << "OK" << std::endl;
@@ -454,17 +459,109 @@ void FileOperations::moveFile(const std::string& fileSource, const std::string& 
         pathContext->moveTo(destPath);
         pathContext->loadItems();
         if (pathContext->getFolderItemIndex(destFileName) != -1) {
-            throw FSException("Error, file already exists in target folder");
+            throw FSException("Error, file already exists in the target folder");
+        }
+    }
+    catch (FSException& ex) {
+        std::cout << ex.what() << std::endl;
+        restorePathContextState(absolutePath);
+        throw FSException("FILE NOT FOUND (neexistuje cilova cesta)");
+    }
+    // vratime se zpet na cestu pri zavolani funkce, jinak bychom se mohli ocitnout jinde pokud se jedna o relativni cestu
+    restorePathContextState(absolutePath);
+
+    // test jestli zdrojova cesta existuje, pokud ano, rovnou se presuneme
+    try {
+        pathContext->moveTo(sourcePath);
+        pathContext->loadItems();
+    }
+    catch (FSException& ex) {
+        restorePathContextState(absolutePath);
+        throw FSException("FILE NOT FOUND (neni zdroj)");
+    }
+
+    // index folder itemu v dane ceste
+    auto folderItemIndex = pathContext->getFolderItemIndex(sourceFileName);
+    if (folderItemIndex == -1) {
+        restorePathContextState(absolutePath);
+        throw FSException("FILE NOT FOUND (neni zdroj)");
+    }
+
+    // ziskame dany folder item souboru, jeho inode a inode rodice (slozky)
+    auto folderItem = pathContext->folderItems[folderItemIndex];
+    auto fileNode = fileSystemController.getINodeFromAddress(folderItem.nodeAddress);
+    auto parent = pathContext->absolutePath.back();
+
+    if (fileNode.isFolder()) {
+        restorePathContextState(absolutePath);
+        throw FSException("Error, target is a folder, only files can be moved/linked");
+    }
+
+    restorePathContextState(absolutePath); // potreba vratit se zpet na puvodni path, ze ktere se prikaz volal
+    pathContext->moveTo(destPath);
+
+    auto newParent = pathContext->absolutePath.back();
+    if (newParent.isFolderFull()) { // pokud je slozka plna vyhodime chybu a vratime se (nic se nevykona)
+        restorePathContextState(absolutePath);
+        throw FSException("Error, folder is full");
+    }
+
+    try {
+        FolderItem::validateFileName(destFileName);
+    }
+    catch (FSException& ex) {
+        restorePathContextState(absolutePath);
+        throw FSException(ex.what());
+    }
+
+    auto newFolderItem = FolderItem(destFileName, folderItem.nodeAddress); // novy folder item
+    fileSystemController.appendFolderItem(newParent, newFolderItem); // pridame folder item do nove slozky
+
+    if (deleteFromSource) { // smazani z puvodniho zdroje (pro mv prikaz, pri hard linku se neprovede)
+
+        if (newParent == parent) {
+            fileSystemController.removeFolderItem(newParent, folderItem);
+        } else {
+            // pokud se jedna o prikaz "mv", pak odstranime z puvodni slozky, pro hardlink pouze zkopirujeme folder item
+            fileSystemController.removeFolderItem(parent, folderItem); // odstranime predmet z aktualni slozky
+        }
+
+    }
+    else {
+        // jinak zvysime pocet referenci inode daneho souboru
+        fileNode.incrRefCount();
+        fileSystemController.refresh(fileNode); // refresh pro zapsani do souboru
+    }
+
+
+    std::cout << "OK" << std::endl;
+    restorePathContextState(absolutePath); // vratime se zpet na puvodni cestu
+}
+
+void FileOperations::copyFile(const std::string& fileSource, const std::string& fileDest) {
+    auto sourcePath = FileSystemPath(fileSource);
+    auto destPath = FileSystemPath(fileDest);
+
+    auto sourceFileName = sourcePath.releaseBack();
+    auto destFileName = destPath.releaseBack();
+    auto absolutePath = pathContext->absolutePath; // zaloha absolutni cesty path kontextu pro navrat
+
+    try {
+        pathContext->moveTo(destPath);
+        pathContext->loadItems();
+
+        if (pathContext->getFolderItemIndex(destFileName) != -1) {
+            throw FSException("Error, file already present in the path");
         }
     }
     catch (FSException& ex) {
         restorePathContextState(absolutePath);
-        throw FSException("FILE NOT FOUND (neexistuje cilova cesta)");
+        throw FSException(ex.what());
     }
 
+    // vratime se na path, ve ktere prikaz zacinal (jinak se pri relativni path ocitneme jinde)
     restorePathContextState(absolutePath);
 
-    // test jestli zdrojova cesta existuje
     try {
         pathContext->moveTo(sourcePath);
         pathContext->loadItems();
@@ -484,14 +581,10 @@ void FileOperations::moveFile(const std::string& fileSource, const std::string& 
     // ziskame folder item a jeho inode
     auto folderItem = pathContext->folderItems[folderItemIndex];
     auto fileNode = fileSystemController.getINodeFromAddress(folderItem.nodeAddress);
-    auto parent = pathContext->absolutePath.back();
 
-    pathContext->moveTo(destPath);
-
-    auto newParent = pathContext->absolutePath.back();
-    if (newParent.isFolderFull()) { // pokud je slozka plna vyhodime chybu a vratime se (nic se nevykona)
+    if (fileNode.isFolder()) {
         restorePathContextState(absolutePath);
-        throw FSException("Error, folder is full");
+        throw FSException("Error, target is a folder, only files can be copied");
     }
 
     try {
@@ -502,75 +595,7 @@ void FileOperations::moveFile(const std::string& fileSource, const std::string& 
         throw FSException(ex.what());
     }
 
-    auto newFolderItem = FolderItem(destFileName, folderItem.nodeAddress); // novy folder item
-
-    fileSystemController.appendFolderItem(newParent, newFolderItem); // pridame folder item do nove slozky
-
-    if (deleteFromSource) {
-
-        if (newParent == parent) {
-            fileSystemController.removeFolderItem(newParent, folderItem);
-        } else {
-            // pokud se jedna o prikaz "mv", pak odstranime z puvodni slozky, pro hardlink pouze zkopirujeme folder item
-            fileSystemController.removeFolderItem(parent, folderItem); // odstranime predmet z aktualni slozky
-        }
-
-    }
-
-    std::cout << "OK" << std::endl;
-    restorePathContextState(absolutePath); // vratime se zpet na puvodni cestu
-}
-
-void FileOperations::copyFile(const std::string& fileSource, const std::string& fileDest) {
-    auto sourcePath = FileSystemPath(fileSource);
-    auto destPath = FileSystemPath(fileDest);
-
-    auto sourceFileName = sourcePath.releaseBack();
-    auto destFileName = destPath.releaseBack();
-    auto absolutePath = pathContext->absolutePath; // zaloha absolutni cesty path kontextu pro navrat
-
-        try {
-            pathContext->moveTo(destPath);
-            pathContext->loadItems();
-
-            if (pathContext->getFolderItemIndex(destFileName) != -1) {
-                throw FSException("Error, file already present in the path");
-            }
-        }
-        catch (FSException& ex) {
-            restorePathContextState(absolutePath);
-            throw FSException(ex.what());
-        }
-        restorePathContextState(absolutePath);
-
-        try {
-            pathContext->moveTo(sourcePath);
-            pathContext->loadItems();
-        }
-        catch (FSException& ex) {
-            restorePathContextState(absolutePath);
-            throw FSException("FILE NOT FOUND (neni zdroj)");
-        }
-
-    // index folder itemu v dane ceste
-    auto folderItemIndex = pathContext->getFolderItemIndex(sourceFileName);
-    if (folderItemIndex == -1) {
-        restorePathContextState(absolutePath);
-        throw FSException("FILE NOT FOUND (neni zdroj)");
-    }
-
-    // ziskame folder item a jeho inode
-    auto folderItem = pathContext->folderItems[folderItemIndex];
-    auto fileNode = fileSystemController.getINodeFromAddress(folderItem.nodeAddress);
-
-    try {
-        FolderItem::validateFileName(destFileName);
-    }
-    catch (FSException& ex) {
-        restorePathContextState(absolutePath);
-        throw FSException(ex.what());
-    }
-
+    restorePathContextState(absolutePath); // opet potreba presun na path, ze ktere se prikaz
     pathContext->moveTo(destPath);
     pathContext->loadItems();
 
