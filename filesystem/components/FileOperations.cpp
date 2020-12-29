@@ -592,7 +592,6 @@ void FileOperations::copyFile(const std::string& fileSource, const std::string& 
     auto newFileNode = fileSystemController.getFreeINode(false);
     auto newFileNodeAddress = fileSystemController.getINodeAddress(newFileNode);
     auto newFolderItem = FolderItem(destFileName, newFileNodeAddress);
-
     auto newParent = pathContext->absolutePath.back();
 
     if (newParent.isFolderFull()) {

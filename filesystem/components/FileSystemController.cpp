@@ -132,7 +132,7 @@ void FileSystemController::mv(const std::string& file, const std::string& path) 
 }
 
 void FileSystemController::cp(const std::string& file, const std::string& path) {
-
+    fileOperations->copyFile(file, path);
 }
 
 DriveState FileSystemController::getDriveState() const {
