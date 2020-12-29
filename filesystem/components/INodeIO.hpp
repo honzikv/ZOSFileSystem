@@ -28,7 +28,7 @@ class INodeIO {
        */
       void linkFolderToParent(INode& current, uint64_t currentNodeAddress, uint64_t parentNodeAddress);
 
-      void printINodeInfo(INode& node);
+      void printINodeInfo(INode& node, FolderItem& folderItem);
 
       void removeFolderItem(INode& node, FolderItem& folderItem);
 

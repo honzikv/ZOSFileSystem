@@ -17,16 +17,6 @@ uint64_t INode::getT1Address() const { return t1Address; }
 
 uint64_t INode::getT2Address() const { return t2Address; }
 
-uint32_t INode::getSize() const { return size; }
-
-void INode::setSize(uint32_t size) { this->size = size; }
-
-void INode::setDirectAddress(uint32_t index, uint64_t address) { t0AddressList[index] = address; }
-
-void INode::setT1Address(uint64_t t1Address) { this->t1Address = t1Address; }
-
-void INode::setT2Address(uint64_t t2Address) { this->t2Address = t2Address; }
-
 INode::INode(bool isFolder, uint32_t id) {
     this->folder = isFolder;
     this->id = id;
@@ -73,24 +63,10 @@ void INode::setTimestamp(uint64_t timestamp) {
     INode::timestamp = timestamp;
 }
 
-void INode::printInfo() {
-    if (folder) {
-        std::cout << "INode with id: " << id << " folder " << "items: " << size << " refCount: " << refCount
-                  << std::endl;
-    } else {
-        std::cout << "Inode with id: " << id << " file " << "size in bytes: " << size << " refCount: " << refCount
-                  << std::endl;
-    }
-}
-
 void INode::setFolder(bool folder) {
     INode::folder = folder;
 }
 
 uint64_t INode::getRefCount() const {
     return refCount;
-}
-
-void INode::decreaseRefCount() {
-    refCount -= 1;
 }

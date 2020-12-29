@@ -372,11 +372,12 @@ void INodeIO::linkFolderToParent(INode& current, uint64_t currentNodeAddress, ui
     appendFolderItem(current, dotDot, false);
 }
 
-void INodeIO::printINodeInfo(INode& node) {
-    node.printInfo();
+void INodeIO::printINodeInfo(INode& node, FolderItem& folderItem) {
+    std::cout << "NAME: " << folderItem.getItemName() << " - SIZE: "  << node.size << " - NUMBER: "
+              << node.id << " - TYPE: " << (node.isFolder() ? "folder " : "file ") << std::endl;
 
     auto blocks = getINodeBlocks(node);
-    std::cout << "INode blocks:" << std::endl;
+    std::cout << "Initialized Blocks:" << std::endl;
     for (auto block : blocks) {
         std::cout << +block << std::endl;
     }

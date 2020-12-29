@@ -120,6 +120,12 @@ void FileSystem::execute(const std::vector<std::string>& commandWithArguments) {
         }
         fileSystemController->diskInfo();
     }
+    else if (command == "ln") {
+        if (args.size() != 2) {
+            throw FSException(INCORRECT_NUM_PARAMS + "\"ln\"");
+        }
+        fileSystemController->ln(args[0], args[1]);
+    }
 
 }
 
@@ -137,9 +143,14 @@ void FileSystem::format(std::vector<std::string>& args) {
     uint64_t userSpaceSizeBytes;
     try {
         userSpaceSizeBytes = StringParsing::parseDriveFormatSize(string);
+
     }
     catch (FSException& ex) {
         throw FSException("Incorrect parameters for \"format\"");
+    }
+
+    if (userSpaceSizeBytes < ConversionUtils::megabytesToBytes(10)) {
+        throw FSException("Error file system must be at least 10MB");
     }
 
     fileStream.deleteFile(); // smazeme predchozi soubor
@@ -153,4 +164,6 @@ void FileSystem::format(std::vector<std::string>& args) {
     fileStream.writeSuperBlock(superBlock);
     fileSystemController->initDrive();
     isMounted = true;
+
+    std::cout << "OK" << std::endl;
 }

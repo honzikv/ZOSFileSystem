@@ -32,9 +32,6 @@ void SuperBlock::printInfo() const {
 
 SuperBlock::SuperBlock(uint64_t size) {
 
-    if (size < ConversionUtils::megabytesToBytes(10)) {
-        throw FSException("Error file system must be at least 10MB");
-    }
 
     blockCount = getBlockCount(size);
     nodeCount = getNodeCount(blockCount);

@@ -1,10 +1,6 @@
 #include <iostream>
-#include <fstream>
 #include <iterator>
-#include <sstream>
-#include <utility>
 #include "CLI.hpp"
-#include "../util/FSException.hpp"
 
 
 CLI::CLI(std::string filePath) : filePath(std::move(filePath)) {

@@ -131,6 +131,10 @@ void FileSystemController::mv(const std::string& file, const std::string& path) 
     fileOperations->moveFile(file, path, true);
 }
 
+void FileSystemController::ln(const std::string& file, const std::string& path) {
+    fileOperations->moveFile(file, path, false);
+}
+
 void FileSystemController::cp(const std::string& file, const std::string& path) {
     fileOperations->copyFile(file, path);
 }
@@ -143,8 +147,7 @@ void FileSystemController::initDrive() {
     fileStream.moveTo(0);
     if (fileStream.isFileEmpty() || fileStream.getFileSize() < Globals::MIN_DRIVE_SIZE) {
         throw FSException(
-                "Error while formatting the file, OS might be preventing from writing to the file, "
-                "please restart the program.");
+                "CANNOT CREATE FILE");
     }
     superBlock = std::make_shared<SuperBlock>();
     fileStream.readSuperBlock(*this->superBlock);
@@ -213,8 +216,8 @@ void FileSystemController::linkFolderToParent(INode& child, uint64_t childAddres
     nodeIO->linkFolderToParent(child, childAddress, parentNodeAddress);
 }
 
-void FileSystemController::printINodeInfo(INode& node) {
-    nodeIO->printINodeInfo(node);
+void FileSystemController::printINodeInfo(INode& node , FolderItem& folderItem) {
+    nodeIO->printINodeInfo(node, folderItem);
 }
 
 void FileSystemController::removeFolderItem(INode& node, FolderItem& folderItem) {

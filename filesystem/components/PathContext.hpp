@@ -24,8 +24,6 @@ class PathContext {
 
       void refresh();
 
-      bool folderItemExists(std::string& itemName);
-
       int getFolderItemIndex(std::string& folderItemName);
 
       void moveToRoot(bool fetchFolderItems = false);

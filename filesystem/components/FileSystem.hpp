@@ -15,18 +15,15 @@
 class SuperBlock;
 
 class FileSystem {
-      static constexpr uint16_t MAX_DISK_SIZE_GB = 8; // vic by asi windows / linux nezvladl
 
       FileStream& fileStream;
-
-      std::string filePath;
 
       std::unordered_set<std::string> mountedCommands {
               "format", "mount", "cp", "mv", "rm", "mkdir",
               "rmdir", "ls", "cat", "cd", "pwd", "info",
-              "incp", "outcp", "load",
+              "incp", "outcp", "load", "ln",
               // debug
-              "diskinfo"
+              "diskinfo", "debugnodebitmap", "debugblockbitmap"
       };
 
       std::shared_ptr<FileSystemController> fileSystemController = nullptr;

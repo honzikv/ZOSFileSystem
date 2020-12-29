@@ -12,21 +12,13 @@ PathContext::PathContext(FileOperations& fileOperations) : fileOperations(fileOp
 }
 
 
-bool PathContext::folderItemExists(std::string& itemName) {
-    for (auto& folderItem : folderItems) {
-        if (folderItem.getItemName() == itemName) {
-            return true;
-        }
-    }
-    return false;
-}
-
 int PathContext::getFolderItemIndex(std::string& folderItemName) {
-    auto folderItemLowerCase = StringParsing::toLowerCase(folderItemName);
+// V zadani nebylo, jestli ma byt file system case sensitive
+//    auto folderItemLowerCase = StringParsing::toLowerCase(folderItemName);
     for (auto i = 0; i < folderItems.size(); i += 1) {
         auto itemName = folderItems[i].getItemName();
-        auto itemNameLowerCase = StringParsing::toLowerCase(itemName);
-        if (itemNameLowerCase == folderItemLowerCase) {
+//        auto itemNameLowerCase = StringParsing::toLowerCase(itemName);
+        if (itemName == folderItemName) { // if (itemNameLowerCase == folderItemLowerCase) {
             return i;
         }
     }
@@ -72,7 +64,7 @@ void PathContext::moveTo(FileSystemPath& path) {
         folderItems = fileOperations.getFolderItems(absolutePath.back());
         auto nextFolderIndex = getFolderItemIndex(nextFolder);
         if (nextFolderIndex == -1) {
-            throw FSException("Error, specified path is not valid.");
+            throw FSException("FILE NOT FOUND (neexistuje cilova cesta)");
         }
 
         auto nextFolderNodeAddress = folderItems[nextFolderIndex].nodeAddress;
@@ -85,7 +77,7 @@ void PathContext::moveTo(FileSystemPath& path) {
             absolutePath.push_back(nextFolderNode);
         }
         catch (FSException& ex) {
-            throw FSException("Error while reading INode @ PathContext"); //debug, nemelo by se stat
+            throw FSException(ex.what());
         }
     }
 }

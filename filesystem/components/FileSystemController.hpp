@@ -78,6 +78,8 @@ class FileSystemController {
 
       void outcp(const std::string& path, const std::string& exportPath);
 
+      void ln(const std::string& file, const std::string& path);
+
       void debugBlockBitmap();
 
       void debugNodeBitmap();
@@ -108,7 +110,7 @@ class FileSystemController {
 
       void linkFolderToParent(INode& child, uint64_t childAddress, uint64_t parentNodeAddress);
 
-      void printINodeInfo(INode& node);
+      void printINodeInfo(INode& node, FolderItem& folderItem);
 
       void removeFolderItem(INode& node, FolderItem& folderItem);
 
