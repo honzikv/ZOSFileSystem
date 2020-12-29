@@ -16,9 +16,9 @@ class SuperBlock;
 
 class FileSystem {
 
-      FileStream& fileStream;
+      FileStream& fileStream; // reference na file stream pro zapis na "disk"
 
-      std::unordered_set<std::string> mountedCommands {
+      std::unordered_set<std::string> commandList { // seznam vsech pouzitelnych prikazu
               "format", "mount", "cp", "mv", "rm", "mkdir",
               "rmdir", "ls", "cat", "cd", "pwd", "info",
               "incp", "outcp", "load", "ln",
@@ -28,20 +28,26 @@ class FileSystem {
 
       std::shared_ptr<FileSystemController> fileSystemController = nullptr;
 
-      bool isMounted = false;
+      bool isMounted = false; // zda-li je disk mounted - tzn. lze pouzit
 
     public:
 
+      /**
+       * Konstruktor vytvori filesystem a ulozi si referenci na filestream
+       * @param fstream injektovany filestream
+       */
       explicit FileSystem(FileStream& fstream);
 
-/**
-       * Formats filesystem file - creates all neccessary parts of the filesystem
-       * @param filePath name of the disk (and the file as well) - default is "myfs.dat"
-       * @param userSpaceSizeBytes file system size in bytes
-       * @return
+      /**
+       * Provede format disku
+       * @param args argumenty - velikost a jednotky
        */
       void format(std::vector<std::string>& args);
 
+      /**
+       * Provede dany prikaz
+       * @param commandWithArguments vektor prikazu s argumenty, prvni prvek je prikaz zbytek argumenty
+       */
       void execute(const std::vector<std::string>& commandWithArguments);
 
 };

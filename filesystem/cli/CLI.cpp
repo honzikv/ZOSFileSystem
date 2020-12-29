@@ -12,45 +12,46 @@ bool CLI::startsWith(const std::string& input, const std::string& token) {
 
 void CLI::run() {
     std::cout << "Virtual File System Application" << std::endl;
-    std::cout << "Command limit is 2048 characters, commands over 2048 characters will be truncated" <<
-              std::endl << std::endl;
     std::cout << "Type \"format\" to format disk" << std::endl;
     std::cout << "Type \"help\" to list all commands" << std::endl << std::endl;
 
     auto fileStream = FileStream(filePath);
     fileSystem = std::make_unique<FileSystem>(fileStream);
 
-    auto input = std::string(); // TODO 2048 char limit
+    auto input = std::string();
     while (running) {
         std::cout << "#:";
         std::getline(std::cin, input);
         try {
-            if (input.empty()) {
+            // pokud je vstup prazdny nebo pouze mezery pokracujeme (jinak by program spadl)
+            if (input.empty() || input.find_first_not_of(' ') == std::string::npos) {
                 continue;
             } else {
                 auto tokens = splitByWhitespace(input);
 
+                // prikaz na lowercase - uzivatel tedy muze pouzivat napr. i LS nebo lS ...
                 std::transform(tokens[0].begin(), tokens[0].end(), tokens[0].begin(), ::tolower);
                 input = tokens[0];
 
                 if (input == "help") {
-                    printHelp();
-                } else if (input == "exit" || input == "q" || input == "quit") {
-                    running = false;
+                    printHelp(); // vytisknuti napovedy
+                } else if (input == "exit" || input == "q" || input == "quit" || input == "c90") {
+                    running = false; // ukonci program
                 } else if (input == "load") {
-                    executeScript(tokens);
+                    executeScript(tokens); // provede skript ze souboru
                 } else {
-                    execute(tokens);
+                    execute(tokens); // jinak provede primo prikaz
                 }
             }
         }
         catch (FSException& ex) {
+            // jakoukoliv exception co zadna cast programu neosetri vypiseme do konzole
             std::cout << ex.what() << std::endl;
         }
 
     }
 
-    exit(EXIT_SUCCESS);
+    exit(EXIT_SUCCESS); // pri q | quit | exit
 }
 
 
@@ -63,14 +64,14 @@ void CLI::executeScript(const std::vector<std::string>& tokens) {
     auto fileName = tokens[1];
     auto fileStream = std::ifstream(fileName);
 
-    auto commands = std::vector<std::string>();
+    auto commands = std::vector<std::string>(); // vsechny prikazy
 
-    auto line = std::string();
-    while (std::getline(fileStream, line)) {
+    auto line = std::string(); // radka
+    while (std::getline(fileStream, line)) { // iterace pres radky
         commands.push_back(line);
     }
 
-    for (auto& command : commands) {
+    for (auto& command : commands) { // provadeni prikazu
         auto commandTokens = splitByWhitespace(command);
         if (commandTokens.empty()) {
             continue;
@@ -82,7 +83,7 @@ void CLI::executeScript(const std::vector<std::string>& tokens) {
 
 void CLI::execute(const std::vector<std::string>& tokens) {
     try {
-        fileSystem->execute(tokens);
+        fileSystem->execute(tokens); // predani prikazu "file systemu"
     }
     catch (FSException& exception) {
         std::cout << exception.what() << std::endl;
@@ -111,6 +112,7 @@ void CLI::printHelp() {
               << std::endl;
     std::cout << "outcp [file] [target] - copy file in disk to the target path on external drive" << std::endl;
     std::cout << "load [script] - load script with commands and execute them sequentially" << std::endl;
+    std::cout << "ln [fileA] [fileB] - create hard link of fileA with path and name of fileB" << std::endl;
 }
 
 

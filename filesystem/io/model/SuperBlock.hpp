@@ -40,7 +40,7 @@ struct SuperBlock {
 
     static uint64_t getBlockCount(uint64_t sizeBytes);
 
-    static uint64_t getNodeCount(uint64_t blockCount);
+    static uint64_t getNodeCount(uint64_t sizeBytes);
 
     static uint64_t getBitmapSize(uint64_t objectCount);
 

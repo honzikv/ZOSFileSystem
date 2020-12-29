@@ -11,6 +11,8 @@ Globalni hodnoty pro snazsi pristup
  */
 struct Globals {
 
+    static constexpr float BLOCK_RATIO = 0.9;
+    static constexpr float INODE_RATIO = 0.1;
 
     static constexpr uint64_t MIN_DRIVE_SIZE = 1024 * 10 * 1024;
     static constexpr uint16_t SUPER_BLOCK_MAGIC_NUMBER = 0x53ef;

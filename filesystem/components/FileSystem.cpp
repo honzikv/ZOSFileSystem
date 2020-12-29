@@ -25,22 +25,18 @@ void FileSystem::execute(const std::vector<std::string>& commandWithArguments) {
         args = std::vector<std::string>(commandWithArguments.begin() + 1, commandWithArguments.end());
     }
 
-    if (command == "debugblockbitmap") {
+    if (command == "debugblockbitmap") { // debug bitmapy
         fileSystemController->debugBlockBitmap();
         return;
-    }
-
-    if (command == "debugnodebitmap") {
+    } else if (command == "debugnodebitmap") { // debug bitmapy
         fileSystemController->debugNodeBitmap();
         return;
-    }
-
-    if (command == "format") {
+    } else if (command == "format") {
         if (args.size() > 2 || args.empty()) {
             throw FSException(INCORRECT_NUM_PARAMS + "\"format\"");
         }
         format(args);
-    } else if (!mountedCommands.contains(command)) {
+    } else if (!commandList.contains(command)) {
         throw FSException("Unknown command, type \"help\" for list of all commands");
     } else if (!isMounted) {
         throw FSException("Error unable to read disk file, this is probably due to wrong parameter or disk not having"
@@ -119,8 +115,7 @@ void FileSystem::execute(const std::vector<std::string>& commandWithArguments) {
             throw FSException(INCORRECT_NUM_PARAMS + "\"diskinfo\"");
         }
         fileSystemController->diskInfo();
-    }
-    else if (command == "ln") {
+    } else if (command == "ln") {
         if (args.size() != 2) {
             throw FSException(INCORRECT_NUM_PARAMS + "\"ln\"");
         }
@@ -140,16 +135,16 @@ void FileSystem::format(std::vector<std::string>& args) {
         throw FSException("Incorrect parameters for \"format\"");
     }
 
-    uint64_t userSpaceSizeBytes;
+    uint64_t sizeBytes;
     try {
-        userSpaceSizeBytes = StringParsing::parseDriveFormatSize(string);
+        sizeBytes = StringParsing::parseDriveFormatSize(string);
 
     }
     catch (FSException& ex) {
         throw FSException("Incorrect parameters for \"format\"");
     }
 
-    if (userSpaceSizeBytes < ConversionUtils::megabytesToBytes(10)) {
+    if (sizeBytes < ConversionUtils::megabytesToBytes(10)) {
         throw FSException("Error file system must be at least 10MB");
     }
 
@@ -157,7 +152,7 @@ void FileSystem::format(std::vector<std::string>& args) {
     fileStream.createFile(); // vytvorime prazdny soubor
     fileStream.open(); // otevreme fstream
 
-    auto superBlock = SuperBlock(userSpaceSizeBytes);
+    auto superBlock = SuperBlock(sizeBytes);
     fileStream.moveTo(0);
     fileStream.format(superBlock.totalSize);
     fileStream.moveTo(0);

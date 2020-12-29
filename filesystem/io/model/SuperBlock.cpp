@@ -12,14 +12,12 @@ uint64_t SuperBlock::getBitmapSize(uint64_t objectCount) {
     return objectCount % 8 == 0 ? count : count + 1;
 }
 
-uint64_t SuperBlock::getNodeCount(uint64_t blockCount) {
-    auto count = blockCount / 4;
-    return blockCount % Globals::BLOCKS_PER_INODE == 0 ? count : count + 1;
+uint64_t SuperBlock::getNodeCount(uint64_t sizeBytes) {
+    return (sizeBytes * Globals::INODE_RATIO) / Globals::INODE_SIZE_BYTES();
 }
 
 uint64_t SuperBlock::getBlockCount(uint64_t sizeBytes) {
-    auto count = sizeBytes / Globals::BLOCK_SIZE_BYTES;
-    return sizeBytes % Globals::BLOCK_SIZE_BYTES == 0 ? count : count + 1;
+    return (sizeBytes * Globals::BLOCK_RATIO) / Globals::BLOCK_SIZE_BYTES;
 }
 
 void SuperBlock::printInfo() const {
@@ -31,8 +29,6 @@ void SuperBlock::printInfo() const {
 }
 
 SuperBlock::SuperBlock(uint64_t size) {
-
-
     blockCount = getBlockCount(size);
     nodeCount = getNodeCount(blockCount);
     auto nodeBitmapSize = getBitmapSize(nodeCount);

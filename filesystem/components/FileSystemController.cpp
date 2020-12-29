@@ -79,10 +79,6 @@ void FileSystemController::refresh(INode& node) {
 }
 
 
-void FileSystemController::writeINode(INode& node) {
-    memoryAllocator->update(node);
-}
-
 uint64_t FileSystemController::nextBlock(AddressType type) {
     return memoryAllocator->getDataBlock(type);
 }
