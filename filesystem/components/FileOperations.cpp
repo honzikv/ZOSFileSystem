@@ -28,10 +28,6 @@ void FileOperations::listItems(const std::string& path) {
     // zobrazit misto toho, kde se nachazel
     auto absolutePath = pathContext->absolutePath; // kopie absolutni cesty
 
-    if (fsPath.getPathType() == PathType::Absolute) {
-        pathContext->moveToRoot(false);
-    }
-
     try {
         pathContext->moveTo(fsPath);
         // nacteme predmety a vytiskneme
@@ -56,14 +52,12 @@ void FileOperations::makeDirectory(const std::string& path) {
     auto folderName = fsPath.back(); // nazev souboru je posledni prvek objektu FileSystemPath
     fsPath.popBack(); // odstranime nazev slozky, protoze tam se presouvat nebudeme
 
-    if (fsPath.size() > 0) {
-        try {
-            pathContext->moveTo(fsPath); // presuneme se do aktualni cesty
-        }
-        catch (FSException& exception) {
-            restorePathContextState(absolutePath);
-            throw FSException("PATH NOT FOUND (neexistuje zadana cesta)");
-        }
+    try {
+        pathContext->moveTo(fsPath); // presuneme se do aktualni cesty
+    }
+    catch (FSException& exception) {
+        restorePathContextState(absolutePath);
+        throw FSException("PATH NOT FOUND (neexistuje zadana cesta)");
     }
 
     pathContext->loadItems(); // nacteme soubory
@@ -187,16 +181,15 @@ void FileOperations::getInfo(const std::string& path) {
     auto itemName = fsPath.releaseBack();
 
     auto absolutePath = pathContext->absolutePath;
-    if (fsPath.size() > 0) {
-        try {
-            pathContext->moveTo(fsPath);
-        }
-        catch (FSException& ex) {
-            restorePathContextState(absolutePath);
-            throw FSException("FILE NOT FOUND (neni zdroj)");
-        }
-        pathContext->loadItems();
+    try {
+        pathContext->moveTo(fsPath);
     }
+    catch (FSException& ex) {
+        restorePathContextState(absolutePath);
+        throw FSException("FILE NOT FOUND (neni zdroj)");
+    }
+    pathContext->loadItems();
+
 
     auto index = pathContext->getFolderItemIndex(itemName);
     if (index == -1) {
@@ -208,9 +201,8 @@ void FileOperations::getInfo(const std::string& path) {
     auto node = fileSystemController.getINodeFromAddress(item.nodeAddress);
     fileSystemController.printINodeInfo(node, item);
 
-    if (fsPath.size() > 0) {
-        restorePathContextState(absolutePath);
-    }
+    restorePathContextState(absolutePath);
+
 }
 
 void FileOperations::removeDirectory(const std::string& path) {
@@ -224,16 +216,15 @@ void FileOperations::removeDirectory(const std::string& path) {
         throw FSException("Failed to remove '.', invalid argument");
     }
 
-    if (fsPath.size() > 0) {
-        try {
-            pathContext->moveTo(fsPath);
-            pathContext->loadItems();
-        }
-        catch (FSException& ex) {
-            restorePathContextState(absolutePath);
-            throw FSException(ex.what());
-        }
+    try {
+        pathContext->moveTo(fsPath);
+        pathContext->loadItems();
     }
+    catch (FSException& ex) {
+        restorePathContextState(absolutePath);
+        throw FSException(ex.what());
+    }
+
 
     auto folderIndex = pathContext->getFolderItemIndex(folder);
     if (folderIndex == -1) {
@@ -270,16 +261,15 @@ void FileOperations::removeFile(const std::string& path) {
     auto fileName = fsPath.releaseBack();
 
     auto absolutePath = pathContext->absolutePath;
-    if (fsPath.size() > 0) {
-        try {
-            pathContext->moveTo(fsPath);
-            pathContext->loadItems();
-        }
-        catch (FSException& ex) {
-            restorePathContextState(absolutePath);
-            throw FSException(ex.what());
-        }
+    try {
+        pathContext->moveTo(fsPath);
+        pathContext->loadItems();
     }
+    catch (FSException& ex) {
+        restorePathContextState(absolutePath);
+        throw FSException(ex.what());
+    }
+
 
     auto fileIndex = pathContext->getFolderItemIndex(fileName);
 
@@ -324,15 +314,13 @@ void FileOperations::copyIntoFileSystem(const std::string& outPath, const std::s
     auto absolutePath = pathContext->absolutePath;
     auto fileName = fsPath.releaseBack();
 
-    if (fsPath.size() > 0) {
-        try {
-            pathContext->moveTo(fsPath);
-            pathContext->loadItems();
-        }
-        catch (FSException& ex) {
-            restorePathContextState(absolutePath);
-            throw FSException("PATH NOT FOUND (neexistuje cilova cesta)");
-        }
+    try {
+        pathContext->moveTo(fsPath);
+        pathContext->loadItems();
+    }
+    catch (FSException& ex) {
+        restorePathContextState(absolutePath);
+        throw FSException("PATH NOT FOUND (neexistuje cilova cesta)");
     }
 
     if (pathContext->getFolderItemIndex(fileName) != -1) {
@@ -364,16 +352,15 @@ void FileOperations::readFile(const std::string& path) {
     auto file = fsPath.releaseBack();
 
     auto absolutePath = pathContext->absolutePath;
-    if (fsPath.size() > 0) {
-        try {
-            pathContext->moveTo(fsPath);
-            pathContext->loadItems();
-        }
-        catch (FSException& ex) {
-            restorePathContextState(absolutePath);
-            throw FSException("FILE NOT FOUND (neni zdroj)");
-        }
+    try {
+        pathContext->moveTo(fsPath);
+        pathContext->loadItems();
     }
+    catch (FSException& ex) {
+        restorePathContextState(absolutePath);
+        throw FSException("FILE NOT FOUND (neni zdroj)");
+    }
+
 
     auto folderItemIndex = pathContext->getFolderItemIndex(file);
     if (folderItemIndex == -1) {
@@ -416,15 +403,13 @@ void FileOperations::exportFromFileSystem(const std::string& path, const std::st
     auto file = fsPath.releaseBack();
 
     auto absolutePath = pathContext->absolutePath;
-    if (fsPath.size() > 0) {
-        try {
-            pathContext->moveTo(fsPath);
-            pathContext->loadItems();
-        }
-        catch (FSException& ex) {
-            restorePathContextState(absolutePath);
-            throw FSException(ex.what());
-        }
+    try {
+        pathContext->moveTo(fsPath);
+        pathContext->loadItems();
+    }
+    catch (FSException& ex) {
+        restorePathContextState(absolutePath);
+        throw FSException(ex.what());
     }
 
     auto folderItemIndex = pathContext->getFolderItemIndex(file);
@@ -451,9 +436,8 @@ void FileOperations::exportFromFileSystem(const std::string& path, const std::st
         throw FSException(ex.what());
     }
 
-    if (fsPath.size() > 0) {
-        restorePathContextState(absolutePath);
-    }
+    restorePathContextState(absolutePath);
+    std::cout << "OK" << std::endl;
 }
 
 void FileOperations::moveFile(const std::string& fileSource, const std::string& fileDest, bool deleteFromSource) {
@@ -466,32 +450,28 @@ void FileOperations::moveFile(const std::string& fileSource, const std::string& 
     auto absolutePath = pathContext->absolutePath; // zaloha absolutni cesty path kontextu pro navrat
 
     // test jestli cilova cesta existuje
-    if (destPath.size() > 0) {
-        try {
-            pathContext->moveTo(destPath);
-            pathContext->loadItems();
-            if (pathContext->getFolderItemIndex(destFileName) != -1) {
-                throw FSException("Error, file already exists in target folder");
-            }
+    try {
+        pathContext->moveTo(destPath);
+        pathContext->loadItems();
+        if (pathContext->getFolderItemIndex(destFileName) != -1) {
+            throw FSException("Error, file already exists in target folder");
         }
-        catch (FSException& ex) {
-            restorePathContextState(absolutePath);
-            throw FSException("FILE NOT FOUND (neexistuje cilova cesta)");
-        }
-
+    }
+    catch (FSException& ex) {
         restorePathContextState(absolutePath);
+        throw FSException("FILE NOT FOUND (neexistuje cilova cesta)");
     }
 
+    restorePathContextState(absolutePath);
+
     // test jestli zdrojova cesta existuje
-    if (sourcePath.size() > 0) {
-        try {
-            pathContext->moveTo(sourcePath);
-            pathContext->loadItems();
-        }
-        catch (FSException& ex) {
-            restorePathContextState(absolutePath);
-            throw FSException("FILE NOT FOUND (neni zdroj)");
-        }
+    try {
+        pathContext->moveTo(sourcePath);
+        pathContext->loadItems();
+    }
+    catch (FSException& ex) {
+        restorePathContextState(absolutePath);
+        throw FSException("FILE NOT FOUND (neni zdroj)");
     }
 
     // index folder itemu v dane ceste
@@ -549,8 +529,6 @@ void FileOperations::copyFile(const std::string& fileSource, const std::string& 
     auto destFileName = destPath.releaseBack();
     auto absolutePath = pathContext->absolutePath; // zaloha absolutni cesty path kontextu pro navrat
 
-
-    if (destPath.size() > 0) {
         try {
             pathContext->moveTo(destPath);
             pathContext->loadItems();
@@ -563,11 +541,8 @@ void FileOperations::copyFile(const std::string& fileSource, const std::string& 
             restorePathContextState(absolutePath);
             throw FSException(ex.what());
         }
-
         restorePathContextState(absolutePath);
-    }
 
-    if (sourcePath.size() > 0) {
         try {
             pathContext->moveTo(sourcePath);
             pathContext->loadItems();
@@ -576,7 +551,6 @@ void FileOperations::copyFile(const std::string& fileSource, const std::string& 
             restorePathContextState(absolutePath);
             throw FSException("FILE NOT FOUND (neni zdroj)");
         }
-    }
 
     // index folder itemu v dane ceste
     auto folderItemIndex = pathContext->getFolderItemIndex(sourceFileName);
@@ -597,6 +571,9 @@ void FileOperations::copyFile(const std::string& fileSource, const std::string& 
         throw FSException(ex.what());
     }
 
+    pathContext->moveTo(destPath);
+    pathContext->loadItems();
+
     // ziskani nove inode
     auto newFileNode = fileSystemController.getFreeINode(false);
     auto newFileNodeAddress = fileSystemController.getINodeAddress(newFileNode);
@@ -608,9 +585,6 @@ void FileOperations::copyFile(const std::string& fileSource, const std::string& 
         restorePathContextState(absolutePath);
         throw FSException("Error, folder is full");
     }
-
-    pathContext->moveTo(destPath);
-    pathContext->loadItems();
 
     if (pathContext->getFolderItemIndex(destFileName) != -1) {
         fileSystemController.reclaimINode(newFileNode);
