@@ -36,8 +36,9 @@ int PathContext::getFolderItemIndex(std::string& folderItemName) {
 
 void PathContext::moveToRoot(bool fetchFolderItems) {
     auto root = absolutePath[0];
+    auto updatedRoot = fileOperations.getUpdatedINode(root);
     absolutePath = std::vector<INode>();
-    absolutePath.push_back(root);
+    absolutePath.push_back(updatedRoot);
 
     if (fetchFolderItems) {
         fileOperations.getFolderItems(root);

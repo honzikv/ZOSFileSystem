@@ -15,6 +15,7 @@ void FileOperations::printCurrentFolderItems() {
 void FileOperations::listItems(const std::string& path) {
     auto fsPath = FileSystemPath(path);
 
+    // pokud je aktualni cesta prazdna (tzn pouze prikaz ls) vypiseme aktualni adresar
     if (fsPath.size() == 0) {
         printCurrentFolderItems();
         return;
@@ -75,8 +76,7 @@ void FileOperations::makeDirectory(const std::string& path) {
     auto parentNode = pathContext->absolutePath.back();
     auto parentNodeAddress = fileSystemController.getINodeAddress(parentNode);
 
-    // hodi exception pokud je jmeno nesmysl a ukonci operaci
-    FolderItem::validateFolderName(folderName);
+    // pokud je slozka plna hodi exception (coz asi ale neni realisticke pro tento pripad)
     if (parentNode.isFolderFull()) {
         restorePathContextState(absolutePath);
         throw FSException("Error, specified folder is full");

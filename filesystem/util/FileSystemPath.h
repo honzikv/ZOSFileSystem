@@ -40,7 +40,9 @@ class FileSystemPath {
           // prepise se na local pokud je relativni a ma velikost 1
           pathType = path.starts_with('/') ? PathType::Absolute
                                            : PathType::Relative;
-          auto result = StringParsing::parsePath(path);
+          auto parseString = pathType == PathType::Absolute ? path.substr(1) : path;
+
+          auto result = StringParsing::parsePath(parseString);
           this->path = result;
       }
 

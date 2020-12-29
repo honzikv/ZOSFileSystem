@@ -53,7 +53,7 @@ class FileOperations {
        */
       void changeDirectory(const std::string& path);
 
-      std::string getFolderName(uint64_t nodeAddress, const std::vector<FolderItem>& vector);
+      static std::string getFolderName(uint64_t nodeAddress, const std::vector<FolderItem>& vector);
 
       void printCurrentPath();
 
