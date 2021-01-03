@@ -146,15 +146,9 @@ class FileStream {
 
       void readINode(INode& node);
 
-      bool isOpen();
-
       void deleteFile();
 
       void createFile();
-
-      long getWritePosition();
-
-      long getReadPosition();
 
       std::vector<FolderItem> readNFolderItems(uint64_t address, uint32_t n);
 };

@@ -22,8 +22,6 @@ class CLI {
 
       void executeScript(const std::vector<std::string>& tokens);
 
-      bool startsWith(const std::string& input, const std::string& token);
-
       void execute(const std::vector<std::string>& tokens);
 
       static void printHelp();

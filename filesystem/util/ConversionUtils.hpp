@@ -49,28 +49,10 @@ class ConversionUtils {
           return kilobyteSize * KILOBYTE_TO_BYTES;
       }
 
-      static const uint64_t bytesToKilobytes(uint64_t bytes) {
-          return bytes / KILOBYTE_TO_BYTES;
-      }
-
       static const uint64_t bytesToMegabytes(uint64_t bytes) {
           return bytes / MEGABYTE_TO_BYTES;
       }
 
-
-      static uint64_t toBytes(UnitType type, uint64_t size) {
-          if (type == UnitType::Byte) {
-              return size;
-          }
-          if (type == UnitType::Kilobyte) {
-              return kilobytesToBytes(size);
-          }
-          if (type == UnitType::Megabyte) {
-              return megabytesToBytes(size);
-          } else {
-              return gigabyteToBytes(size);
-          }
-      }
 };
 
 

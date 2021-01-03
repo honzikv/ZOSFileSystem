@@ -17,8 +17,6 @@ enum class PathType {
 
 class FileSystemPath {
 
-      int currentIndex = 0; // aktualni index pro iteraci
-
       std::vector<std::string> path; // cesta kdy index 0 je na zacatku a index n je konecna slozka
 
       PathType pathType;
@@ -46,20 +44,36 @@ class FileSystemPath {
           this->path = result;
       }
 
+      /**
+       * [] operátor pro snažší přístup než přes get metody
+       * @param i index prvku
+       * @return prvek na i-tém indexu
+       */
       std::string operator[](int i) {
           return path[i];
       }
 
+      /**
+       * Vrátí poslední prvek, stejně jako vektor
+       * @return poslední prvek v cestě
+       */
       std::string back() {
           return path.back();
       }
 
+      /**
+       * Uvolní poslední prvek z cesty a vrátí ho
+       * @return poslední prvek cesty
+       */
       std::string releaseBack() {
           auto back = path.back();
           path.pop_back();
           return back;
       }
 
+      /**
+       * Uvolní poslední prvek cesty
+       */
       void popBack() {
           path.pop_back();
       }

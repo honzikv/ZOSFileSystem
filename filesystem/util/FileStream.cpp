@@ -146,18 +146,6 @@ void FileStream::close() {
     fstream.close();
 }
 
-bool FileStream::isOpen() {
-    return fstream.is_open();
-}
-
-long FileStream::getWritePosition() {
-    return fstream.tellp();
-}
-
-long FileStream::getReadPosition() {
-    return fstream.tellg();
-}
-
 FileStream::~FileStream() {
     fstream.flush();
 }

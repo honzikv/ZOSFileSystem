@@ -6,10 +6,6 @@
 CLI::CLI(std::string filePath) : filePath(std::move(filePath)) {
 }
 
-bool CLI::startsWith(const std::string& input, const std::string& token) {
-    return input.find(token) == 0;
-}
-
 void CLI::run() {
     std::cout << "Virtual File System Application" << std::endl;
     std::cout << "Type \"format\" to format disk" << std::endl;
