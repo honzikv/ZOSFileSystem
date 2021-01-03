@@ -1,5 +1,4 @@
 #include "INodeIO.hpp"
-#include "../io/AddressType.h"
 
 
 INodeIO::INodeIO(FileStream& fileStream, FileSystemController& fileSystemController) : fileStream(fileStream),
@@ -32,10 +31,10 @@ void INodeIO::appendToT2Block(uint32_t itemPosition, uint64_t t2Address, std::ve
                               FolderItem& folderItem) {
     auto t2Row = itemPosition / (Globals::POINTERS_PER_BLOCK() * Globals::FOLDER_ITEMS_PER_BLOCK());
 
-    uint64_t t1Pointer;
+    uint64_t t1Pointer; // precteme pointer z bloku
     fileStream.moveTo(t2Address + t2Row * Globals::POINTER_SIZE_BYTES);
     fileStream.read(t1Pointer);
-    if (t1Pointer == Globals::INVALID_VALUE) {
+    if (t1Pointer == Globals::INVALID_VALUE) { //
         auto address = fileSystemController.nextBlock(AddressType::Pointer);
         allocations.push_back(address);
         t1Pointer = address;
@@ -50,7 +49,7 @@ void INodeIO::appendToT2Block(uint32_t itemPosition, uint64_t t2Address, std::ve
 
 void INodeIO::writeAt(INode& node, uint32_t index, FolderItem& folderItem) {
     // write na jiz alokovanou pozici lze zaridit pomoci INodeIO::append, kdy zmenime velikost INode na index, kam
-    // chceme prvek zapsat, funkce by nemela nikdy spadnout, protoze bloky uz alokovane jsou
+    // chceme prvek zapsat
     auto swap = node.size;
     node.size = index;
     appendFolderItem(node, folderItem, false);

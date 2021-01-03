@@ -10,41 +10,64 @@
 #include "../../util/FileStream.hpp"
 
 /**
-*                               Filesystem
-* 0 ......... | ............ | .................... | ..... | ....... EOF
-* Super Block | Block Bitmap |       Node Bitmap    | Nodes | Data Blocks
+* Obsahuje informace o super bloku
 */
 struct SuperBlock {
 
-    uint16_t magicNumber = (uint16_t) Globals::INVALID_VALUE; // cislo pro kontrolu
-    uint64_t totalSize = Globals::INVALID_VALUE; // celkova velikost
+      uint16_t magicNumber = (uint16_t) Globals::INVALID_VALUE; // cislo pro kontrolu
+      uint64_t totalSize = Globals::INVALID_VALUE; // celkova velikost
 
-    uint64_t blockSize = Globals::INVALID_VALUE; // velikost jednoho bloku
-    uint64_t blockCount = Globals::INVALID_VALUE; // Number of data blocks
-    uint64_t blockBitmapAddress = Globals::INVALID_VALUE; // Beginning of bitmap with taken blocks
+      uint64_t blockSize = Globals::INVALID_VALUE; // velikost jednoho bloku
+      uint64_t blockCount = Globals::INVALID_VALUE; // Pocet datovych bloku
+      uint64_t blockBitmapAddress = Globals::INVALID_VALUE; // Pocatek bitmapy pro datove bloky
 
-    uint64_t nodeCount = Globals::INVALID_VALUE; // Total number of nodes
-    uint64_t nodeBitmapAddress = Globals::INVALID_VALUE; // Address of the first node object
+      uint64_t nodeCount = Globals::INVALID_VALUE; // Pocet INodes
+      uint64_t nodeBitmapAddress = Globals::INVALID_VALUE; // Adresa bitmapy pro INodes
 
-    uint64_t nodeAddress = Globals::INVALID_VALUE;
-    uint64_t dataAddress = Globals::INVALID_VALUE; // Start of data blocks
+      uint64_t nodeAddress = Globals::INVALID_VALUE; // Pocatek INode objektu
+      uint64_t dataAddress = Globals::INVALID_VALUE; // Pocatek datovych bloku
 
-    uint64_t freeNodes = Globals::INVALID_VALUE; // Pocet volnych inodes, aby se pro prikaz nemuselo pocitat s O(N) slozitosti
-    uint64_t freeBlocks = Globals::INVALID_VALUE; // Pocet volnych datovych bloku, aby se nemuselo pocitat s O(N)
+      uint64_t freeNodes = Globals::INVALID_VALUE;
+      uint64_t freeBlocks = Globals::INVALID_VALUE;
 
-    explicit SuperBlock(uint64_t totalSize);
+      /**
+       * Konstruktor pro vytvoreni super bloku, automaticky inicializuej vsechna potrebna data
+       * @param totalSize
+       */
+      explicit SuperBlock(uint64_t totalSize);
 
-    SuperBlock() = default;
+      SuperBlock() = default;
 
-    [[nodiscard]] bool isValid() const;
+      /**
+       * Vrati, zda-li je super blok validni (porovnani cisla)
+       * @return true, pokud je super blok validni, jinak false
+       */
+      [[nodiscard]] bool isValid() const;
 
-    static uint64_t getBlockCount(uint64_t sizeBytes);
+    private:
+      /**
+       * Vypocte pocet bloku
+       * @param sizeBytes velikost disku v bytech
+       * @return pocet datovych bloku
+       */
+      static uint64_t getBlockCount(uint64_t sizeBytes);
 
-    static uint64_t getNodeCount(uint64_t sizeBytes);
+      /**
+       * Vypocte pocet INodes pro disk
+       * @param sizeBytes velikost disku v bytech
+       * @return pocet inode
+       */
+      static uint64_t getNodeCount(uint64_t sizeBytes);
 
-    static uint64_t getBitmapSize(uint64_t objectCount);
+      /**
+       * Vrati velikost bitmapy pro dany pocet objektu
+       * @param objectCount pocet objektu
+       * @return velikost bitmapy v bytech
+       */
+      static uint64_t getBitmapSize(uint64_t objectCount);
 
-    void printInfo() const;
+    public:
+      void printInfo() const;
 };
 
 

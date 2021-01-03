@@ -30,19 +30,16 @@ enum class DriveState {
 class FileSystemController {
       friend class FileSystem;
 
-      FileStream& fileStream; // reference na filestream ziskana z FileSystem tridy
+      FileStream& fileStream; // reference na filestream ziskana z FileSystem objektu
 
       DriveState driveState = DriveState::Empty; // stav disku
 
       std::shared_ptr<SuperBlock> superBlock; // reference na super blok disku
-
       std::shared_ptr<MemoryAllocator> memoryAllocator; // reference na memory alokator pro prirazovani pameti
-
       std::shared_ptr<INodeIO> nodeIO; // reference na praci s INodes
-
       std::shared_ptr<FileOperations> fileOperations; // reference na praci se soubory
 
-      void initDrive();
+      void initDrive(); // inicializace disku - zapis inod, bitmapy apod.
 
     public:
 
@@ -89,8 +86,6 @@ class FileSystemController {
       void reclaimMemory(std::vector<uint64_t>& memoryBlocks);
 
       void refresh(INode& node);
-
-      void writeINode(INode& node);
 
       std::vector<FolderItem> getFolderItems(INode& node);
 
