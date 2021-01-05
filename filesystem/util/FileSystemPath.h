@@ -10,16 +10,16 @@
 #include <optional>
 
 enum class PathType {
-      Empty,
-      Relative,
-      Absolute
+      Empty, // prazdna (velikost 0)
+      Relative, // relativni - nezacina /
+      Absolute // absolutni - zacina /
 };
 
 class FileSystemPath {
 
       std::vector<std::string> path; // cesta kdy index 0 je na zacatku a index n je konecna slozka
 
-      PathType pathType;
+      PathType pathType; // typ cesty
 
     public:
       [[nodiscard]] PathType getPathType() const {

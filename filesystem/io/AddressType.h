@@ -6,10 +6,9 @@
  * Typ adresy, pouzito pro formatovani
  */
 enum class AddressType {
-    Pointer,
-    FolderItem,
-    RAW_DATA
-
+      Pointer, // pointer - nastavime na invalid 64 bit
+      FolderItem, // folder item - nastavime na prazdny
+      RawData
 };
 
 #endif //ZOSREWORK_ADDRESSTYPE_H

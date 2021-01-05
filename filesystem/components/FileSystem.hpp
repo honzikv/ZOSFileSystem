@@ -18,7 +18,7 @@ class FileSystem {
 
       FileStream& fileStream; // reference na file stream pro zapis na "disk"
 
-      std::unordered_set<std::string> commandList { // seznam vsech pouzitelnych prikazu
+      std::unordered_set<std::string> commandList{ // seznam vsech pouzitelnych prikazu
               "format", "mount", "cp", "mv", "rm", "mkdir",
               "rmdir", "ls", "cat", "cd", "pwd", "info",
               "incp", "outcp", "load", "ln",

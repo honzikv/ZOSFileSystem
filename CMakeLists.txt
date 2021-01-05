@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.17)
-project(ZOSRework)
+project(ZOSFS)
 set (${CMAKE_CXX_FLAGS} -Wall -Wextra)
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_GENERATOR "MinGW Makefiles")
 
 include_directories(filesystem)
 
-add_executable(ZOSRework main.cpp
+add_executable(ZOSFS main.cpp
         filesystem/global/Globals.hpp
         filesystem/io/AddressType.h
         filesystem/io/model/INode.cpp

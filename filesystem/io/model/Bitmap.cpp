@@ -4,7 +4,8 @@
 Bitmap::Bitmap(uint64_t bitmapStartAddress, uint32_t count, uint64_t objectStartAddress, uint64_t objectSizeBytes,
                FileStream& fileStream, std::string name) : bitmapStartAddress(bitmapStartAddress), fstream(fileStream),
                                                            objectSizeBytes(objectSizeBytes),
-                                                           objectStartAddress(objectStartAddress), name(std::move(name)) {
+                                                           objectStartAddress(objectStartAddress),
+                                                           name(std::move(name)) {
     fileStream.moveTo(bitmapStartAddress);
     auto bytes = count % 8 > 0 ? (count / 8) + 1 : (count / 8);
 
@@ -28,7 +29,8 @@ uint64_t Bitmap::getFirstEmptyAddress() {
         }
     }
 
-    if (index != -1) { // pokud neni index -1 (resp. preteceni uint32_t) najdeme prvni prazdny bit a vratime danou adresu
+    if (index !=
+        -1) { // pokud neni index -1 (resp. preteceni uint32_t) najdeme prvni prazdny bit a vratime danou adresu
         auto bit = getFirstEmptyBit(bitmap[index]);
         return (index * 8 + bit) * objectSizeBytes + objectStartAddress;
     } else {

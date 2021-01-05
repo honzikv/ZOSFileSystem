@@ -28,7 +28,10 @@ void FileStream::createFileIfNotExists(const std::filesystem::path& filePath) {
     auto ifstream = std::ifstream(filePath.string());
     if (!ifstream.good()) {
         ifstream.close();
-        std::ofstream(filePath.string());
+        auto ofstream = std::ofstream(filePath.string());
+        if (!ofstream.good()) {
+            throw FSException("CANNOT CREATE FILE");
+        }
     }
 }
 
@@ -69,12 +72,12 @@ std::vector<FolderItem> FileStream::readNFolderItems(uint64_t address, uint32_t 
 }
 
 void FileStream::format(uint64_t bytes) {
-    moveTo(0);
+    moveTo(0); // presun na adresu 0 a zapis '/0'
     auto buffer = std::vector<char>(FORMAT_BUFFER_SIZE_BYTES, 0);
     auto bufferWrites = bytes / FORMAT_BUFFER_SIZE_BYTES;
     auto remainder = bytes % FORMAT_BUFFER_SIZE_BYTES;
 
-    if (lastOp == LastOperation::Read) {
+    if (lastOp == LastOperation::Read) { // pokud byla posledni operace read musime prepnout, jinak undefined behavior
         fstream.seekp(fstream.tellp(), std::ios::beg);
         lastOp = LastOperation::Write;
     }

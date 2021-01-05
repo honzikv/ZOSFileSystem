@@ -212,7 +212,7 @@ void FileSystemController::linkFolderToParent(INode& child, uint64_t childAddres
     nodeIO->linkFolderToParent(child, childAddress, parentNodeAddress);
 }
 
-void FileSystemController::printINodeInfo(INode& node , FolderItem& folderItem) {
+void FileSystemController::printINodeInfo(INode& node, FolderItem& folderItem) {
     nodeIO->printINodeInfo(node, folderItem);
 }
 

@@ -11,12 +11,12 @@ Globalni hodnoty pro snazsi pristup
  */
 struct Globals {
 
-    static constexpr float BLOCK_RATIO = 0.9;
-    static constexpr float INODE_RATIO = 0.1;
+    static constexpr float BLOCK_RATIO = 0.9; // bloky : inodes
+    static constexpr float INODE_RATIO = 0.1; // inodes : blokum
 
-    static constexpr uint64_t MIN_DRIVE_SIZE = 1024 * 10 * 1024;
-    static constexpr uint16_t SUPER_BLOCK_MAGIC_NUMBER = 0x53ef;
-    static constexpr uint64_t SUPERBLOCK_SIZE_BYTES = 10 * sizeof(uint64_t) + sizeof(uint16_t);
+    static constexpr uint64_t MIN_DRIVE_SIZE = 1024 * 10 * 1024; // minimalni velikost disku (10 MB)
+    static constexpr uint16_t SUPER_BLOCK_MAGIC_NUMBER = 0x53ef; // magicke cislo pro kontrolu
+    static constexpr uint64_t SUPERBLOCK_SIZE_BYTES = 10 * sizeof(uint64_t) + sizeof(uint16_t); // velikost super bloku
 
     static constexpr uint64_t INVALID_VALUE = std::numeric_limits<uint64_t>::max(); // invalid value pro kontrolu
     static inline uint32_t BLOCK_SIZE_BYTES = 4096;
@@ -56,7 +56,7 @@ struct Globals {
 
     static uint64_t T0_CAPACITY() { return FOLDER_ITEMS_PER_BLOCK(); } // kapacita jednoho T0 odkazu - tzn. primeho
 
-    static uint64_t T0_ADDRESS_LIST_CAPACITY() { return T0_CAPACITY() * T0_ADDRESS_LIST_SIZE; }
+    [[maybe_unused]] static uint64_t T0_ADDRESS_LIST_CAPACITY() { return T0_CAPACITY() * T0_ADDRESS_LIST_SIZE; }
 
     static uint64_t T0_ADDRESS_LIST_CAPACITY_BYTES() { return BLOCK_SIZE_BYTES * T0_ADDRESS_LIST_SIZE; }
 
@@ -68,29 +68,29 @@ struct Globals {
         return T0_CAPACITY() * POINTERS_PER_BLOCK();
     }// kapacita jednoho T1 odkazu - tzn 1. neprimeho
 
-    static uint64_t T2_CAPACITY() {
+    [[maybe_unused]] static uint64_t T2_CAPACITY() {
         return T1_CAPACITY() * POINTERS_PER_BLOCK();
     }
 
-    static uint32_t maxAddressableBlocksPerINode() {
+    static uint32_t maxAddressableBlocksPerINode() { // max pocet adresovatelnych bloku jednou INode
         return T0_ADDRESS_LIST_SIZE + POINTERS_PER_BLOCK() + POINTERS_PER_BLOCK() * POINTERS_PER_BLOCK();
     }
 
-    static bool isFileTooLarge(uint64_t bytes) {
+    [[maybe_unused]] static bool isFileTooLarge(uint64_t bytes) { // zda-li je soubor moc velky pro filesystem (nevyuzito)
         return bytes > (T0_ADDRESS_LIST_CAPACITY_BYTES() + T1_POINTER_CAPACITY_BYTES() + T2_POINTER_CAPACITY_BYTES());
     }
 
-    static uint32_t getBlockCount(uint64_t bytes) {
+    static uint32_t getBlockCount(uint64_t bytes) { // pocet bloku z bytu
         return bytes % BLOCK_SIZE_BYTES == 0 ? bytes / BLOCK_SIZE_BYTES : bytes / BLOCK_SIZE_BYTES + 1;
     }
 
-    static uint32_t MAX_FOLDER_ITEMS() {
+    static uint32_t MAX_FOLDER_ITEMS() { // max pocet predmetu ve slozce
         return T0_ADDRESS_LIST_SIZE * FOLDER_ITEMS_PER_BLOCK() + POINTERS_PER_BLOCK() * FOLDER_ITEMS_PER_BLOCK() +
                POINTERS_PER_BLOCK() * POINTERS_PER_BLOCK() * FOLDER_ITEMS_PER_BLOCK();
     }
 
-    static inline const std::string CURRENT_FOLDER_SYMBOL = ".";
-    static inline const std::string PARENT_FOLDER_SYMBOL = "..";
+    static inline const std::string CURRENT_FOLDER_SYMBOL = "."; // symbol pro aktualni slozku
+    static inline const std::string PARENT_FOLDER_SYMBOL = ".."; // symbol pro nadrazenou slozku
 
 
     static uint64_t MAX_FILE_SIZE_BYTES() {

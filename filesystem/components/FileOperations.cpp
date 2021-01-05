@@ -155,6 +155,7 @@ void FileOperations::printCurrentPath() {
         path.push_back(folderName);
     }
 
+    // join pomoci '/' a print do konzole
     auto delim = "/";
     auto stringStream = std::ostringstream();
     std::copy(path.begin(), path.end(), std::ostream_iterator<std::string>(stringStream, delim));
@@ -293,8 +294,7 @@ void FileOperations::removeFile(const std::string& path) {
 
     if (fileNode.getRefCount() == 0) {
         fileSystemController.reclaimINode(fileNode);
-    }
-    else {
+    } else {
         fileNode.decrRefCount();
         fileSystemController.refresh(fileNode);
     }
@@ -526,8 +526,7 @@ void FileOperations::moveFile(const std::string& fileSource, const std::string& 
             fileSystemController.removeFolderItem(parent, folderItem); // odstranime predmet z aktualni slozky
         }
 
-    }
-    else {
+    } else {
         // jinak zvysime pocet referenci inode daneho souboru
         fileNode.incrRefCount();
         fileSystemController.refresh(fileNode); // refresh pro zapsani do souboru

@@ -61,7 +61,7 @@ void INodeIO::copyData(INode& source, INode& dest) {
     auto dataBlocksRequired = Globals::getBlockCount(bytes);
     auto extraBlocksRequired = getExtraBlocks(bytes);
 
-    auto dataBlocks = fileSystemController.nextNBlocks(dataBlocksRequired, AddressType::RAW_DATA);
+    auto dataBlocks = fileSystemController.nextNBlocks(dataBlocksRequired, AddressType::RawData);
     auto pointerBlocks = fileSystemController.nextNBlocks(extraBlocksRequired, AddressType::Pointer);
     auto pointerBlockIndex = 0;
 
@@ -146,7 +146,7 @@ void INodeIO::appendExternalFile(INode& parent, INode& node, FolderItem& folderI
         throw FSException("Error, file is too large to contain in the filesystem");
     }
 
-    auto dataBlocks = fileSystemController.nextNBlocks(dataBlocksRequired, AddressType::RAW_DATA);
+    auto dataBlocks = fileSystemController.nextNBlocks(dataBlocksRequired, AddressType::RawData);
     auto pointerBlocks = fileSystemController.nextNBlocks(extraBlocksRequired, AddressType::Pointer);
     auto pointerBlockIndex = 0;
 
@@ -373,7 +373,7 @@ void INodeIO::linkFolderToParent(INode& current, uint64_t currentNodeAddress, ui
 
 void INodeIO::printINodeInfo(INode& node, FolderItem& folderItem) {
     std::cout << "NAME: " << folderItem.getItemName() << " - SIZE: " << node.size << " - NUMBER: "
-              << node.id << " - TYPE: " << (node.isFolder() ? "folder " : "file ") << " - REF_COUNT: " << node.refCount
+              << node.id << " - REF_COUNT: " << node.refCount
               << std::endl;
 
     auto blocks = getINodeBlocks(node);
@@ -571,15 +571,17 @@ void INodeIO::exportFile(INode& node, FileStream& outputFileStream) {
     auto blockCount = Globals::getBlockCount(bytes);
     auto remainingBytes = bytes;
 
+    // buffer pro cteni dat
     auto buffer = std::vector<char>(Globals::BLOCK_SIZE_BYTES, '\0');
     for (auto currentBlock = 0; currentBlock < blockCount; currentBlock += 1) {
         if (remainingBytes < Globals::BLOCK_SIZE_BYTES) {
-            buffer = std::vector<char>(remainingBytes, '\0');
+            buffer = std::vector<char>(remainingBytes, '\0'); // nechceme precist vice nez je mozno
             remainingBytes = 0;
         } else {
             remainingBytes -= Globals::BLOCK_SIZE_BYTES;
         }
 
+        // vyber daneho bloku
         if (currentBlock < Globals::T0_ADDRESS_LIST_SIZE) {
             fileStream.moveTo(node.t0AddressList[currentBlock]);
             fileStream.readVector(buffer);

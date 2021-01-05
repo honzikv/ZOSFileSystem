@@ -148,9 +148,14 @@ void FileSystem::format(std::vector<std::string>& args) {
         throw FSException("Error file system must be at least 10MB");
     }
 
-    fileStream.deleteFile(); // smazeme predchozi soubor
-    fileStream.createFile(); // vytvorime prazdny soubor
-    fileStream.open(); // otevreme fstream
+    try {
+        fileStream.deleteFile(); // smazeme predchozi soubor
+        fileStream.createFile(); // vytvorime prazdny soubor
+        fileStream.open(); // otevreme fstream
+    }
+    catch (FSException& exception) {
+        throw FSException("CANNOT CREATE FILE");
+    }
 
     auto superBlock = SuperBlock(sizeBytes);
     fileStream.moveTo(0);
