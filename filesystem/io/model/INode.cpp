@@ -7,8 +7,6 @@ uint32_t INode::getFolderSize() const { return size; }
 
 INode::INode() {}
 
-bool INode::isFree() const { return id != (uint32_t) Globals::INVALID_VALUE; }
-
 bool INode::isFolder() const { return folder; }
 
 const std::vector<uint64_t>& INode::getT0AddressList() const { return t0AddressList; }

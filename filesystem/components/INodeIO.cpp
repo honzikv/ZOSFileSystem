@@ -657,12 +657,10 @@ void INodeIO::readFile(INode& node) {
 
         printBuffer(buffer);
     }
-
-    std::cout << std::endl;
 }
 
-void INodeIO::printBuffer(std::vector<char> vector) {
-    auto text = std::string(vector.data());
+void INodeIO::printBuffer(std::vector<char>& vector) {
+    auto text = std::string(vector.begin(), vector.end());
     std::cout << text << std::flush;
 }
 

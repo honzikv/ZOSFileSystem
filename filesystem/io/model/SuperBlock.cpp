@@ -47,5 +47,5 @@ SuperBlock::SuperBlock(uint64_t size) {
     freeNodes = nodeCount - 1; // krome root node
 
     //debug
-    printInfo();
+//    printInfo();
 }

@@ -10,11 +10,11 @@
  * Trida pro "sofistikovane" operace se soubory
  */
 class FileOperations {
-      friend class PathContext;
+      friend class PathContext; // PathContext muze vyuzivat tridu bez pristupovych prav
 
-      std::unique_ptr<PathContext> pathContext;
+      std::unique_ptr<PathContext> pathContext; // kontext, kde se aktualne uzivatel nachazi
 
-      FileSystemController& fileSystemController;
+      FileSystemController& fileSystemController; // reference na FileSystemController pro zavolani operaci
 
     public:
 

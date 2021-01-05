@@ -20,7 +20,7 @@ void Bitmap::updateBitmap(uint64_t bitmapIndex, uint8_t value) {
 
 
 uint64_t Bitmap::getFirstEmptyAddress() {
-    uint32_t index = -1;
+    uint32_t index = -1; // index adresy v bitmape
     for (auto i = 0; i < bitmap.size(); i += 1) {
         if (bitmap[i] < 0xff) {
             index = i;
@@ -28,11 +28,11 @@ uint64_t Bitmap::getFirstEmptyAddress() {
         }
     }
 
-    if (index != -1) {
+    if (index != -1) { // pokud neni index -1 (resp. preteceni uint32_t) najdeme prvni prazdny bit a vratime danou adresu
         auto bit = getFirstEmptyBit(bitmap[index]);
         return (index * 8 + bit) * objectSizeBytes + objectStartAddress;
     } else {
-        throw FSException("Error bitmap is full");
+        throw FSException("Error, bitmap is full");
     }
 }
 
@@ -49,7 +49,7 @@ void Bitmap::setAddress(uint64_t address, bool empty) {
 }
 
 uint8_t Bitmap::getFirstEmptyBit(uint8_t byte) {
-    auto bitSet = std::bitset<8>(byte);
+    auto bitSet = std::bitset<8>(byte); // prevedeme na bitset a najdeme bit
     for (auto i = 0; i < bitSet.size(); i += 1) {
         if (bitSet[i] == 0) {
             return i;
@@ -62,7 +62,7 @@ uint64_t Bitmap::getIdFromAddress(uint64_t itemAddress) const {
     return (itemAddress - objectStartAddress) / objectSizeBytes;
 }
 
-void Bitmap::debug() {
+void Bitmap::debug() { // vytiskne debug
     std::cout << "BITMAP start address: " << bitmapStartAddress << std::endl;
     for (auto i = 0; i < bitmap.size(); i += 1) {
         if (bitmap[i] > 0) {

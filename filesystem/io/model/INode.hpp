@@ -10,10 +10,12 @@ class FolderItem;
 
 class FileStream;
 
+/**
+ * Reprezentuje INode v FS
+ */
 class INode {
-      friend class FileStream;
-
-      friend class INodeIO;
+      friend class FileStream; // aby FileStream mohl pristupovat k privatnim polim bez getteru a setteru
+      friend class INodeIO; // aby INodeIO mohlo vyuzivat funkcionality bez zbytecnych getteru
 
       bool folder = false;
       uint32_t id = (uint32_t) Globals::INVALID_VALUE; // Id. Bude bud vypocteno z adresy INode nebo INVALID_VALUE
@@ -28,18 +30,25 @@ class INode {
       uint64_t t2Address = Globals::INVALID_VALUE; // Odkaz na blok s odkazy na neprime adresy
 
     public:
+      /**
+       * Getter pro id
+       * @return id
+       */
       [[nodiscard]] uint32_t getId() const;
 
+      /**
+       * Nastavi id INode (v Memory Allocator)
+       * @param id dane id
+       */
       void setId(uint32_t id);
 
+      /**
+       * Nastavi, zda-li je INode slozkou
+       * @param folder true, pokud je slozka, jinak false
+       */
       void setFolder(bool folder);
 
       [[nodiscard]] uint64_t getRefCount() const;
-
-      /**
-       * @return zda-li je INode volna
-       */
-      [[nodiscard]] bool isFree() const;
 
       /**
        * @return zda-li je INode slozka
@@ -89,10 +98,24 @@ class INode {
        */
       void incrRefCount();
 
+      /**
+       * Operator pro rovnost
+       * @param rhs right hand side
+       * @return zda-li se dve INodes rovnaji
+       */
       bool operator==(const INode& rhs) const;
 
+      /**
+       * Operator pro nerovnost
+       * @param rhs right hand side
+       * @return zda-li se dve INodes nerovnaji
+       */
       bool operator!=(const INode& rhs) const;
 
+      /**
+       * Vrati, zda-li je slozka plna
+       * @return
+       */
       [[nodiscard]] bool isFolderFull() const;
 
       /**
@@ -101,8 +124,15 @@ class INode {
        */
       static INode createRoot();
 
+      /**
+       * Nastavi timestamp (nakonec nevyuzito)
+       * @param timestamp
+       */
       void setTimestamp(uint64_t timestamp);
 
+      /**
+       * Snizi pocet referenci na INode
+       */
       void decrRefCount();
 };
 

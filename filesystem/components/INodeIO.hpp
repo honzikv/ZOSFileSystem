@@ -66,7 +66,7 @@ class INodeIO {
 
       uint64_t getExtraBlocks(uint64_t bytes);
 
-      static void printBuffer(std::vector<char> vector);
+      static void printBuffer(std::vector<char>& vector);
 };
 
 #endif //INODEIO_HPP

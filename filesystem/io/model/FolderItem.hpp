@@ -11,11 +11,18 @@
 
 class FileStream;
 
+/**
+ * Reprezentuje predmet ve slozce - DirectoryItem
+ */
 struct FolderItem {
 
       std::vector<char> itemName = std::vector<char>(Globals::FILE_NAME_CHAR_ARRAY_LENGTH, (char) 0); // nazev souboru
       uint64_t nodeAddress = Globals::INVALID_VALUE; // reference na INode
 
+      /**
+       * Validace nazvu slozky
+       * @param input
+       */
       static void validateFolderName(const std::string& input);
 
       static void validateFileName(const std::string& input);

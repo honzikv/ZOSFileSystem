@@ -27,8 +27,8 @@ struct SuperBlock {
       uint64_t nodeAddress = Globals::INVALID_VALUE; // Pocatek INode objektu
       uint64_t dataAddress = Globals::INVALID_VALUE; // Pocatek datovych bloku
 
-      uint64_t freeNodes = Globals::INVALID_VALUE;
-      uint64_t freeBlocks = Globals::INVALID_VALUE;
+      uint64_t freeNodes = Globals::INVALID_VALUE; // nakonec nevyuzito
+      uint64_t freeBlocks = Globals::INVALID_VALUE; // nakonec nevyuzito
 
       /**
        * Konstruktor pro vytvoreni super bloku, automaticky inicializuej vsechna potrebna data
