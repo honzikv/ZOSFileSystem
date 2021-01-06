@@ -21,10 +21,14 @@ struct FolderItem {
 
       /**
        * Validace nazvu slozky
-       * @param input
+       * @param input vstup od uzivatele
        */
       static void validateFolderName(const std::string& input);
 
+      /**
+       * Validace nazvu souboru
+       * @param input vstup od uzivatele
+       */
       static void validateFileName(const std::string& input);
 
     public:
@@ -36,8 +40,16 @@ struct FolderItem {
        */
       FolderItem();
 
+      /**
+       * Ziskani jmena predmetu
+       * @return string se jmenem predmetu
+       */
       [[nodiscard]] std::string getItemName() const;
 
+      /**
+       * Ziskani adresy INode
+       * @return adresu Inode
+       */
       [[nodiscard]] uint64_t getNodeAddress() const;
 
       bool operator==(const FolderItem& other) const;

@@ -6,9 +6,12 @@
 #include <exception>
 #include <string>
 
+/**
+ * Jednoducha trida pro vyjimku
+ */
 class FSException : public std::exception {
 
-      const std::string text;
+      const std::string text; // zprava chyby
 
     public:
       explicit FSException(std::string text);

@@ -67,6 +67,9 @@ struct SuperBlock {
       static uint64_t getBitmapSize(uint64_t objectCount);
 
     public:
+      /**
+       * Tisk informaci o superbloku pro debug
+       */
       void printInfo() const;
 };
 

@@ -20,15 +20,17 @@ void FileStream::openAppendOnly() {
 }
 
 void FileStream::createFileIfNotExists(const std::filesystem::path& filePath) {
-    if (filePath.has_parent_path()) {
+    if (filePath.has_parent_path()) { // vytvoreni slozek
         auto folders = filePath.parent_path();
         std::filesystem::create_directories(folders);
     }
 
-    auto ifstream = std::ifstream(filePath.string());
-    if (!ifstream.good()) {
+    auto ifstream = std::ifstream(filePath.string()); // ofstream muze slouzit ke kontrole, zda-li soubor existuje
+    if (!ifstream.good()) { // pokud neni "good" musime soubor vytvorit
         ifstream.close();
-        auto ofstream = std::ofstream(filePath.string());
+        auto ofstream = std::ofstream(filePath.string()); // ofstream vytvori soubor automaticky
+
+        // pokud neni good, nelze soubor vytvorit - pravdepodobne spatny nazev nebo chybi povoleni od OS
         if (!ofstream.good()) {
             throw FSException("CANNOT CREATE FILE");
         }
@@ -36,7 +38,7 @@ void FileStream::createFileIfNotExists(const std::filesystem::path& filePath) {
 }
 
 void FileStream::deleteFile() {
-    fstream.close();
+    fstream.close(); // zavreme stream a zavolame std::remove
     if (fileExists()) {
         std::remove(filePath.c_str());
     }
@@ -49,7 +51,7 @@ void FileStream::createFile() {
 
 
 void FileStream::writeFolderItem(FolderItem& folderItem, uint64_t address) {
-    moveTo(address);
+    moveTo(address); // presun na adresu a zapis dat
     write(folderItem.nodeAddress);
     writeVector(folderItem.itemName);
 }
@@ -59,14 +61,14 @@ std::vector<FolderItem> FileStream::readFolderItemBlock(uint64_t address) {
 }
 
 std::vector<FolderItem> FileStream::readNFolderItems(uint64_t address, uint32_t n) {
-    moveTo(address);
-    auto result = std::vector<FolderItem>();
+    moveTo(address); // presun na adresu
+    auto result = std::vector<FolderItem>(); // vysledek pro cteni
     result.reserve(n);
-    auto folderItem = FolderItem();
+    auto folderItem = FolderItem(); // prazdny objekt, ktery se bude prepisovat
     for (auto i = 0; i < n; i++) {
         read(folderItem.nodeAddress);
         readVector(folderItem.itemName);
-        result.push_back(folderItem);
+        result.push_back(folderItem); // zkopirujeme folder item do result
     }
     return result;
 }
@@ -82,7 +84,7 @@ void FileStream::format(uint64_t bytes) {
         lastOp = LastOperation::Write;
     }
 
-    for (auto i = 0; i < bufferWrites; i++) {
+    for (auto i = 0; i < bufferWrites; i++) { // zapis dat
         fstream.write(buffer.data(), buffer.size());
     }
     auto remainingBytes = std::vector<char>(remainder, 0);

@@ -7,10 +7,11 @@ Bitmap::Bitmap(uint64_t bitmapStartAddress, uint32_t count, uint64_t objectStart
                                                            objectStartAddress(objectStartAddress),
                                                            name(std::move(name)) {
     fileStream.moveTo(bitmapStartAddress);
+    // pocet bytu je bud count / 8 nebo count / 8 + 1 podle zbytku
     auto bytes = count % 8 > 0 ? (count / 8) + 1 : (count / 8);
 
-    bitmap = std::vector<uint8_t>(bytes, 0);
-    fileStream.readVector(bitmap);
+    bitmap = std::vector<uint8_t>(bytes, 0); // bitmapu lze reprezentovat vektorem bytu
+    fileStream.readVector(bitmap); // nacteni dat
 }
 
 

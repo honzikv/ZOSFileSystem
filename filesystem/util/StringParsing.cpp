@@ -46,7 +46,7 @@ uint64_t StringParsing::convertToBytes(uint64_t unitSize, std::string unit) {
 
 std::vector<std::string> StringParsing::parsePath(const std::string& path) {
     auto pathString = std::string(path);
-    auto delimiter = std::string("/");
+    auto delimiter = std::string("/"); // oddeleni podle /
     auto pos = 0;
 
     auto result = std::vector<std::string>();

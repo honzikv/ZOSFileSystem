@@ -8,7 +8,7 @@
 enum class AddressType {
       Pointer, // pointer - nastavime na invalid 64 bit
       FolderItem, // folder item - nastavime na prazdny
-      RawData
+      RawData // data
 };
 
 #endif //ZOSREWORK_ADDRESSTYPE_H

@@ -25,7 +25,7 @@ class FileStream {
       std::fstream fstream; // fstream objekt pro cteni souboru
       std::string filePath; // cesta k souboru
 
-      LastOperation lastOp = LastOperation::None;
+      LastOperation lastOp = LastOperation::None; // posledni operace - pro prepnuti mezi ctenim a zapisem
 
     public:
 
@@ -56,6 +56,11 @@ class FileStream {
        */
       static void createFileIfNotExists(const std::filesystem::path& filePath);
 
+      /**
+       * Template pro zapis jakehokoliv souboru, ktery je zapsan v pameti spojite
+       * @tparam T typ
+       * @param object reference na objekt, do ktereho se data zapisi
+       */
       template<typename T>
       void write(T& object) {
           // potreba provest seek pokud se predtim cetlo
@@ -70,6 +75,11 @@ class FileStream {
           }
       }
 
+      /**
+       * Template pro cteni jakehokoliv souboru, ktery je zapsan v pameti spojite (tzn bez referenci)
+       * @tparam T typ
+       * @param object reference na objekt
+       */
       template<typename T>
       void read(T& object) {
           // potreba provest seek pokud se predtim zapisovalo
@@ -83,6 +93,10 @@ class FileStream {
           }
       }
 
+      /**
+       * Presun na danou pozici (relativne od zacatku)
+       * @param pos pozice v souboru
+       */
       void moveTo(uint64_t pos) {
           fstream.seekg(pos, std::fstream::beg);
       }
@@ -107,6 +121,12 @@ class FileStream {
           }
       }
 
+      /**
+       * Precte do vektoru data. Vektor musi byt inicializovany na prazdne instance daneho typu a musi obsahovat
+       * stejny pocet instanci, ktere chceme nacist
+       * @tparam T typ objektu
+       * @param vector vektor, kam se data zapisou
+       */
       template<typename T>
       void readVector(std::vector<T>& vector) {
           for (auto& obj : vector) {
@@ -120,20 +140,48 @@ class FileStream {
        */
       void format(uint64_t bytes);
 
+      /**
+       * Precte blok a interpretuje ho jako blok FolderItem objektu
+       * @param address adresa zacatku bloku
+       * @return vektor s nactenymi FolderItems
+       */
       std::vector<FolderItem> readFolderItemBlock(uint64_t address);
 
+      /**
+       * Zapis super bloku
+       * @param superBlock reference na super blok
+       */
       void writeSuperBlock(SuperBlock& superBlock);
 
+      /**
+       * Cteni super bloku
+       * @param superBlock reference na superblok, kam se data ulozi
+       */
       void readSuperBlock(SuperBlock& superBlock);
 
+      /**
+       * Zapise INode
+       * @param inode reference na INode
+       */
       void writeINode(INode& inode);
 
+      /**
+       * Zda-li je fstream "good"
+       * @return fstream.good()
+       */
       bool good() { return fstream.good(); }
 
+      /**
+       * Zda-li je soubor prazdny
+       * @return true, pokud je soubor prazdny
+       */
       bool isFileEmpty();
 
+      /**
+       * Ziska velikost souboru
+       * @return velikost souboru v bytech
+       */
       uint64_t getFileSize() {
-
           fstream.seekg(0, std::ios::beg);
           auto beg = fstream.tellg();
           fstream.seekg(0, std::ios::end);
@@ -142,14 +190,33 @@ class FileStream {
           return end - beg;
       }
 
+      /**
+       * Destruktor - provede flush fstreamu
+       */
       virtual ~FileStream();
 
+      /**
+       * Precte INode
+       * @param node reference na INode, do ktere se data ulozi
+       */
       void readINode(INode& node);
 
+      /**
+       * Smaze soubor
+       */
       void deleteFile();
 
+      /**
+       * Vytvori soubor
+       */
       void createFile();
 
+      /**
+       * Precte n zaznamu slozky z dane adresy
+       * @param address adresa pro cteni
+       * @param n pocet predmetu
+       * @return vektor s prectenymi predmety
+       */
       std::vector<FolderItem> readNFolderItems(uint64_t address, uint32_t n);
 };
 

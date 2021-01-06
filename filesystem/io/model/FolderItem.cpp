@@ -11,7 +11,7 @@ void FolderItem::validateFileName(const std::string& input) {
         throw FSException("File name with extension is too long");
     }
 
-    if (input.find('.') == std::string::npos) {
+    if (input.find('.') == std::string::npos) { // pokud neni tecka a je soubor prilis dlouhy, vyhodime exception
         if (input.length() > Globals::FILE_NAME_CHAR_LIMIT) {
             throw FSException("Error file name is too long");
         }
@@ -21,11 +21,11 @@ void FolderItem::validateFileName(const std::string& input) {
         auto token = std::string();
         auto tokens = std::vector<std::string>();
 
-
         while (std::getline(stringStream, token, '.')) {
             tokens.push_back(token);
         }
 
+        // posledni z tecek je koncovka
         if (tokens[tokens.size() - 1].length() > Globals::FILE_EXTENSION_CHAR_LIMIT) {
             throw FSException(
                     "Extension is too long, make sure it is less or equal to " +
@@ -47,6 +47,7 @@ FolderItem::FolderItem() = default;
 
 
 std::string FolderItem::getItemName() const {
+    // iterujeme dokud nenarazime na '/0' a pote vratime string
     auto terminalIndex = -1;
     for (auto i = 0; i < itemName.size(); i++) {
         if (itemName[i] == (char) 0) {
