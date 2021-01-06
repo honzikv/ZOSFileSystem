@@ -22,11 +22,12 @@ class FileSystem {
               "format", "mount", "cp", "mv", "rm", "mkdir",
               "rmdir", "ls", "cat", "cd", "pwd", "info",
               "incp", "outcp", "load", "ln",
-              // debug
+
+              // debugovaci prikazy
               "diskinfo", "debugnodebitmap", "debugblockbitmap"
       };
 
-      std::shared_ptr<FileSystemController> fileSystemController = nullptr;
+      std::shared_ptr<FileSystemController> fileSystemController = nullptr; // file system controller instance
 
       bool isMounted = false; // zda-li je disk mounted - tzn. lze pouzit
 

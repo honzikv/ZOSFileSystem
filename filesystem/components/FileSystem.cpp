@@ -125,17 +125,17 @@ void FileSystem::execute(const std::vector<std::string>& commandWithArguments) {
 }
 
 void FileSystem::format(std::vector<std::string>& args) {
-    auto string = std::string();
+    auto string = std::string(); // nacteni argumentu
     for (const auto& arg : args) {
         string += arg;
     }
     std::transform(string.begin(), string.end(), string.begin(),
                    [](auto c) { return std::tolower(c); }); // to lower
-    if (!StringParsing::matchesFormatRegex(string)) {
+    if (!StringParsing::matchesFormatRegex(string)) { // pokud nevyhovuji regexu vyhodime vyjimku
         throw FSException("Incorrect parameters for \"format\"");
     }
 
-    uint64_t sizeBytes;
+    uint64_t sizeBytes; // velikost disku
     try {
         sizeBytes = StringParsing::parseDriveFormatSize(string);
 

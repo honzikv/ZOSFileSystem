@@ -31,6 +31,7 @@ INode MemoryAllocator::getINodeWithId(uint32_t nodeId) {
     if (nodeId == (uint32_t) Globals::INVALID_VALUE) {
         throw FSException("Error, node does not have id"); // to by se nikdy nemelo stat, pouze pro debug
     }
+    // presun na adresu podle id a cteni dat
     auto nodeWithId = INode();
     auto nodeAddress = superBlock->nodeAddress + nodeId * Globals::INODE_SIZE_BYTES();
     fileStream.moveTo(nodeAddress);
@@ -48,7 +49,7 @@ void MemoryAllocator::freeINode(INode& node) {
     fileStream.moveTo(nodeAddress);
     fileStream.writeINode(emptyNode); // update INode na disku
     nodeBitmap->setAddress(nodeAddress, true);
-    freeMemory(node);
+    freeMemory(node); // uvolneni pameti, ktera byla INode pridelena
 }
 
 void MemoryAllocator::format(uint64_t address, AddressType addressType) {
@@ -68,26 +69,27 @@ void MemoryAllocator::format(uint64_t address, AddressType addressType) {
 }
 
 uint64_t MemoryAllocator::getDataBlock(AddressType addressType) {
-    auto address = blockBitmap->getFirstEmptyAddress();
-    blockBitmap->setAddress(address, false);
-    format(address, addressType);
+    auto address = blockBitmap->getFirstEmptyAddress(); // zavolame bitmapu a nechame si prinest prvni volnou adresu
+    blockBitmap->setAddress(address, false); // nastavime adresu na zaplnenou
+    format(address, addressType); // format pro spravny typ dat
     return address;
 }
 
 INode MemoryAllocator::getINode(bool isFolder) {
-    auto nodeAddress = nodeBitmap->getFirstEmptyAddress();
+    auto nodeAddress = nodeBitmap->getFirstEmptyAddress(); // zavolame bitmapu a nechame si prinest volnou adresu
     auto id = nodeBitmap->getIdFromAddress(nodeAddress);
     auto result = INode();
     result.setId(id);
     result.setFolder(isFolder);
     result.setTimestamp(std::chrono::system_clock::now().time_since_epoch().count());
-    nodeBitmap->setAddress(nodeAddress, false);
+    nodeBitmap->setAddress(nodeAddress, false); // nastavime adresu na zaplnenou
     return result;
 }
 
 std::vector<uint64_t> MemoryAllocator::getNDataBlocks(uint64_t n, AddressType addressType) {
     auto dataBlocks = std::vector<uint64_t>();
     dataBlocks.reserve(n);
+    // provedeme n krat operaci getDataBlock a pri chybe ji presmerujeme vyse
     for (auto i = 0; i < n; i++) {
         try {
             auto emptyAddress = getDataBlock(addressType);

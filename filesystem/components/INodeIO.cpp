@@ -5,7 +5,7 @@ INodeIO::INodeIO(FileStream& fileStream, FileSystemController& fileSystemControl
                                                                                        fileSystemController(
                                                                                                fileSystemController) {}
 
-void INodeIO::appendToT1Block(uint64_t itemPosition, uint64_t t1Address, std::vector<uint64_t> allocations,
+void INodeIO::appendToT1Block(uint64_t itemPosition, uint64_t t1Address, std::vector<uint64_t>& allocations,
                               FolderItem& folderItem) {
     auto t1Row = itemPosition / Globals::FOLDER_ITEMS_PER_BLOCK(); // dany index v 1. neprime adrese
     auto blockRow = itemPosition % Globals::FOLDER_ITEMS_PER_BLOCK(); // pozice v bloku
@@ -27,7 +27,7 @@ void INodeIO::appendToT1Block(uint64_t itemPosition, uint64_t t1Address, std::ve
 }
 
 
-void INodeIO::appendToT2Block(uint32_t itemPosition, uint64_t t2Address, std::vector<uint64_t> allocations,
+void INodeIO::appendToT2Block(uint32_t itemPosition, uint64_t t2Address, std::vector<uint64_t>& allocations,
                               FolderItem& folderItem) {
     auto t2Row = itemPosition / (Globals::POINTERS_PER_BLOCK() * Globals::FOLDER_ITEMS_PER_BLOCK());
 
@@ -318,7 +318,7 @@ std::vector<FolderItem> INodeIO::getFolderItems(INode& node) {
 }
 
 
-void INodeIO::readFromDirectBlocks(std::vector<uint64_t> addressList, uint32_t count, std::vector<FolderItem>& result) {
+void INodeIO::readFromDirectBlocks(std::vector<uint64_t>& addressList, uint32_t count, std::vector<FolderItem>& result) {
     auto fullBlocks = count / Globals::FOLDER_ITEMS_PER_BLOCK();
     auto remainder = count % Globals::FOLDER_ITEMS_PER_BLOCK();
 
@@ -336,14 +336,14 @@ void INodeIO::readFromDirectBlocks(std::vector<uint64_t> addressList, uint32_t c
     result.insert(result.end(), remainderItems.begin(), remainderItems.end());
 }
 
-void INodeIO::readFromT1Address(uint64_t t1Address, uint64_t count, std::vector<FolderItem> result) {
+void INodeIO::readFromT1Address(uint64_t t1Address, uint64_t count, std::vector<FolderItem>& result) {
     auto addressList = std::vector<uint64_t>(Globals::POINTERS_PER_BLOCK(), Globals::INVALID_VALUE);
     fileStream.moveTo(t1Address);
     fileStream.readVector(addressList);
     readFromDirectBlocks(addressList, count, result);
 }
 
-void INodeIO::readFromT2Address(uint64_t t2Address, uint32_t itemCount, const std::vector<FolderItem>& result) {
+void INodeIO::readFromT2Address(uint64_t t2Address, uint32_t itemCount, std::vector<FolderItem>& result) {
     auto fullBlocks = itemCount / (Globals::POINTERS_PER_BLOCK() * Globals::FOLDER_ITEMS_PER_BLOCK());
     auto remainder = itemCount % (Globals::POINTERS_PER_BLOCK() * Globals::FOLDER_ITEMS_PER_BLOCK());
 

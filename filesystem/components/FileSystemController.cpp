@@ -48,7 +48,7 @@ FileSystemController::FileSystemController(FileStream& fileStream) : fileStream(
 }
 
 
-INode FileSystemController::getRoot() {
+INode FileSystemController::getRoot() { // root je jako prvni INode v souboru
     auto root = INode();
     fileStream.moveTo(superBlock->nodeAddress);
     fileStream.readINode(root);

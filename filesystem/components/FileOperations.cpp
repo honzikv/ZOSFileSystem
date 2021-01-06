@@ -89,17 +89,18 @@ void FileOperations::makeDirectory(const std::string& path) {
     auto parentNodeFolderItem = FolderItem(folderName, folderNodeAddress); // folder item v parent node
 
     try {
+        // pridani "." a ".."
         fileSystemController.linkFolderToParent(folderNode, folderNodeAddress, parentNodeAddress);
     }
-    catch (FSException& ex) {
+    catch (FSException& ex) { // neni misto
         fileSystemController.reclaimINode(folderNode);
         restorePathContextState(absolutePath);
         throw FSException("Error, not enough space to create new folder");
     }
 
     try {
-        fileSystemController.appendFolderItem(parentNode, parentNodeFolderItem);
-    } catch (FSException& ex) {
+        fileSystemController.appendFolderItem(parentNode, parentNodeFolderItem); // pridani predmetu
+    } catch (FSException& ex) { // neni misto
         restorePathContextState(absolutePath);
         fileSystemController.reclaimINode(folderNode);
         throw FSException("Error, not enough space to create new folder");
@@ -119,14 +120,14 @@ void FileOperations::changeDirectory(const std::string& path) {
     auto absolutePath = pathContext->absolutePath; // kopie pro pripad ze se zmena slozky nezdari
 
     try {
-        pathContext->moveTo(fsPath);
+        pathContext->moveTo(fsPath); // presun do slozky
     }
-    catch (FSException& ex) {
+    catch (FSException& ex) { // vytiskneme chybu
         restorePathContextState(absolutePath);
         std::cout << ex.what() << std::endl;
     }
 
-    pathContext->loadItems();
+    pathContext->loadItems(); // nacteni predmetu
     std::cout << "OK" << std::endl;
 }
 

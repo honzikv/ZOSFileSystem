@@ -4,7 +4,7 @@
 #include "FileOperations.hpp"
 
 PathContext::PathContext(FileOperations& fileOperations) : fileOperations(fileOperations) {
-
+    // pri spusteni se ocitneme vzdy v rootu, tzn. nacteme predmety rootu
     auto root = fileOperations.getRoot();
     absolutePath.push_back(root);
     auto rootItems = fileOperations.getFolderItems(root);
@@ -27,7 +27,7 @@ int PathContext::getFolderItemIndex(std::string& folderItemName) {
 
 
 void PathContext::moveToRoot(bool fetchFolderItems) {
-    auto root = absolutePath[0];
+    auto root = absolutePath[0]; // root je vzdy prvni, takze akorat odstranime zbytek
     auto updatedRoot = fileOperations.getUpdatedINode(root);
     absolutePath = std::vector<INode>();
     absolutePath.push_back(updatedRoot);
@@ -55,13 +55,15 @@ void PathContext::moveTo(FileSystemPath& path) {
     for (auto i = 0; i < path.size(); i++) {
         auto nextFolder = path[i];
 
+        // pokud je dalsi prvek ".." a jeste nejsme v rootu pak odstranime posledni prvek cesty
         if (nextFolder == ".." && absolutePath.size() > 1) {
             absolutePath.pop_back();
             continue;
         } else if (nextFolder == ".") {
-            continue;
+            continue; // pokud je prvek "." nic se nemusi delat, protoze to je reference na aktualni adresar
         }
 
+        // jinak nacteme predmety a presuneme se do dane slozky (pokud existuje, jinak vyhodime exception)
         folderItems = fileOperations.getFolderItems(absolutePath.back());
         auto nextFolderIndex = getFolderItemIndex(nextFolder);
         if (nextFolderIndex == -1) {
