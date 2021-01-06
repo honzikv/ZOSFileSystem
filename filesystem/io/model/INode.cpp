@@ -5,7 +5,7 @@
 
 uint32_t INode::getFolderSize() const { return size; }
 
-INode::INode() {}
+INode::INode() = default;
 
 bool INode::isFolder() const { return folder; }
 
